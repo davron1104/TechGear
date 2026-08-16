@@ -1,7 +1,15 @@
+import { Metadata } from "next";
+import { LoginForm } from "@/components/auth/login-form";
+
+export const metadata: Metadata = {
+  title: "Вход в аккаунт — TechGear",
+  description: "Войдите в личный кабинет интернет-магазина TechGear для управления заказами.",
+};
+
 export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center p-4">
-      <h1 className="text-xl font-bold">Вход в систему (Заглушка)</h1>
+    <div className="w-full py-8 sm:py-12 flex items-center justify-center">
+      <LoginForm />
     </div>
   );
 }
