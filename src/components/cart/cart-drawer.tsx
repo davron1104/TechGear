@@ -44,20 +44,30 @@ export function CartDrawer() {
     };
   }, [isOpen, closeCart]);
 
-  if (!isOpen) return null;
-
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden" role="dialog" aria-modal="true">
-      {/* 1. Полупрозрачный оверлей с размытием фона */}
+    <div
+      className={`fixed inset-0 z-50 overflow-hidden transition-all duration-300 ${
+        isOpen ? "visible pointer-events-auto" : "invisible pointer-events-none delay-300"
+      }`}
+      role="dialog"
+      aria-modal="true"
+    >
+      {/* 1. Полупрозрачный оверлей с плавным затемнением и размытием */}
       <div
-        className="fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity animate-in fade-in duration-300"
+        className={`fixed inset-0 bg-black/40 backdrop-blur-xs transition-opacity duration-300 ease-in-out ${
+          isOpen ? "opacity-100" : "opacity-0"
+        }`}
         onClick={closeCart}
         aria-hidden="true"
       />
 
-      {/* 2. Выдвижная боковая панель справа */}
+      {/* 2. Выдвижная боковая панель справа с плавной анимацией скольжения */}
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <aside className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-300">
+        <aside
+          className={`w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between transform transition-transform duration-300 ease-out ${
+            isOpen ? "translate-x-0" : "translate-x-full"
+          }`}
+        >
           {/* Шапка корзины */}
           <div className="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
             <div className="flex items-center gap-2">
