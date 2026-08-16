@@ -1,0 +1,58 @@
+@import "tailwindcss";
+
+:root {
+  --primary: #0f172a;
+  --secondary: #475569;
+  --accent: #06b6d4;
+  --accent-hover: #0891b2;
+  --cta: #f59e0b;
+  --cta-hover: #d97706;
+  --neutral-bg: #ffffff;
+  --page-bg: #f8fafc;
+  --light-bg: #f1f5f9;
+  --border: #e2e8f0;
+  --border-hover: #06b6d4;
+
+  --success: #10b981;
+  --success-bg: #ecfdf5;
+  --destructive: #f43f5e;
+  --destructive-bg: #fff1f2;
+  --warning: #d97706;
+  --warning-bg: #fef3c7;
+  --info: #2563eb;
+  --info-bg: #eff6ff;
+}
+
+@theme {
+  --color-primary: var(--primary);
+  --color-secondary: var(--secondary);
+  --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-cta: var(--cta);
+  --color-cta-hover: var(--cta-hover);
+  --color-neutral-bg: var(--neutral-bg);
+  --color-page-bg: var(--page-bg);
+  --color-light-bg: var(--light-bg);
+  --color-border: var(--border);
+
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-geist-mono), var(--font-jetbrains-mono), monospace;
+}
+
+body {
+  background-color: var(--page-bg);
+  color: var(--primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom utility for hiding scrollbar in category bar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
