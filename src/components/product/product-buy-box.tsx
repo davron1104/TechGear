@@ -20,6 +20,8 @@ export function ProductBuyBox({
   const addItem = useCart((state) => state.addItem);
 
   const isInStock = product.stock > 0;
+  const effectiveQty = quantity > 0 ? quantity : 1;
+  const totalPrice = product.price * effectiveQty;
 
   const handleIncrement = () => {
     if (quantity < product.stock) {
@@ -69,11 +71,29 @@ export function ProductBuyBox({
         {product.shortDescription}
       </p>
 
-      {/* 4. Блок цены */}
-      <div className="pt-2 pb-1 border-y border-slate-100 flex items-baseline justify-between">
-        <span className="text-xs text-slate-400 font-medium">Стоимость:</span>
-        <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-mono">
-          {product.price.toLocaleString("ru-RU")} ₽
+      {/* 4. Блок цены и Итого */}
+      <div className="pt-3 pb-3 border-y border-slate-100 space-y-2">
+        <div className="flex items-center justify-between text-xs text-slate-500">
+          <span>Цена за 1 шт.:</span>
+          <span className="font-mono font-semibold text-slate-700">
+            {product.price.toLocaleString("ru-RU")} ₽
+          </span>
+        </div>
+
+        <div className="flex items-baseline justify-between pt-1 border-t border-slate-50">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-sm font-bold text-slate-900 uppercase tracking-wider">
+              Итого:
+            </span>
+            {quantity > 1 && (
+              <span className="text-xs text-[#06B6D4] font-medium">
+                (за {quantity} шт.)
+              </span>
+            )}
+          </div>
+          <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-mono">
+            {totalPrice.toLocaleString("ru-RU")} ₽
+          </div>
         </div>
       </div>
 
@@ -97,7 +117,7 @@ export function ProductBuyBox({
                   type="button"
                   onClick={handleDecrement}
                   disabled={quantity <= 1}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   aria-label="Уменьшить количество"
                 >
                   <Minus className="w-4 h-4" />
@@ -109,7 +129,7 @@ export function ProductBuyBox({
                   type="button"
                   onClick={handleIncrement}
                   disabled={quantity >= product.stock}
-                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                  className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   aria-label="Увеличить количество"
                 >
                   <Plus className="w-4 h-4" />
