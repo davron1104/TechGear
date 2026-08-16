@@ -1,69 +1,159 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { Suspense, useMemo, useState } from "react";
+import { useSearchParams, useRouter } from "next/navigation";
+import { HeroBanner } from "@/components/catalog/hero-banner";
+import { CatalogFilters } from "@/components/catalog/catalog-filters";
+import { ProductGrid } from "@/components/catalog/product-grid";
+import { MOCK_PRODUCTS } from "@/data/mock-products";
+import { FilterState, Product } from "@/types/product";
+
+function CatalogSection() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+
+  const urlCategory = searchParams.get("category");
+
+  const [filterValues, setFilterValues] = useState<
+    Omit<FilterState, "categorySlug">
+  >({
+    minPrice: null,
+    maxPrice: null,
+    inStockOnly: false,
+    sortBy: "popular",
+  });
+
+  // Единый объект фильтров (категория из URL + локальные фильтры цены и сортировки)
+  const filters: FilterState = useMemo(
+    () => ({
+      ...filterValues,
+      categorySlug: urlCategory,
+    }),
+    [filterValues, urlCategory]
+  );
+
+  const handleFilterChange = (
+    updater: (prev: FilterState) => FilterState
+  ) => {
+    const next = updater(filters);
+
+    // Если изменилась категория, обновляем URL для синхронизации с CategoryBar
+    if (next.categorySlug !== urlCategory) {
+      if (next.categorySlug) {
+        router.push(`/?category=${next.categorySlug}`, { scroll: false });
+      } else {
+        router.push("/", { scroll: false });
+      }
+    }
+
+    setFilterValues({
+      minPrice: next.minPrice,
+      maxPrice: next.maxPrice,
+      inStockOnly: next.inStockOnly,
+      sortBy: next.sortBy,
+    });
+  };
+
+  const handleResetFilters = () => {
+    setFilterValues({
+      minPrice: null,
+      maxPrice: null,
+      inStockOnly: false,
+      sortBy: "popular",
+    });
+    router.push("/", { scroll: false });
+  };
+
+  // Фильтрация и сортировка товаров
+  const filteredProducts = useMemo(() => {
+    return MOCK_PRODUCTS.filter((product: Product) => {
+      // 1. Фильтр по категории
+      if (
+        filters.categorySlug &&
+        product.categorySlug !== filters.categorySlug
+      ) {
+        return false;
+      }
+
+      // 2. Фильтр по минимальной цене
+      if (filters.minPrice !== null && product.price < filters.minPrice) {
+        return false;
+      }
+
+      // 3. Фильтр по максимальной цене
+      if (filters.maxPrice !== null && product.price > filters.maxPrice) {
+        return false;
+      }
+
+      // 4. Фильтр "Только в наличии"
+      if (filters.inStockOnly && product.stock <= 0) {
+        return false;
+      }
+
+      return true;
+    }).sort((a, b) => {
+      if (filters.sortBy === "price_asc") {
+        return a.price - b.price;
+      }
+      if (filters.sortBy === "price_desc") {
+        return b.price - a.price;
+      }
+      return 0; // "popular"
+    });
+  }, [filters]);
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div id="catalog-grid" className="scroll-mt-24">
+      <div className="flex flex-col lg:flex-row gap-8 items-start">
+        {/* Боковая панель фильтров */}
+        <CatalogFilters
+          filters={filters}
+          onFilterChange={handleFilterChange}
+          onReset={handleResetFilters}
+          totalFound={filteredProducts.length}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+        {/* Сетка товаров */}
+        <div className="flex-1 w-full">
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200">
+            <h2 className="text-xl font-bold text-slate-900">
+              {filters.categorySlug
+                ? MOCK_PRODUCTS.find(
+                    (p) => p.categorySlug === filters.categorySlug
+                  )?.categoryName || "Каталог товаров"
+                : "Все товары"}
+            </h2>
+            <span className="text-xs text-slate-500 font-medium">
+              Показано: {filteredProducts.length} из {MOCK_PRODUCTS.length}
+            </span>
+          </div>
+
+          <ProductGrid
+            products={filteredProducts}
+            onResetFilters={handleResetFilters}
+          />
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+      </div>
+    </div>
+  );
+}
+
+export default function HomePage() {
+  return (
+    <div className="w-full pb-12">
+      {/* 1. Hero-баннер */}
+      <HeroBanner />
+
+      {/* 2. Каталог с фильтрами */}
+      <Suspense
+        fallback={
+          <div className="w-full py-20 text-center text-slate-400">
+            Загрузка каталога...
+          </div>
+        }
+      >
+        <CatalogSection />
+      </Suspense>
     </div>
   );
 }
