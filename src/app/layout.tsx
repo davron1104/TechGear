@@ -1,11 +1,6 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Header } from "@/components/layout/header";
-import { CategoryBar } from "@/components/layout/category-bar";
-import { Footer } from "@/components/layout/footer";
-import { CartDrawer } from "@/components/cart/cart-drawer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -36,20 +31,7 @@ export default function RootLayout({
       className={`${inter.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
-        <Header />
-        <Suspense
-          fallback={
-            <div className="h-14 bg-white border-b border-slate-200" />
-          }
-        >
-          <CategoryBar />
-        </Suspense>
-        <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
-          {children}
-        </main>
-        <Footer />
-        {/* Глобальный виджет корзины */}
-        <CartDrawer />
+        {children}
       </body>
     </html>
   );
