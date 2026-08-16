@@ -5,6 +5,7 @@ import "./globals.css";
 import { Header } from "@/components/layout/header";
 import { CategoryBar } from "@/components/layout/category-bar";
 import { Footer } from "@/components/layout/footer";
+import { CartDrawer } from "@/components/cart/cart-drawer";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -47,6 +48,8 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
+        {/* Глобальный виджет корзины */}
+        <CartDrawer />
       </body>
     </html>
   );
