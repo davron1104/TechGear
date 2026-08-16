@@ -6,6 +6,19 @@ export const useCart = create<CartStore>()(
   persist(
     (set, get) => ({
       items: [],
+      isOpen: false,
+
+      openCart: () => {
+        set({ isOpen: true });
+      },
+
+      closeCart: () => {
+        set({ isOpen: false });
+      },
+
+      toggleCart: () => {
+        set((state) => ({ isOpen: !state.isOpen }));
+      },
 
       addItem: (newItem) => {
         const { items } = get();
@@ -85,6 +98,8 @@ export const useCart = create<CartStore>()(
     {
       name: "techgear-guest-cart",
       storage: createJSONStorage(() => localStorage),
+      // Сохраняем в localStorage только список items, исключая UI-состояние isOpen
+      partialize: (state) => ({ items: state.items }),
     }
   )
 );

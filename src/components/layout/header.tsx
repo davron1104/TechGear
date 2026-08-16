@@ -21,6 +21,7 @@ export function Header() {
     () => false
   );
   const totalCount = useCart((state) => state.getTotalCount());
+  const openCart = useCart((state) => state.openCart);
 
   return (
     <header className="w-full flex flex-col">
@@ -93,10 +94,12 @@ export function Header() {
               <span className="hidden md:inline">Войти</span>
             </Link>
 
-            {/* Кнопка/триггер корзины */}
-            <Link
-              href="/#cart"
-              className="flex items-center gap-2 px-3.5 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg transition-colors relative"
+            {/* Кнопка открытия выдвижной корзины (CartDrawer) */}
+            <button
+              type="button"
+              onClick={openCart}
+              className="flex items-center gap-2 px-3.5 py-2 text-sm font-medium bg-slate-100 hover:bg-slate-200 text-slate-800 rounded-lg transition-colors relative cursor-pointer"
+              aria-label="Открыть корзину"
             >
               <ShoppingCart className="w-5 h-5 text-slate-700" />
               <span className="hidden sm:inline">Корзина</span>
@@ -105,7 +108,7 @@ export function Header() {
                   {totalCount}
                 </span>
               )}
-            </Link>
+            </button>
           </div>
         </div>
       </div>
