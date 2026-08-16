@@ -7,16 +7,19 @@ import { useCart } from "@/hooks/use-cart";
 
 interface ProductStickyBarProps {
   product: Product;
+  quantity: number;
 }
 
-export function ProductStickyBar({ product }: ProductStickyBarProps) {
+export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
   const [isAdded, setIsAdded] = useState(false);
   const addItem = useCart((state) => state.addItem);
 
   const isInStock = product.stock > 0;
+  const effectiveQty = quantity > 0 ? quantity : 1;
+  const totalPrice = product.price * effectiveQty;
 
   const handleAddToCart = () => {
-    if (!isInStock) return;
+    if (!isInStock || quantity <= 0) return;
 
     addItem({
       productId: product.id,
@@ -24,7 +27,7 @@ export function ProductStickyBar({ product }: ProductStickyBarProps) {
       price: product.price,
       image: product.image,
       stock: product.stock,
-      quantity: 1,
+      quantity: effectiveQty,
     });
 
     setIsAdded(true);
@@ -40,9 +43,12 @@ export function ProductStickyBar({ product }: ProductStickyBarProps) {
         <div className="flex flex-col min-w-0">
           <span className="text-[10px] uppercase font-semibold text-slate-400 truncate">
             {product.name}
+            {effectiveQty > 1 && (
+              <span className="text-[#06B6D4] ml-1">({effectiveQty} шт.)</span>
+            )}
           </span>
           <span className="text-xl font-extrabold text-slate-900 font-mono">
-            {product.price.toLocaleString("ru-RU")} ₽
+            {totalPrice.toLocaleString("ru-RU")} ₽
           </span>
         </div>
 
@@ -60,7 +66,7 @@ export function ProductStickyBar({ product }: ProductStickyBarProps) {
             {isAdded ? (
               <>
                 <Check className="w-4 h-4" />
-                <span>Добавлено</span>
+                <span>Добавлено ({effectiveQty})</span>
               </>
             ) : (
               <>

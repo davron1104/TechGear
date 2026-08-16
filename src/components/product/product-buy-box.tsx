@@ -7,25 +7,29 @@ import { useCart } from "@/hooks/use-cart";
 
 interface ProductBuyBoxProps {
   product: Product;
+  quantity: number;
+  onQuantityChange: (qty: number) => void;
 }
 
-export function ProductBuyBox({ product }: ProductBuyBoxProps) {
-  const [quantity, setQuantity] = useState(product.stock > 0 ? 1 : 0);
+export function ProductBuyBox({
+  product,
+  quantity,
+  onQuantityChange,
+}: ProductBuyBoxProps) {
   const [isAdded, setIsAdded] = useState(false);
-
   const addItem = useCart((state) => state.addItem);
 
   const isInStock = product.stock > 0;
 
   const handleIncrement = () => {
     if (quantity < product.stock) {
-      setQuantity((prev) => prev + 1);
+      onQuantityChange(quantity + 1);
     }
   };
 
   const handleDecrement = () => {
     if (quantity > 1) {
-      setQuantity((prev) => prev - 1);
+      onQuantityChange(quantity - 1);
     }
   };
 
