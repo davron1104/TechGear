@@ -113,7 +113,7 @@ export function ProductCard({ product }: ProductCardProps) {
           />
 
           {/* Статус наличия */}
-          <div className="absolute top-2.5 left-2.5 pointer-events-none">
+          <div className="absolute top-2.5 left-2.5 pointer-events-none z-10">
             {isInStock ? (
               isLowStock ? (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
@@ -130,6 +130,22 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
             )}
           </div>
+
+          {/* Тонкий сегментированный индикатор нескольких фото */}
+          {images.length > 1 && (
+            <div className="absolute bottom-2.5 inset-x-4 flex items-center gap-1.5 z-10 pointer-events-none">
+              {images.map((_, idx) => (
+                <div
+                  key={idx}
+                  className={`h-0.5 flex-1 rounded-full transition-all duration-200 ${
+                    idx === activeImageIndex
+                      ? "bg-[#06B6D4] shadow-xs"
+                      : "bg-slate-300/80"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Категория и бренд */}
