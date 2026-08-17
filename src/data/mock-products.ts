@@ -11,6 +11,11 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Клавиатуры",
     price: 8990,
     image: "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Премиальная кастомная механика на свитчах Gateron Red с PBT-кейкапами.",
     description: "Беспроводная механическая клавиатура с горячей заменой переключателей (Hot-Swap), смазанными стабилизаторами и звукоизоляцией корпуса.",
     stock: 14,
@@ -32,6 +37,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Клавиатуры",
     price: 13490,
     image: "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1618384887929-16ec33fab9ef?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Сверхбыстрая киберспортивная клавиатура с оптико-механическими переключателями.",
     description: "Алюминиевый корпус авиационного класса, настраиваемая точка срабатывания клавиш и RGB-подсветка с синхронизацией.",
     stock: 2, // мало
@@ -53,6 +61,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Клавиатуры",
     price: 5490,
     image: "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Низкопрофильная ультратонкая клавиатура для работы и продуктивности.",
     description: "Компактный дизайн с ножничным механизмом клавиш, поддержка одновременного сопряжения с 3 устройствами.",
     stock: 0, // нет в наличии
@@ -76,6 +87,11 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Мыши",
     price: 6990,
     image: "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1626218174358-7769486c4b79?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Ультралегкая эргономичная мышь весом 49 грамм с оптическим сенсором 26K DPI.",
     description: "Флагманский сенсор PixArt PAW3395, тефлоновые глайды из 100% PTFE и до 90 часов автономной работы на одном заряде.",
     stock: 19,
@@ -97,6 +113,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Мыши",
     price: 9990,
     image: "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Симметричная форма, оптические микропереключатели с ресурсом 90 млн кликов.",
     description: "Проводная киберспортивная мышь с поддержкой частоты опроса 8000 Гц и ультрагибким паракордовым кабелем.",
     stock: 3, // мало
@@ -118,6 +137,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Мыши",
     price: 3890,
     image: "https://images.unsplash.com/photo-1626958390898-162d3577f293?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1626958390898-162d3577f293?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Вертикальная анатомическая мышь для снятия усталости кисти.",
     description: "Оптимальный угол наклона 57 градусов для естественного положения руки, бесшумные кнопки и поддержка Bluetooth.",
     stock: 0, // нет в наличии
@@ -141,6 +163,11 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Гарнитуры",
     price: 11990,
     image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1583394838336-acd977736f90?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Пространственное звучание 7.1, 53-мм драйверы и съемный микрофон студийного качества.",
     description: "Амбушюры с эффектом памяти и охлаждающим гелем, прочное оголовье из алюминия и совместимость со всеми платформами.",
     stock: 8,
@@ -162,6 +189,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Гарнитуры",
     price: 15990,
     image: "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Активное шумоподавление ANC и до 50 часов работы без подзарядки.",
     description: "Премиальное качество звучания Hi-Res Audio, радиоканал с ультранизкой задержкой 15 мс и мягкая экокожа.",
     stock: 1, // мало
@@ -183,6 +213,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Гарнитуры",
     price: 8490,
     image: "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1484704849700-f032a568e944?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Открытая акустическая конструкция для максимально детальной сцены.",
     description: "Создана для создателей контента и стримеров. Чистый неокрашенный звук и велюровые дышащие амбушюры.",
     stock: 0, // нет в наличии
@@ -206,6 +239,11 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Мониторы",
     price: 28990,
     image: "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1585792180666-f7347c490ee2?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1551645120-d70bfe82c825?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "27-дюймовая Fast IPS панель с разрешением QHD (2560x1440) и временем отклика 1мс.",
     description: "Поддержка AMD FreeSync Premium и G-Sync Compatible, цветовой охват 99% sRGB и регулируемая по высоте подставка.",
     stock: 6,
@@ -227,6 +265,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Мониторы",
     price: 49990,
     image: "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1593642632823-8f785ba67e45?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "34 дюйма 21:9 WQHD, радиус кривизны 1500R и HDR400.",
     description: "Идеальное решение для погружения в симуляторы и одновременной работы с несколькими окнами. Встроенные динамики и USB-хаб.",
     stock: 2, // мало
@@ -248,6 +289,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Мониторы",
     price: 89990,
     image: "https://images.unsplash.com/photo-1547082299-de196ea013d6?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1547082299-de196ea013d6?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Флагманский QD-OLED дисплей с бесконечным контрастом и молниеносным откликом 0.03 мс.",
     description: "Абсолютный черный цвет, невероятная плавность 240 Гц и эталонная калибровка Delta E < 1 для работы с графикой и требовательного гейминга.",
     stock: 5,
@@ -271,6 +315,10 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Накопители",
     price: 14990,
     image: "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?w=600&auto=format&fit=crop&q=80",
+      "https://images.unsplash.com/photo-1550745165-9bc0b252726f?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Скорость чтения до 7450 МБ/с и записи до 6900 МБ/с с радиатором охлаждения.",
     description: "Интерфейс PCIe 4.0 x4, кэш-память LPDDR4 и гарантированный ресурс записи 1200 TBW для игр нового поколения и тяжелых задач.",
     stock: 22,
@@ -292,6 +340,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Накопители",
     price: 7990,
     image: "https://images.unsplash.com/photo-1628133297672-04e8a4a4c1ea?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1628133297672-04e8a4a4c1ea?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Ударопрочный компактный накопитель со скоростью до 1050 МБ/с.",
     description: "Алюминиевый корпус с резиновым бампером, защита от падений с высоты до 2 метров и аппаратное шифрование AES 256-bit.",
     stock: 2, // мало
@@ -313,6 +364,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Накопители",
     price: 34990,
     image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Рекордная скорость PCIe Gen5 до 12400 МБ/с с активным кулером.",
     description: "Новейший контроллер 232-слойная 3D TLC память для профессионального монтажа 8K видео и AI вычислений.",
     stock: 0, // нет в наличии
@@ -336,6 +390,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Аксессуары",
     price: 1990,
     image: "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1616440347437-b1c73416efc2?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Водоотталкивающее покрытие Jacquard, прошитые края и противоскользящая база.",
     description: "Огромный размер 900×400 мм позволяет комфортно разместить клавиатуру и мышь. Толщина 4 мм отлично сглаживает неровности стола.",
     stock: 35,
@@ -357,6 +414,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Аксессуары",
     price: 6490,
     image: "https://images.unsplash.com/photo-1593642532400-2682810df593?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1593642532400-2682810df593?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Газлифт механизм, поддержка мониторов до 32\" и кабель-менеджмент.",
     description: "Полная свобода вращения на 360 градусов, наклон и регулировка высоты одним движением руки. Крепление струбциной к краю стола.",
     stock: 3, // мало
@@ -378,6 +438,9 @@ export const MOCK_PRODUCTS: Product[] = [
     categoryName: "Аксессуары",
     price: 2490,
     image: "https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=600&auto=format&fit=crop&q=80",
+    images: [
+      "https://images.unsplash.com/photo-1544652478-6653e09f18a2?w=600&auto=format&fit=crop&q=80",
+    ],
     shortDescription: "Кастомный спиральный кабель в оплетке Paracord с коннектором GX16 Aviator.",
     description: "Стильный аксессуар для кастомной механической клавиатуры. Двойная нейлоновая оплетка и позолоченные разъемы Type-C.",
     stock: 0, // нет в наличии

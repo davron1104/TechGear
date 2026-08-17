@@ -1,7 +1,7 @@
 /* eslint-disable @next/next/no-img-element */
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { ShoppingCart, Check } from "lucide-react";
 import { Product } from "@/types/product";
@@ -13,10 +13,65 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const [isAdded, setIsAdded] = useState(false);
+  const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const touchStartX = useRef<number | null>(null);
+
   const addItem = useCart((state) => state.addItem);
 
+  const images = product.images?.length ? product.images : [product.image];
   const isInStock = product.stock > 0;
   const isLowStock = product.stock > 0 && product.stock <= 3;
+
+  // Переключение по зонам движения мыши (Hover scrubbing)
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (images.length <= 1) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const width = rect.width;
+    if (width <= 0) return;
+
+    const segmentWidth = width / images.length;
+    const index = Math.min(
+      Math.max(Math.floor(x / segmentWidth), 0),
+      images.length - 1
+    );
+
+    if (index !== activeImageIndex) {
+      setActiveImageIndex(index);
+    }
+  };
+
+  // Сброс к первому фото при уходе курсора
+  const handleMouseLeave = () => {
+    if (images.length <= 1) return;
+    setActiveImageIndex(0);
+  };
+
+  // Touch Swipe для мобильных устройств
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (images.length <= 1) return;
+    touchStartX.current = e.touches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent<HTMLDivElement>) => {
+    if (images.length <= 1 || touchStartX.current === null) return;
+    const touchEndX = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX;
+    const swipeThreshold = 35;
+
+    if (Math.abs(diff) > swipeThreshold) {
+      if (diff > 0) {
+        // Свайп влево -> следующее изображение
+        setActiveImageIndex((prev) => (prev + 1) % images.length);
+      } else {
+        // Свайп вправо -> предыдущее изображение
+        setActiveImageIndex(
+          (prev) => (prev - 1 + images.length) % images.length
+        );
+      }
+    }
+    touchStartX.current = null;
+  };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -37,20 +92,28 @@ export function ProductCard({ product }: ProductCardProps) {
     }, 1200);
   };
 
+  const currentImage = images[activeImageIndex] || product.image;
+
   return (
-    <div className="bg-white border border-slate-200 rounded-xl p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-[#06B6D4] flex flex-col justify-between group h-full">
+    <div className="bg-white border border-slate-200 rounded-xl p-4 transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-[#06B6D4] flex flex-col justify-between group h-full select-none">
       <div>
-        {/* Изображение с бейджем наличия */}
-        <div className="aspect-square bg-[#F8FAFC] rounded-lg relative overflow-hidden mb-3.5 flex items-center justify-center p-3">
+        {/* Интерактивная область изображения товара */}
+        <div
+          onMouseMove={handleMouseMove}
+          onMouseLeave={handleMouseLeave}
+          onTouchStart={handleTouchStart}
+          onTouchEnd={handleTouchEnd}
+          className="aspect-square bg-[#F8FAFC] rounded-lg relative overflow-hidden mb-3.5 flex items-center justify-center p-3 cursor-pointer"
+        >
           <img
-            src={product.image}
+            src={currentImage}
             alt={product.name}
             loading="lazy"
-            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 pointer-events-none"
           />
 
           {/* Статус наличия */}
-          <div className="absolute top-2.5 left-2.5">
+          <div className="absolute top-2.5 left-2.5 pointer-events-none">
             {isInStock ? (
               isLowStock ? (
                 <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
