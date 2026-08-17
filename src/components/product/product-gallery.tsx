@@ -112,7 +112,7 @@ export function ProductGallery({ product }: ProductGalleryProps) {
 
       {/* 2. Ряд миниатюр (Thumbnails) */}
       {hasMultipleImages && (
-        <div className="flex items-center gap-3 overflow-x-auto pb-1 pt-1 scrollbar-none">
+        <div className="flex items-center justify-center gap-3 overflow-x-auto pb-1 pt-1 scrollbar-none">
           {images.map((imgUrl, index) => {
             const isSelected = index === selectedIndex;
             return (
