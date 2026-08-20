@@ -1,159 +1,139 @@
-"use client";
-
-import { Suspense, useMemo, useState } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import { 
+  Keyboard, 
+  Mouse, 
+  Headphones, 
+  Monitor, 
+  HardDrive, 
+  Laptop, 
+  ArrowRight, 
+  Sparkles 
+} from "lucide-react";
 import { HeroBanner } from "@/components/catalog/hero-banner";
-import { CatalogFilters } from "@/components/catalog/catalog-filters";
-import { ProductGrid } from "@/components/catalog/product-grid";
+import { ProductCard } from "@/components/catalog/product-card";
 import { MOCK_PRODUCTS } from "@/data/mock-products";
-import { FilterState, Product } from "@/types/product";
+import { DEFAULT_CATEGORIES } from "@/types/category";
 
-function CatalogSection() {
-  const searchParams = useSearchParams();
-  const router = useRouter();
-
-  const urlCategory = searchParams.get("category");
-
-  const [filterValues, setFilterValues] = useState<
-    Omit<FilterState, "categorySlug">
-  >({
-    minPrice: null,
-    maxPrice: null,
-    inStockOnly: false,
-    sortBy: "popular",
-  });
-
-  // Единый объект фильтров (категория из URL + локальные фильтры цены и сортировки)
-  const filters: FilterState = useMemo(
-    () => ({
-      ...filterValues,
-      categorySlug: urlCategory,
-    }),
-    [filterValues, urlCategory]
-  );
-
-  const handleFilterChange = (
-    updater: (prev: FilterState) => FilterState
-  ) => {
-    const next = updater(filters);
-
-    // Если изменилась категория, обновляем URL для синхронизации с CategoryBar
-    if (next.categorySlug !== urlCategory) {
-      if (next.categorySlug) {
-        router.push(`/?category=${next.categorySlug}`, { scroll: false });
-      } else {
-        router.push("/", { scroll: false });
-      }
-    }
-
-    setFilterValues({
-      minPrice: next.minPrice,
-      maxPrice: next.maxPrice,
-      inStockOnly: next.inStockOnly,
-      sortBy: next.sortBy,
-    });
-  };
-
-  const handleResetFilters = () => {
-    setFilterValues({
-      minPrice: null,
-      maxPrice: null,
-      inStockOnly: false,
-      sortBy: "popular",
-    });
-    router.push("/", { scroll: false });
-  };
-
-  // Фильтрация и сортировка товаров
-  const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((product: Product) => {
-      // 1. Фильтр по категории
-      if (
-        filters.categorySlug &&
-        product.categorySlug !== filters.categorySlug
-      ) {
-        return false;
-      }
-
-      // 2. Фильтр по минимальной цене
-      if (filters.minPrice !== null && product.price < filters.minPrice) {
-        return false;
-      }
-
-      // 3. Фильтр по максимальной цене
-      if (filters.maxPrice !== null && product.price > filters.maxPrice) {
-        return false;
-      }
-
-      // 4. Фильтр "Только в наличии"
-      if (filters.inStockOnly && product.stock <= 0) {
-        return false;
-      }
-
-      return true;
-    }).sort((a, b) => {
-      if (filters.sortBy === "price_asc") {
-        return a.price - b.price;
-      }
-      if (filters.sortBy === "price_desc") {
-        return b.price - a.price;
-      }
-      return 0; // "popular"
-    });
-  }, [filters]);
-
-  return (
-    <div id="catalog-grid" className="scroll-mt-24">
-      <div className="flex flex-col lg:flex-row gap-8 items-start">
-        {/* Боковая панель фильтров */}
-        <CatalogFilters
-          filters={filters}
-          onFilterChange={handleFilterChange}
-          onReset={handleResetFilters}
-          totalFound={filteredProducts.length}
-        />
-
-        {/* Сетка товаров */}
-        <div className="flex-1 w-full">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200">
-            <h2 className="text-xl font-bold text-slate-900">
-              {filters.categorySlug
-                ? MOCK_PRODUCTS.find(
-                    (p) => p.categorySlug === filters.categorySlug
-                  )?.categoryName || "Каталог товаров"
-                : "Все товары"}
-            </h2>
-            <span className="text-xs text-slate-500 font-medium">
-              Показано: {filteredProducts.length} из {MOCK_PRODUCTS.length}
-            </span>
-          </div>
-
-          <ProductGrid
-            products={filteredProducts}
-            onResetFilters={handleResetFilters}
-          />
-        </div>
-      </div>
-    </div>
-  );
-}
+// Красивое соответствие иконок и цветов для каждой категории
+const CATEGORY_META = {
+  keyboards: {
+    icon: Keyboard,
+    bgGradient: "from-blue-500/10 to-indigo-500/10 hover:from-blue-500/20 hover:to-indigo-500/20",
+    iconColor: "text-blue-600 dark:text-blue-400",
+    borderColor: "hover:border-blue-300",
+  },
+  mice: {
+    icon: Mouse,
+    bgGradient: "from-emerald-500/10 to-teal-500/10 hover:from-emerald-500/20 hover:to-teal-500/20",
+    iconColor: "text-emerald-600 dark:text-emerald-400",
+    borderColor: "hover:border-emerald-300",
+  },
+  headsets: {
+    icon: Headphones,
+    bgGradient: "from-purple-500/10 to-pink-500/10 hover:from-purple-500/20 hover:to-pink-500/20",
+    iconColor: "text-purple-600 dark:text-purple-400",
+    borderColor: "hover:border-purple-300",
+  },
+  monitors: {
+    icon: Monitor,
+    bgGradient: "from-cyan-500/10 to-sky-500/10 hover:from-cyan-500/20 hover:to-cyan-500/20",
+    iconColor: "text-cyan-600 dark:text-cyan-400",
+    borderColor: "hover:border-cyan-300",
+  },
+  storage: {
+    icon: HardDrive,
+    bgGradient: "from-amber-500/10 to-orange-500/10 hover:from-amber-500/20 hover:to-orange-500/20",
+    iconColor: "text-amber-600 dark:text-amber-400",
+    borderColor: "hover:border-amber-300",
+  },
+  accessories: {
+    icon: Laptop,
+    bgGradient: "from-rose-500/10 to-red-500/10 hover:from-rose-500/20 hover:to-rose-500/20",
+    iconColor: "text-rose-600 dark:text-rose-400",
+    borderColor: "hover:border-rose-300",
+  },
+};
 
 export default function HomePage() {
+  // В качестве популярных выбираем первые 4 товара в наличии из mock-данных
+  const popularProducts = MOCK_PRODUCTS.filter(p => p.stock > 0).slice(0, 4);
+
   return (
-    <div className="w-full pb-12">
+    <div className="w-full pb-16 space-y-16">
       {/* 1. Hero-баннер */}
       <HeroBanner />
 
-      {/* 2. Каталог с фильтрами */}
-      <Suspense
-        fallback={
-          <div className="w-full py-20 text-center text-slate-400">
-            Загрузка каталога...
+      {/* 2. Блок категорий товаров */}
+      <section className="space-y-6">
+        <div className="flex flex-col space-y-2">
+          <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+            <span>Категории товаров</span>
+          </h2>
+          <p className="text-sm text-slate-500 max-w-xl">
+            Выберите интересующий раздел, чтобы просмотреть высококлассные девайсы и комплектующие.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          {DEFAULT_CATEGORIES.map((category) => {
+            const meta = CATEGORY_META[category.slug as keyof typeof CATEGORY_META] || {
+              icon: Laptop,
+              bgGradient: "from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200",
+              iconColor: "text-slate-600",
+              borderColor: "hover:border-slate-300",
+            };
+            const Icon = meta.icon;
+
+            return (
+              <Link
+                key={category.id}
+                href={`/catalog/${category.slug}`}
+                className={`group flex flex-col items-center justify-center p-6 bg-gradient-to-br ${meta.bgGradient} border border-slate-100 rounded-2xl transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${meta.borderColor}`}
+              >
+                <div className={`p-4 rounded-xl bg-white shadow-xs group-hover:scale-110 transition-transform duration-300 ${meta.iconColor}`}>
+                  <Icon className="w-6 h-6" />
+                </div>
+                <span className="mt-4 text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors text-center">
+                  {category.name}
+                </span>
+                <div className="mt-2 flex items-center text-xs font-medium text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  <span>Перейти</span>
+                  <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 3. Секция «Популярные товары» */}
+      <section className="space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+          <div className="space-y-2">
+            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+              <Sparkles className="w-6 h-6 text-amber-500 fill-amber-500" />
+              <span>Популярные товары</span>
+            </h2>
+            <p className="text-sm text-slate-500 max-w-xl">
+              Наши лучшие предложения, заслужившие высокие оценки покупателей и киберспортсменов.
+            </p>
           </div>
-        }
-      >
-        <CatalogSection />
-      </Suspense>
+
+          <Link
+            href="/catalog"
+            className="inline-flex items-center gap-2 text-sm font-bold text-[#06B6D4] hover:text-[#0891B2] transition-colors shrink-0 group"
+          >
+            <span>Смотреть весь каталог</span>
+            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+          </Link>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {popularProducts.map((product) => (
+            <ProductCard key={product.id} product={product} />
+          ))}
+        </div>
+      </section>
     </div>
   );
 }

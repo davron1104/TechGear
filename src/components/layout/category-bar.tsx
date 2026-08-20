@@ -1,12 +1,11 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { DEFAULT_CATEGORIES } from "@/types/category";
 
 export function CategoryBar() {
-  const searchParams = useSearchParams();
-  const activeCategory = searchParams.get("category");
+  const pathname = usePathname();
 
   return (
     <nav
@@ -17,9 +16,9 @@ export function CategoryBar() {
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           {/* Кнопка "Все товары" */}
           <Link
-            href="/"
+            href="/catalog"
             className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              !activeCategory
+              pathname === "/catalog"
                 ? "bg-[#0F172A] text-white shadow-xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F172A]"
             }`}
@@ -29,11 +28,11 @@ export function CategoryBar() {
 
           {/* Список категорий из ТЗ */}
           {DEFAULT_CATEGORIES.map((category) => {
-            const isActive = activeCategory === category.slug;
+            const isActive = pathname === `/catalog/${category.slug}`;
             return (
               <Link
                 key={category.id}
-                href={`/?category=${category.slug}`}
+                href={`/catalog/${category.slug}`}
                 className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   isActive
                     ? "bg-[#0F172A] text-white shadow-xs"
@@ -49,3 +48,4 @@ export function CategoryBar() {
     </nav>
   );
 }
+

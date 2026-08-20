@@ -1,9 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { SlidersHorizontal, RotateCcw, ChevronDown, ChevronUp, Check } from "lucide-react";
+import { SlidersHorizontal, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { FilterState, SortOption } from "@/types/product";
-import { DEFAULT_CATEGORIES } from "@/types/category";
 
 interface CatalogFiltersProps {
   filters: FilterState;
@@ -21,14 +20,12 @@ export function CatalogFilters({
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const hasActiveFilters =
-    filters.categorySlug !== null ||
     filters.minPrice !== null ||
     filters.maxPrice !== null ||
     filters.inStockOnly ||
     filters.sortBy !== "popular";
 
   const activeFiltersCount = [
-    filters.categorySlug !== null,
     filters.minPrice !== null,
     filters.maxPrice !== null,
     filters.inStockOnly,
@@ -114,52 +111,6 @@ export function CatalogFilters({
           </select>
         </div>
 
-        {/* 2. Категории */}
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
-            Категория
-          </span>
-          <div className="space-y-1.5">
-            <button
-              type="button"
-              onClick={() =>
-                onFilterChange((prev) => ({ ...prev, categorySlug: null }))
-              }
-              className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-sm transition-colors text-left ${
-                filters.categorySlug === null
-                  ? "bg-[#0F172A] text-white font-medium"
-                  : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-              }`}
-            >
-              <span>Все категории</span>
-              {filters.categorySlug === null && <Check className="w-4 h-4" />}
-            </button>
-
-            {DEFAULT_CATEGORIES.map((cat) => {
-              const isSelected = filters.categorySlug === cat.slug;
-              return (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() =>
-                    onFilterChange((prev) => ({
-                      ...prev,
-                      categorySlug: isSelected ? null : cat.slug,
-                    }))
-                  }
-                  className={`w-full flex items-center justify-between px-2.5 py-1.5 rounded-lg text-sm transition-colors text-left ${
-                    isSelected
-                      ? "bg-[#0F172A] text-white font-medium"
-                      : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
-                  }`}
-                >
-                  <span>{cat.name}</span>
-                  {isSelected && <Check className="w-4 h-4" />}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
         {/* 3. Диапазон цен */}
         <div>

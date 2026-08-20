@@ -75,7 +75,7 @@ export function Footer() {
               {DEFAULT_CATEGORIES.map((category) => (
                 <li key={category.id}>
                   <Link
-                    href={`/?category=${category.slug}`}
+                    href={`/catalog/${category.slug}`}
                     className="hover:text-white transition-colors"
                   >
                     {category.name}
