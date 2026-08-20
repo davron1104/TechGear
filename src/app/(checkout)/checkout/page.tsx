@@ -82,7 +82,7 @@ export default function CheckoutPage() {
         </p>
         <div className="pt-2">
           <Link
-            href="/"
+            href="/catalog"
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
