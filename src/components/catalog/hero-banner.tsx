@@ -26,13 +26,13 @@ export function HeroBanner() {
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
-            <a
-              href="#catalog-grid"
+            <Link
+              href="/catalog"
               className="bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold px-6 py-3.5 rounded-lg shadow-md transition-all duration-200 hover:scale-[1.02] flex items-center gap-2 text-sm sm:text-base"
             >
               <span>Смотреть каталог</span>
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
 
           {/* Плашки преимуществ */}
