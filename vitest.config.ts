@@ -4,7 +4,8 @@ import path from "path";
 export default defineConfig({
   test: {
     globals: true,
-    environment: "node", // Базовая среда для тестирования Server Actions и API
+    environment: "jsdom",
+    setupFiles: "./tests/setup.ts",
   },
   resolve: {
     alias: {
