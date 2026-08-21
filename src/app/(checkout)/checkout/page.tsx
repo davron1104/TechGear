@@ -68,7 +68,7 @@ export default function CheckoutPage() {
   }
 
   // Пустая корзина
-  if (items.length === 0) {
+  if (items.length === 0 && !isLoading) {
     return (
       <div className="w-full py-16 px-4 text-center bg-white border border-slate-200 rounded-2xl max-w-lg mx-auto my-8 space-y-4 shadow-xs">
         <div className="w-16 h-16 rounded-full bg-slate-100 flex items-center justify-center mx-auto text-slate-400">
