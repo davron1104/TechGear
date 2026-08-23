@@ -4,9 +4,8 @@ import { auth } from "@/auth";
 import {
   ALLOWED_IMAGE_TYPES,
   MAX_IMAGE_SIZE_BYTES,
-  isCloudinaryConfigured,
-  uploadImageToCloudinary,
-} from "@/lib/cloudinary";
+  saveImageLocally,
+} from "@/lib/storage";
 
 export type UploadResponse =
   | { success: true; url: string }
@@ -21,19 +20,11 @@ async function assertAdmin() {
 }
 
 /**
- * Server action to upload a product image to Cloudinary.
+ * Server action to upload a product image to local public/uploads/products/ storage.
  */
 export async function uploadProductImage(formData: FormData): Promise<UploadResponse> {
   try {
     await assertAdmin();
-
-    if (!isCloudinaryConfigured()) {
-      return {
-        success: false,
-        error:
-          "Сервис Cloudinary не настроен на сервере (отсутствует переменная CLOUDINARY_URL в .env). Вы можете использовать прямую ссылку на изображение.",
-      };
-    }
 
     const file = formData.get("file") as File | null;
     if (!file || !(file instanceof File)) {
@@ -63,16 +54,20 @@ export async function uploadProductImage(formData: FormData): Promise<UploadResp
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    // 4. Upload to Cloudinary
-    const result = await uploadImageToCloudinary(buffer, "techgear/products");
+    // 4. Save to local storage
+    const relativeUrl = await saveImageLocally(buffer, file.name, file.type);
 
     return {
       success: true,
-      url: result.secureUrl,
+      url: relativeUrl,
     };
   } catch (error: unknown) {
-    const message =
-      error instanceof Error ? error.message : "Системная ошибка при загрузке изображения.";
+    let message = "Системная ошибка при сохранении изображения.";
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (typeof error === "object" && error !== null && "message" in error) {
+      message = String((error as { message: unknown }).message);
+    }
     console.error("Upload image error:", error);
     return {
       success: false,

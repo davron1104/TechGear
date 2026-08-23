@@ -35,6 +35,7 @@ export default async function AdminProductsPage() {
     brand: p.brand,
     stock: p.stock,
     image: p.image,
+    images: p.images ?? [p.image],
     shortDescription: p.shortDescription,
     description: p.description,
     characteristics: (p.characteristics as Record<string, string>) ?? {},

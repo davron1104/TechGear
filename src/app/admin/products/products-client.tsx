@@ -30,8 +30,8 @@ import {
 } from "@/actions/product-actions";
 import { uploadProductImage } from "@/actions/upload-actions";
 
-// Form schema without characteristics (managed in separate local state)
-const formSchema = productSchema.omit({ characteristics: true });
+// Form schema without characteristics & images (managed in separate local state)
+const formSchema = productSchema.omit({ characteristics: true, images: true });
 type FormValues = z.infer<typeof formSchema>;
 
 interface Category {
@@ -50,6 +50,7 @@ export interface ProductData {
   brand: string;
   stock: number;
   image: string;
+  images?: string[];
   shortDescription: string;
   description: string;
   characteristics: Record<string, string>;
@@ -107,6 +108,12 @@ export function AdminProductsClient({
   const [imageInputMode, setImageInputMode] = useState<"upload" | "url">("upload");
   const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [imageUploadError, setImageUploadError] = useState<string | null>(null);
+
+  // Additional Gallery Images state
+  const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+  const [isUploadingAdditional, setIsUploadingAdditional] = useState(false);
+  const [additionalUrlInput, setAdditionalUrlInput] = useState("");
+  const [additionalUploadError, setAdditionalUploadError] = useState<string | null>(null);
 
   const {
     register,
@@ -184,6 +191,83 @@ export function AdminProductsClient({
     }
   };
 
+  const handleAdditionalFileUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (additionalImages.length >= 5) {
+      setAdditionalUploadError("Максимум 5 дополнительных изображений.");
+      return;
+    }
+
+    setAdditionalUploadError(null);
+
+    const allowedTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+    if (!allowedTypes.includes(file.type)) {
+      setAdditionalUploadError("Поддерживаются только JPG, PNG, WebP, GIF.");
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setAdditionalUploadError(
+        `Размер файла (${(file.size / (1024 * 1024)).toFixed(1)} МБ) превышает лимит 5 МБ.`
+      );
+      return;
+    }
+
+    setIsUploadingAdditional(true);
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const res = await uploadProductImage(formData);
+      if (res.success) {
+        setAdditionalImages((prev) => [...prev, res.url]);
+        setAdditionalUploadError(null);
+      } else {
+        setAdditionalUploadError(res.error || "Не удалось загрузить изображение.");
+      }
+    } catch {
+      setAdditionalUploadError("Ошибка при загрузке файла.");
+    } finally {
+      setIsUploadingAdditional(false);
+      e.target.value = "";
+    }
+  };
+
+  const handleAddAdditionalUrl = () => {
+    const trimmed = additionalUrlInput.trim();
+    if (!trimmed) return;
+
+    if (additionalImages.length >= 5) {
+      setAdditionalUploadError("Максимум 5 дополнительных изображений.");
+      return;
+    }
+
+    if (!trimmed.startsWith("/") && !/^https?:\/\//i.test(trimmed)) {
+      setAdditionalUploadError(
+        "Введите корректную ссылку http(s):// или путь /uploads/..."
+      );
+      return;
+    }
+
+    if (additionalImages.includes(trimmed) || currentImageUrl === trimmed) {
+      setAdditionalUploadError("Это изображение уже добавлено.");
+      return;
+    }
+
+    setAdditionalImages((prev) => [...prev, trimmed]);
+    setAdditionalUrlInput("");
+    setAdditionalUploadError(null);
+  };
+
+  const handleRemoveAdditionalImage = (index: number) => {
+    setAdditionalImages((prev) => prev.filter((_, i) => i !== index));
+    setAdditionalUploadError(null);
+  };
+
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setValue("name", value, { shouldValidate: true });
@@ -204,6 +288,9 @@ export function AdminProductsClient({
     setIsSlugManuallyEdited(false);
     setImageUploadError(null);
     setImageInputMode("upload");
+    setAdditionalImages([]);
+    setAdditionalUrlInput("");
+    setAdditionalUploadError(null);
     setCharacteristics([{ key: "", value: "" }]);
     reset({
       name: "",
@@ -224,7 +311,11 @@ export function AdminProductsClient({
     setEditingProduct(product);
     setIsSlugManuallyEdited(true);
     setImageUploadError(null);
-    setImageInputMode(product.image?.includes("res.cloudinary.com") ? "upload" : "url");
+    setImageInputMode(product.image?.startsWith("/uploads/") ? "upload" : "url");
+    const extra = (product.images || []).filter((img) => img !== product.image);
+    setAdditionalImages(extra);
+    setAdditionalUrlInput("");
+    setAdditionalUploadError(null);
     const charRows = Object.entries(product.characteristics).map(
       ([key, value]) => ({ key, value })
     );
@@ -311,7 +402,11 @@ export function AdminProductsClient({
       }
     }
 
-    const fullData = { ...formData, characteristics: charRecord };
+    const fullData = {
+      ...formData,
+      images: additionalImages,
+      characteristics: charRecord,
+    };
 
     startTransition(async () => {
       try {
@@ -356,11 +451,17 @@ export function AdminProductsClient({
       <div className="border-b border-slate-200 bg-white">
         <div className="max-w-7xl mx-auto px-4 flex items-center justify-between h-14">
           <div className="flex items-center gap-6">
-            <Link href="/" className="font-bold text-[#0F172A] tracking-tight">
+            <Link href="/admin" className="font-bold text-[#0F172A] tracking-tight">
               TechGear
               <span className="text-[#06B6D4] font-normal"> Admin</span>
             </Link>
             <nav className="flex items-center gap-4 text-xs font-semibold">
+              <Link
+                href="/admin"
+                className="text-slate-500 hover:text-slate-900 transition-colors py-4"
+              >
+                Обзор
+              </Link>
               <Link
                 href="/admin/categories"
                 className="text-slate-500 hover:text-slate-900 transition-colors py-4"
@@ -828,7 +929,7 @@ export function AdminProductsClient({
                           <div className="flex flex-col items-center gap-2 text-[#06B6D4]">
                             <Loader2 className="w-6 h-6 animate-spin" />
                             <span className="text-xs font-semibold">
-                              Загрузка в Cloudinary...
+                              Сохранение на сервере...
                             </span>
                           </div>
                         ) : (
@@ -897,6 +998,112 @@ export function AdminProductsClient({
                   <p className="text-xs text-rose-600 mt-1 font-medium">
                     {errors.image.message}
                   </p>
+                )}
+              </div>
+
+              {/* Additional Gallery Images Section */}
+              <div className="pt-3 border-t border-slate-100 space-y-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Дополнительные фото для галереи
+                    </label>
+                    <p className="text-[11px] text-slate-400">
+                      Для слайдера на странице товара (до 5 дополнительных фото)
+                    </p>
+                  </div>
+                  <span className="text-xs font-mono font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                    {additionalImages.length} / 5
+                  </span>
+                </div>
+
+                {/* Thumbnails of added additional images */}
+                {additionalImages.length > 0 && (
+                  <div className="grid grid-cols-5 gap-2.5 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                    {additionalImages.map((imgUrl, idx) => (
+                      <div
+                        key={imgUrl + idx}
+                        className="group relative aspect-square bg-white border border-slate-200 rounded-lg overflow-hidden flex items-center justify-center p-1"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={imgUrl}
+                          alt={`Галерея ${idx + 1}`}
+                          className="w-full h-full object-contain"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveAdditionalImage(idx)}
+                          className="absolute top-1 right-1 bg-rose-600 hover:bg-rose-700 text-white p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity shadow-xs cursor-pointer"
+                          title="Удалить фото"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Add Additional Image Controls */}
+                {additionalImages.length < 5 && (
+                  <div className="space-y-2">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                      <label
+                        className={`px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer shadow-2xs shrink-0 ${
+                          isUploadingAdditional ? "opacity-50 cursor-wait" : ""
+                        }`}
+                      >
+                        <input
+                          type="file"
+                          accept="image/jpeg,image/png,image/webp,image/gif"
+                          onChange={handleAdditionalFileUpload}
+                          disabled={isUploadingAdditional}
+                          className="hidden"
+                        />
+                        {isUploadingAdditional ? (
+                          <>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-[#06B6D4]" />
+                            <span>Загрузка...</span>
+                          </>
+                        ) : (
+                          <>
+                            <UploadCloud className="w-3.5 h-3.5 text-[#06B6D4]" />
+                            <span>Загрузить с ПК</span>
+                          </>
+                        )}
+                      </label>
+
+                      <div className="flex items-center gap-1.5 flex-1">
+                        <input
+                          type="text"
+                          placeholder="Или вставьте URL дополнительного фото..."
+                          value={additionalUrlInput}
+                          onChange={(e) => setAdditionalUrlInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              e.preventDefault();
+                              handleAddAdditionalUrl();
+                            }
+                          }}
+                          className="w-full px-3 py-2 bg-[#F8FAFC] border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4]"
+                        />
+                        <button
+                          type="button"
+                          onClick={handleAddAdditionalUrl}
+                          disabled={!additionalUrlInput.trim()}
+                          className="px-3 py-2 bg-slate-900 hover:bg-[#06B6D4] disabled:opacity-40 disabled:hover:bg-slate-900 text-white rounded-lg text-xs font-semibold transition-colors cursor-pointer shrink-0"
+                        >
+                          Добавить
+                        </button>
+                      </div>
+                    </div>
+
+                    {additionalUploadError && (
+                      <p className="text-xs text-rose-600 font-medium">
+                        {additionalUploadError}
+                      </p>
+                    )}
+                  </div>
                 )}
               </div>
 

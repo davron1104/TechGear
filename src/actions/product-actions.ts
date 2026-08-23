@@ -48,11 +48,18 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
       brand,
       stock,
       image,
+      images,
       shortDescription,
       description,
       characteristics,
     } = result.data;
     const formattedSlug = slug.toLowerCase().trim();
+    const trimmedMainImage = image.trim();
+    const rawAdditional = images || [];
+    const uniqueAdditional = rawAdditional
+      .map((img) => img.trim())
+      .filter((img) => img.length > 0 && img !== trimmedMainImage);
+    const finalImages = [trimmedMainImage, ...Array.from(new Set(uniqueAdditional)).slice(0, 5)];
 
     // Check slug uniqueness
     const existingBySlug = await prisma.product.findUnique({
@@ -86,8 +93,8 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
         price,
         brand: brand.trim(),
         stock,
-        image: image.trim(),
-        images: [image.trim()],
+        image: trimmedMainImage,
+        images: finalImages,
         shortDescription: shortDescription.trim(),
         description: description.trim(),
         characteristics,
@@ -132,11 +139,18 @@ export async function updateProduct(
       brand,
       stock,
       image,
+      images,
       shortDescription,
       description,
       characteristics,
     } = result.data;
     const formattedSlug = slug.toLowerCase().trim();
+    const trimmedMainImage = image.trim();
+    const rawAdditional = images || [];
+    const uniqueAdditional = rawAdditional
+      .map((img) => img.trim())
+      .filter((img) => img.length > 0 && img !== trimmedMainImage);
+    const finalImages = [trimmedMainImage, ...Array.from(new Set(uniqueAdditional)).slice(0, 5)];
 
     // Check slug uniqueness (excluding current product)
     const existingBySlug = await prisma.product.findFirst({
@@ -171,7 +185,8 @@ export async function updateProduct(
         price,
         brand: brand.trim(),
         stock,
-        image: image.trim(),
+        image: trimmedMainImage,
+        images: finalImages,
         shortDescription: shortDescription.trim(),
         description: description.trim(),
         characteristics,

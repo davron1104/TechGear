@@ -4,14 +4,19 @@ import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { CatalogFilters } from "./catalog-filters";
 import { ProductGrid } from "./product-grid";
-import { MOCK_PRODUCTS } from "@/data/mock-products";
 import { FilterState, Product } from "@/types/product";
 
 interface CatalogViewProps {
+  products: Product[];
   categorySlug?: string | null;
+  categoryName?: string | null;
 }
 
-export function CatalogView({ categorySlug = null }: CatalogViewProps) {
+export function CatalogView({
+  products = [],
+  categorySlug = null,
+  categoryName = null,
+}: CatalogViewProps) {
   const router = useRouter();
 
   // Локальные фильтры цены, наличия и сортировки
@@ -66,7 +71,7 @@ export function CatalogView({ categorySlug = null }: CatalogViewProps) {
 
   // Фильтрация и сортировка товаров
   const filteredProducts = useMemo(() => {
-    return MOCK_PRODUCTS.filter((product: Product) => {
+    return products.filter((product: Product) => {
       // 1. Фильтр по категории
       if (
         filters.categorySlug &&
@@ -100,7 +105,14 @@ export function CatalogView({ categorySlug = null }: CatalogViewProps) {
       }
       return 0; // "popular"
     });
-  }, [filters]);
+  }, [products, filters]);
+
+  const headerTitle = filters.categorySlug
+    ? categoryName ||
+      products.find((p) => p.categorySlug === filters.categorySlug)
+        ?.categoryName ||
+      "Каталог товаров"
+    : "Все товары";
 
   return (
     <div id="catalog-grid" className="scroll-mt-24">
@@ -117,14 +129,10 @@ export function CatalogView({ categorySlug = null }: CatalogViewProps) {
         <div className="flex-1 w-full">
           <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200">
             <h2 className="text-xl font-bold text-slate-900">
-              {filters.categorySlug
-                ? MOCK_PRODUCTS.find(
-                    (p) => p.categorySlug === filters.categorySlug
-                  )?.categoryName || "Каталог товаров"
-                : "Все товары"}
+              {headerTitle}
             </h2>
             <span className="text-xs text-slate-500 font-medium">
-              Показано: {filteredProducts.length} из {MOCK_PRODUCTS.length}
+              Показано: {filteredProducts.length} из {products.length}
             </span>
           </div>
 

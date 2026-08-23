@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CatalogView } from "@/components/catalog/catalog-view";
 import prisma from "@/lib/prisma";
+import { getPublicProducts } from "@/lib/products";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -40,6 +41,8 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
+  const products = await getPublicProducts({ categorySlug: category });
+
   return (
     <div className="w-full pb-12">
       <Suspense
@@ -49,7 +52,11 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           </div>
         }
       >
-        <CatalogView categorySlug={category} />
+        <CatalogView
+          products={products}
+          categorySlug={category}
+          categoryName={categoryObject.name}
+        />
       </Suspense>
     </div>
   );

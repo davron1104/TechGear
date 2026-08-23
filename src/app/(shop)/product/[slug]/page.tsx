@@ -1,7 +1,7 @@
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { MOCK_PRODUCTS } from "@/data/mock-products";
 import { ProductDetailView } from "@/components/product/product-detail-view";
+import { getPublicProductBySlug } from "@/lib/products";
 
 interface ProductPageProps {
   params: Promise<{
@@ -13,7 +13,7 @@ export async function generateMetadata({
   params,
 }: ProductPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug);
+  const product = await getPublicProductBySlug(slug);
 
   if (!product) {
     return {
@@ -29,7 +29,7 @@ export async function generateMetadata({
 
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params;
-  const product = MOCK_PRODUCTS.find((p) => p.slug === slug);
+  const product = await getPublicProductBySlug(slug);
 
   if (!product) {
     notFound();

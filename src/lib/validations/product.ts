@@ -26,7 +26,23 @@ export const productSchema = z.object({
     .number({ error: "Количество должно быть числом" })
     .int("Целое число")
     .min(0, "Не может быть отрицательным"),
-  image: z.string().url("Введите корректный URL изображения"),
+  image: z
+    .string()
+    .min(1, "Изображение обязательно")
+    .refine(
+      (val) => val.startsWith("/") || /^https?:\/\//i.test(val),
+      "Введите корректный URL или выберите файл изображения"
+    ),
+  images: z
+    .array(
+      z
+        .string()
+        .refine(
+          (val) => val.startsWith("/") || /^https?:\/\//i.test(val),
+          "Введите корректный URL или путь к изображению"
+        )
+    )
+    .default([]),
   shortDescription: z
     .string()
     .min(1, "Краткое описание обязательно")

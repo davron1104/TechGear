@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { HeroBanner } from "@/components/catalog/hero-banner";
 import { ProductCard } from "@/components/catalog/product-card";
-import { MOCK_PRODUCTS } from "@/data/mock-products";
+import { getPublicProducts } from "@/lib/products";
 import prisma from "@/lib/prisma";
 
 // Красивое соответствие иконок и цветов для каждой категории
@@ -55,8 +55,8 @@ const CATEGORY_META = {
 };
 
 export default async function HomePage() {
-  // В качестве популярных выбираем первые 4 товара в наличии из mock-данных
-  const popularProducts = MOCK_PRODUCTS.filter(p => p.stock > 0).slice(0, 4);
+  // В качестве популярных выбираем первые 4 активных товара в наличии из БД
+  const popularProducts = await getPublicProducts({ inStockOnly: true, limit: 4 });
 
   // Загружаем категории из БД
   const categories = await prisma.category.findMany();
