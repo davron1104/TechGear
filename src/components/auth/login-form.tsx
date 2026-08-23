@@ -6,8 +6,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { loginSchema, LoginInput } from "@/lib/validations/auth";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function LoginForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -28,13 +31,25 @@ export function LoginForm() {
     setIsLoading(true);
     setStatusMessage(null);
 
-    // Имитация клиентской обработки для frontend-этапа
-    setTimeout(() => {
+    try {
+      const res = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setIsLoading(false);
+        setStatusMessage("Неверный адрес электронной почты или пароль.");
+      } else {
+        router.push("/");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error(err);
       setIsLoading(false);
-      setStatusMessage(
-        `Форма валидна! Email: ${data.email}. (Серверная авторизация будет подключена на этапе бэкенда).`
-      );
-    }, 800);
+      setStatusMessage("Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз.");
+    }
   };
 
   return (

@@ -47,3 +47,19 @@ export const resetPasswordSchema = z.object({
 });
 
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const setNewPasswordSchema = z
+  .object({
+    password: z
+      .string()
+      .min(1, "Пароль обязателен для заполнения")
+      .min(6, "Пароль должен содержать минимум 6 символов"),
+    confirmPassword: z.string().min(1, "Подтвердите пароль"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Пароли не совпадают",
+    path: ["confirmPassword"],
+  });
+
+export type SetNewPasswordInput = z.infer<typeof setNewPasswordSchema>;
+

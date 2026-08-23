@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useSyncExternalStore, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -9,12 +9,30 @@ import {
   Phone,
   Clock,
   ShieldCheck,
+  LayoutDashboard,
+  LogOut,
+  ChevronDown,
 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useSession, signOut } from "next-auth/react";
 
 const emptySubscribe = () => () => {};
 
 export function Header() {
+  const { data: session, status } = useSession();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsMenuOpen(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const isHydrated = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -85,14 +103,81 @@ export function Header() {
 
           {/* Правый блок действий */}
           <div className="flex items-center gap-3 shrink-0">
-            {/* Ссылка на аккаунт/вход */}
-            <Link
-              href="/login"
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-[#0F172A] hover:bg-slate-100 rounded-lg transition-colors"
-            >
-              <User className="w-5 h-5 text-slate-600" />
-              <span className="hidden md:inline">Войти</span>
-            </Link>
+            {/* Раздел пользователя: Вход / Личный кабинет с дропдауном */}
+            {status === "loading" ? (
+              <div className="w-20 h-9 bg-slate-100 animate-pulse rounded-lg" />
+            ) : session?.user ? (
+              <div className="relative" ref={menuRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsMenuOpen((prev) => !prev)}
+                  className="flex items-center gap-1.5 px-3 py-2 text-sm font-medium text-slate-700 hover:text-[#0F172A] hover:bg-slate-100 rounded-lg transition-colors cursor-pointer select-none"
+                >
+                  <User className="w-5 h-5 text-slate-600" />
+                  <span className="max-w-[120px] truncate hidden md:inline">
+                    {session.user.name || "Профиль"}
+                  </span>
+                  <ChevronDown className={`w-4 h-4 text-slate-500 transition-transform duration-200 ${isMenuOpen ? "rotate-180" : ""}`} />
+                </button>
+
+                {isMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-56 bg-white border border-slate-200 rounded-xl shadow-xl z-50 py-1.5 animate-in fade-in slide-in-from-top-2 duration-150">
+                    <div className="px-4 py-2 border-b border-slate-100 text-left">
+                      <p className="text-xs font-semibold text-slate-900 truncate">
+                        {session.user.name}
+                      </p>
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                        {session.user.email}
+                      </p>
+                    </div>
+
+                    <div className="py-1">
+                      <Link
+                        href="/account"
+                        onClick={() => setIsMenuOpen(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#0F172A] transition-colors"
+                      >
+                        <User className="w-4 h-4 text-slate-400" />
+                        <span>Личный кабинет</span>
+                      </Link>
+
+                      {session.user.role === "ADMIN" && (
+                        <Link
+                          href="/admin"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#0F172A] transition-colors"
+                        >
+                          <LayoutDashboard className="w-4 h-4 text-slate-400" />
+                          <span>Панель администратора</span>
+                        </Link>
+                      )}
+                    </div>
+
+                    <div className="border-t border-slate-100 pt-1.5 mt-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsMenuOpen(false);
+                          signOut({ callbackUrl: "/" });
+                        }}
+                        className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer border-none bg-transparent"
+                      >
+                        <LogOut className="w-4 h-4 text-rose-400" />
+                        <span>Выйти из аккаунта</span>
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <Link
+                href="/login"
+                className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-[#0F172A] hover:bg-slate-100 rounded-lg transition-colors"
+              >
+                <User className="w-5 h-5 text-slate-600" />
+                <span className="hidden md:inline">Войти</span>
+              </Link>
+            )}
 
             {/* Кнопка открытия выдвижной корзины (CartDrawer) */}
             <button

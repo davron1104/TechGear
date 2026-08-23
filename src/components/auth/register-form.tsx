@@ -6,8 +6,12 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { User, Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { registerSchema, RegisterInput } from "@/lib/validations/auth";
+import { registerUser } from "@/actions/auth-actions";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function RegisterForm() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -16,6 +20,7 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
+    setError,
     formState: { errors },
   } = useForm<RegisterInput>({
     resolver: zodResolver(registerSchema),
@@ -31,12 +36,47 @@ export function RegisterForm() {
     setIsLoading(true);
     setStatusMessage(null);
 
-    setTimeout(() => {
+    try {
+      const result = await registerUser(data);
+
+      if (!result.success) {
+        setIsLoading(false);
+        setStatusMessage(result.error || "Произошла ошибка при регистрации");
+        if (result.fields) {
+          Object.entries(result.fields).forEach(([field, messages]) => {
+            setError(field as any, {
+              type: "server",
+              message: messages[0],
+            });
+          });
+        }
+        return;
+      }
+
+      // Auto-login after successful registration
+      const loginResult = await signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      });
+
+      if (loginResult?.error) {
+        setIsLoading(false);
+        setStatusMessage(
+          "Регистрация успешна, но автоматический вход не удался. Перенаправление на страницу входа..."
+        );
+        setTimeout(() => {
+          router.push("/login");
+        }, 2000);
+      } else {
+        router.push("/");
+        router.refresh();
+      }
+    } catch (err) {
+      console.error(err);
       setIsLoading(false);
-      setStatusMessage(
-        `Данные валидны! Имя: ${data.name}, Email: ${data.email}. (Сохранение в БД будет подключено на этапе бэкенда).`
-      );
-    }, 800);
+      setStatusMessage("Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз.");
+    }
   };
 
   return (
