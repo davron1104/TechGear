@@ -7,10 +7,11 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { loginSchema, LoginInput } from "@/lib/validations/auth";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export function LoginForm() {
-  const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/";
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
@@ -35,20 +36,26 @@ export function LoginForm() {
       const res = await signIn("credentials", {
         email: data.email,
         password: data.password,
+        callbackUrl,
         redirect: false,
       });
 
+
       if (res?.error) {
-        setIsLoading(false);
-        setStatusMessage("Неверный адрес электронной почты или пароль.");
-      } else {
-        router.push("/");
-        router.refresh();
+        setStatusMessage(
+          "Неверный адрес электронной почты или пароль."
+        );
+        return;
       }
+
+      window.location.href = callbackUrl;
     } catch (err) {
       console.error(err);
+      setStatusMessage(
+        "Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз."
+      );
+    } finally {
       setIsLoading(false);
-      setStatusMessage("Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз.");
     }
   };
 
@@ -86,11 +93,10 @@ export function LoginForm() {
               type="email"
               placeholder="name@example.com"
               {...register("email")}
-              className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                errors.email
-                  ? "border-rose-400 focus:ring-rose-400"
-                  : "border-slate-200"
-              }`}
+              className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${errors.email
+                ? "border-rose-400 focus:ring-rose-400"
+                : "border-slate-200"
+                }`}
             />
             <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           </div>
@@ -123,11 +129,10 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               {...register("password")}
-              className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                errors.password
-                  ? "border-rose-400 focus:ring-rose-400"
-                  : "border-slate-200"
-              }`}
+              className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${errors.password
+                ? "border-rose-400 focus:ring-rose-400"
+                : "border-slate-200"
+                }`}
             />
             <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <button

@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { CatalogView } from "@/components/catalog/catalog-view";
-import { DEFAULT_CATEGORIES } from "@/types/category";
+import prisma from "@/lib/prisma";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -14,7 +14,9 @@ export async function generateMetadata({
   params,
 }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
-  const categoryObject = DEFAULT_CATEGORIES.find((cat) => cat.slug === category);
+  const categoryObject = await prisma.category.findUnique({
+    where: { slug: category },
+  });
 
   if (!categoryObject) {
     return {
@@ -30,7 +32,9 @@ export async function generateMetadata({
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { category } = await params;
-  const categoryObject = DEFAULT_CATEGORIES.find((cat) => cat.slug === category);
+  const categoryObject = await prisma.category.findUnique({
+    where: { slug: category },
+  });
 
   if (!categoryObject) {
     notFound();

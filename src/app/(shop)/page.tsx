@@ -12,7 +12,7 @@ import {
 import { HeroBanner } from "@/components/catalog/hero-banner";
 import { ProductCard } from "@/components/catalog/product-card";
 import { MOCK_PRODUCTS } from "@/data/mock-products";
-import { DEFAULT_CATEGORIES } from "@/types/category";
+import prisma from "@/lib/prisma";
 
 // Красивое соответствие иконок и цветов для каждой категории
 const CATEGORY_META = {
@@ -54,9 +54,28 @@ const CATEGORY_META = {
   },
 };
 
-export default function HomePage() {
+export default async function HomePage() {
   // В качестве популярных выбираем первые 4 товара в наличии из mock-данных
   const popularProducts = MOCK_PRODUCTS.filter(p => p.stock > 0).slice(0, 4);
+
+  // Загружаем категории из БД
+  const categories = await prisma.category.findMany();
+
+  // Сохраняем исходный визуальный порядок категорий
+  const categoryOrder = ["keyboards", "mice", "headsets", "monitors", "storage", "accessories"];
+  const sortedCategories = [...categories].sort((a, b) => {
+    const indexA = categoryOrder.indexOf(a.slug);
+    const indexB = categoryOrder.indexOf(b.slug);
+
+    if (indexA !== -1 && indexB !== -1) {
+      return indexA - indexB;
+    }
+    if (indexA !== -1) return -1;
+    if (indexB !== -1) return 1;
+
+    // Новые категории сортируем по алфавиту
+    return a.name.localeCompare(b.name);
+  });
 
   return (
     <div className="w-full pb-16 space-y-16">
@@ -75,7 +94,7 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          {DEFAULT_CATEGORIES.map((category) => {
+          {sortedCategories.map((category) => {
             const meta = CATEGORY_META[category.slug as keyof typeof CATEGORY_META] || {
               icon: Laptop,
               bgGradient: "from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200",

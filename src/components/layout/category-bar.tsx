@@ -4,7 +4,11 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { DEFAULT_CATEGORIES } from "@/types/category";
 
-export function CategoryBar() {
+interface CategoryBarProps {
+  categories?: { id: string; name: string; slug: string }[];
+}
+
+export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProps) {
   const pathname = usePathname();
 
   return (
@@ -26,8 +30,8 @@ export function CategoryBar() {
             Все товары
           </Link>
 
-          {/* Список категорий из ТЗ */}
-          {DEFAULT_CATEGORIES.map((category) => {
+          {/* Список категорий */}
+          {categories.map((category) => {
             const isActive = pathname === `/catalog/${category.slug}`;
             return (
               <Link

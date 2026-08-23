@@ -11,7 +11,7 @@ export const authConfig = {
       const isAccountRoute = nextUrl.pathname.startsWith("/account");
 
       if (isAdminRoute) {
-        return isLoggedIn && auth.user.role === "ADMIN";
+        return isLoggedIn && auth?.user?.role === "ADMIN";
       }
       if (isAccountRoute) {
         return isLoggedIn;
