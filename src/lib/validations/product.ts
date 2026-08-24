@@ -49,6 +49,7 @@ export const productSchema = z.object({
     .max(500, "Максимум 500 символов"),
   description: z.string().min(1, "Описание обязательно"),
   characteristics: z.record(z.string(), z.string()),
+  isPopular: z.boolean(),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;

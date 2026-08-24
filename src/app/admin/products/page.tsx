@@ -39,6 +39,7 @@ export default async function AdminProductsPage() {
     shortDescription: p.shortDescription,
     description: p.description,
     characteristics: (p.characteristics as Record<string, string>) ?? {},
+    isPopular: p.isPopular ?? false,
     deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
     createdAt: p.createdAt.toISOString(),
   }));

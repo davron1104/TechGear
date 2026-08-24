@@ -52,6 +52,7 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
       shortDescription,
       description,
       characteristics,
+      isPopular,
     } = result.data;
     const formattedSlug = slug.toLowerCase().trim();
     const trimmedMainImage = image.trim();
@@ -98,6 +99,7 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
         shortDescription: shortDescription.trim(),
         description: description.trim(),
         characteristics,
+        isPopular: Boolean(isPopular),
       },
     });
 
@@ -143,6 +145,7 @@ export async function updateProduct(
       shortDescription,
       description,
       characteristics,
+      isPopular,
     } = result.data;
     const formattedSlug = slug.toLowerCase().trim();
     const trimmedMainImage = image.trim();
@@ -190,6 +193,7 @@ export async function updateProduct(
         shortDescription: shortDescription.trim(),
         description: description.trim(),
         characteristics,
+        isPopular: Boolean(isPopular),
       },
     });
 

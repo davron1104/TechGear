@@ -20,6 +20,7 @@ interface PrismaProductWithCategory {
   brand: string;
   characteristics: unknown;
   deletedAt?: Date | null;
+  isPopular?: boolean;
   createdAt: Date;
   updatedAt?: Date;
 }
@@ -46,8 +47,37 @@ export function serializeProduct(item: PrismaProductWithCategory): Product {
       item.characteristics && typeof item.characteristics === "object"
         ? (item.characteristics as Record<string, string>)
         : {},
+    isPopular: Boolean(item.isPopular),
     createdAt: item.createdAt.toISOString(),
   };
+}
+
+/**
+ * Fetches popular products marked by the administrator (isPopular: true, in stock, not deleted).
+ */
+export async function getPopularProducts(limit: number = 4): Promise<Product[]> {
+  const products = await prisma.product.findMany({
+    where: {
+      deletedAt: null,
+      isPopular: true,
+      stock: { gt: 0 },
+    },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+    take: limit,
+  });
+
+  return products.map(serializeProduct);
 }
 
 export interface GetPublicProductsOptions {

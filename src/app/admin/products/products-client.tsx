@@ -54,6 +54,7 @@ export interface ProductData {
   shortDescription: string;
   description: string;
   characteristics: Record<string, string>;
+  isPopular?: boolean;
   deletedAt: string | null;
   createdAt: string;
 }
@@ -135,6 +136,7 @@ export function AdminProductsClient({
       image: "",
       shortDescription: "",
       description: "",
+      isPopular: false,
     },
   });
 
@@ -302,6 +304,7 @@ export function AdminProductsClient({
       image: "",
       shortDescription: "",
       description: "",
+      isPopular: false,
     });
     setStatusMessage(null);
     setIsFormOpen(true);
@@ -330,6 +333,7 @@ export function AdminProductsClient({
       image: product.image,
       shortDescription: product.shortDescription,
       description: product.description,
+      isPopular: product.isPopular ?? false,
     });
     setStatusMessage(null);
     setIsFormOpen(true);
@@ -585,8 +589,15 @@ export function AdminProductsClient({
                             >
                               {product.name}
                             </div>
-                            <div className="text-xs text-slate-400 font-mono mt-0.5">
-                              {product.slug}
+                            <div className="flex items-center gap-2 mt-0.5">
+                              <span className="text-xs text-slate-400 font-mono">
+                                {product.slug}
+                              </span>
+                              {product.isPopular && !product.deletedAt && (
+                                <span className="inline-flex items-center gap-1 text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded-md">
+                                  ⭐ Популярный
+                                </span>
+                              )}
                             </div>
                             {product.deletedAt && (
                               <div className="flex items-center gap-1 text-xs text-amber-600 mt-0.5">
@@ -1200,6 +1211,25 @@ export function AdminProductsClient({
                     </div>
                   ))}
                 </div>
+              </div>
+
+              {/* Popular Product Toggle */}
+              <div className="pt-2 border-t border-slate-100">
+                <label className="flex items-start gap-3 p-3.5 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer hover:bg-slate-100/70 transition-colors select-none">
+                  <input
+                    type="checkbox"
+                    {...register("isPopular")}
+                    className="mt-0.5 w-4 h-4 rounded text-[#06B6D4] focus:ring-[#06B6D4] border-slate-300 cursor-pointer"
+                  />
+                  <div>
+                    <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                      ⭐ Популярный товар
+                    </span>
+                    <p className="text-[11px] text-slate-500 mt-0.5">
+                      Отображать этот товар в блоке «Популярные товары» на главной странице
+                    </p>
+                  </div>
+                </label>
               </div>
 
               {/* Modal Footer */}

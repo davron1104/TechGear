@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { HeroBanner } from "@/components/catalog/hero-banner";
 import { ProductCard } from "@/components/catalog/product-card";
-import { getPublicProducts } from "@/lib/products";
+import { getPopularProducts } from "@/lib/products";
 import prisma from "@/lib/prisma";
 
 // Красивое соответствие иконок и цветов для каждой категории
@@ -36,7 +36,7 @@ const CATEGORY_META = {
   },
   monitors: {
     icon: Monitor,
-    bgGradient: "from-cyan-500/10 to-sky-500/10 hover:from-cyan-500/20 hover:to-cyan-500/20",
+    bgGradient: "from-cyan-500/10 to-sky-500/10 hover:from-cyan-500/20 hover:to-sky-500/20",
     iconColor: "text-cyan-600 dark:text-cyan-400",
     borderColor: "hover:border-cyan-300",
   },
@@ -55,8 +55,8 @@ const CATEGORY_META = {
 };
 
 export default async function HomePage() {
-  // В качестве популярных выбираем первые 4 активных товара в наличии из БД
-  const popularProducts = await getPublicProducts({ inStockOnly: true, limit: 4 });
+  // Загружаем популярные товары (isPopular: true, в наличии, не удаленные)
+  const popularProducts = await getPopularProducts(4);
 
   // Загружаем категории из БД
   const categories = await prisma.category.findMany();
@@ -126,33 +126,35 @@ export default async function HomePage() {
       </section>
 
       {/* 3. Секция «Популярные товары» */}
-      <section className="space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-          <div className="space-y-2">
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-              <Sparkles className="w-6 h-6 text-amber-500 fill-amber-500" />
-              <span>Популярные товары</span>
-            </h2>
-            <p className="text-sm text-slate-500 max-w-xl">
-              Наши лучшие предложения, заслужившие высокие оценки покупателей и киберспортсменов.
-            </p>
+      {popularProducts.length > 0 && (
+        <section className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+            <div className="space-y-2">
+              <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
+                <Sparkles className="w-6 h-6 text-amber-500 fill-amber-500" />
+                <span>Популярные товары</span>
+              </h2>
+              <p className="text-sm text-slate-500 max-w-xl">
+                Наши лучшие предложения, заслужившие высокие оценки покупателей и киберспортсменов.
+              </p>
+            </div>
+
+            <Link
+              href="/catalog"
+              className="inline-flex items-center gap-2 text-sm font-bold text-[#06B6D4] hover:text-[#0891B2] transition-colors shrink-0 group"
+            >
+              <span>Смотреть весь каталог</span>
+              <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+            </Link>
           </div>
 
-          <Link
-            href="/catalog"
-            className="inline-flex items-center gap-2 text-sm font-bold text-[#06B6D4] hover:text-[#0891B2] transition-colors shrink-0 group"
-          >
-            <span>Смотреть весь каталог</span>
-            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {popularProducts.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))}
-        </div>
-      </section>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {popularProducts.map((product) => (
+              <ProductCard key={product.id} product={product} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

@@ -19,6 +19,7 @@ export interface Product {
   stock: number;
   brand: string;
   characteristics: Record<string, string>;
+  isPopular?: boolean;
   createdAt: string;
 }
 
