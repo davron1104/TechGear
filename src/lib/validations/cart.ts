@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const addToCartSchema = z.object({
-  productId: z.string().uuid("Некорректный идентификатор товара"),
+  productId: z.string().min(1, "Идентификатор товара обязателен"),
   quantity: z
     .number({ error: "Количество должно быть числом" })
     .int("Количество должно быть целым числом")
@@ -10,7 +10,7 @@ export const addToCartSchema = z.object({
 });
 
 export const updateCartQuantitySchema = z.object({
-  productId: z.string().uuid("Некорректный идентификатор товара"),
+  productId: z.string().min(1, "Идентификатор товара обязателен"),
   quantity: z
     .number({ error: "Количество должно быть числом" })
     .int("Количество должно быть целым числом")
@@ -18,7 +18,7 @@ export const updateCartQuantitySchema = z.object({
 });
 
 export const guestCartItemSchema = z.object({
-  productId: z.string().uuid("Некорректный идентификатор товара"),
+  productId: z.string().min(1, "Идентификатор товара обязателен"),
   quantity: z
     .number({ error: "Количество должно быть числом" })
     .int("Количество должно быть целым числом")

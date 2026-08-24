@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
+import { CartSyncProvider } from "@/components/cart/cart-sync-provider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -33,6 +34,7 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
         <SessionProvider>
+          <CartSyncProvider />
           {children}
         </SessionProvider>
       </body>

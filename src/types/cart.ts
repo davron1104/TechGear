@@ -14,13 +14,19 @@ export interface CartItem {
 export interface CartStore {
   items: CartItem[];
   isOpen: boolean;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  setIsAuthenticated: (status: boolean) => void;
   openCart: () => void;
   closeCart: () => void;
   toggleCart: () => void;
-  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
-  clearCart: () => void;
+  setItems: (items: CartItem[]) => void;
+  addItem: (item: Omit<CartItem, "quantity"> & { quantity?: number }) => void | Promise<void>;
+  removeItem: (productId: string) => void | Promise<void>;
+  updateQuantity: (productId: string, quantity: number) => void | Promise<void>;
+  clearCart: () => void | Promise<void>;
+  syncWithServer: () => Promise<void>;
+  mergeGuestCart: (explicitGuestItems?: CartItem[]) => Promise<void>;
   getTotalCount: () => number;
   getTotalPrice: () => number;
 }
