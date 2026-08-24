@@ -17,10 +17,16 @@ export function ProductCard({ product }: ProductCardProps) {
   const touchStartX = useRef<number | null>(null);
 
   const addItem = useCart((state) => state.addItem);
+  const quantityInCart = useCart(
+    (state) =>
+      state.items.find((item) => item.productId === product.id)?.quantity ?? 0
+  );
+
+  const availableStock = Math.max(0, product.stock - quantityInCart);
+  const isPhysicallyInStock = product.stock > 0;
+  const canAddToCart = availableStock > 0;
 
   const images = product.images?.length ? product.images : [product.image];
-  const isInStock = product.stock > 0;
-  const isLowStock = product.stock > 0 && product.stock <= 3;
 
   // Переключение по зонам движения мыши (Hover scrubbing)
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -75,7 +81,7 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    if (!isInStock) return;
+    if (!canAddToCart) return;
 
     addItem({
       productId: product.id,
@@ -112,21 +118,23 @@ export function ProductCard({ product }: ProductCardProps) {
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 pointer-events-none"
           />
 
-          {/* Статус наличия */}
+          {/* Статус наличия с учётом товаров в корзине */}
           <div className="absolute top-2.5 left-2.5 pointer-events-none z-10">
-            {isInStock ? (
-              isLowStock ? (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                  Осталось {product.stock} шт.
-                </span>
-              ) : (
-                <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  В наличии
-                </span>
-              )
-            ) : (
+            {!isPhysicallyInStock ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
                 Нет в наличии
+              </span>
+            ) : availableStock === 0 ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                В корзине (макс.)
+              </span>
+            ) : availableStock <= 3 ? (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                Осталось {availableStock} шт.
+              </span>
+            ) : (
+              <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                В наличии
               </span>
             )}
           </div>
@@ -171,7 +179,23 @@ export function ProductCard({ product }: ProductCardProps) {
           </span>
         </div>
 
-        {isInStock ? (
+        {!isPhysicallyInStock ? (
+          <button
+            type="button"
+            disabled
+            className="w-full py-2.5 px-3 rounded-lg text-sm font-medium bg-slate-100 text-slate-400 cursor-not-allowed flex items-center justify-center gap-1.5"
+          >
+            <span>Нет в наличии</span>
+          </button>
+        ) : availableStock === 0 ? (
+          <button
+            type="button"
+            disabled
+            className="w-full py-2.5 px-3 rounded-lg text-sm font-medium bg-slate-100 text-slate-500 cursor-not-allowed flex items-center justify-center gap-1.5"
+          >
+            <span>В корзине (макс.)</span>
+          </button>
+        ) : (
           <button
             type="button"
             onClick={handleAddToCart}
@@ -193,14 +217,6 @@ export function ProductCard({ product }: ProductCardProps) {
                 <span>В корзину</span>
               </>
             )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="w-full py-2.5 px-3 rounded-lg text-sm font-medium bg-slate-100 text-slate-400 cursor-not-allowed flex items-center justify-center gap-1.5"
-          >
-            <span>Нет в наличии</span>
           </button>
         )}
       </div>

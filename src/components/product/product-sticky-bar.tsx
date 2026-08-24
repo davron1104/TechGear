@@ -13,13 +13,23 @@ interface ProductStickyBarProps {
 export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
   const [isAdded, setIsAdded] = useState(false);
   const addItem = useCart((state) => state.addItem);
+  const quantityInCart = useCart(
+    (state) =>
+      state.items.find((item) => item.productId === product.id)?.quantity ?? 0
+  );
 
-  const isInStock = product.stock > 0;
-  const effectiveQty = quantity > 0 ? quantity : 1;
-  const totalPrice = product.price * effectiveQty;
+  const availableStock = Math.max(0, product.stock - quantityInCart);
+  const isPhysicallyInStock = product.stock > 0;
+  const canAddToCart = availableStock > 0;
+
+  const effectiveQty = canAddToCart
+    ? Math.min(Math.max(1, quantity), availableStock)
+    : 0;
+  const displayQty = canAddToCart ? effectiveQty : 1;
+  const totalPrice = product.price * displayQty;
 
   const handleAddToCart = () => {
-    if (!isInStock || quantity <= 0) return;
+    if (!canAddToCart || effectiveQty <= 0) return;
 
     addItem({
       productId: product.id,
@@ -43,7 +53,7 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
         <div className="flex flex-col min-w-0">
           <span className="text-[10px] uppercase font-semibold text-slate-400 truncate">
             {product.name}
-            {effectiveQty > 1 && (
+            {canAddToCart && effectiveQty > 1 && (
               <span className="text-[#06B6D4] ml-1">({effectiveQty} шт.)</span>
             )}
           </span>
@@ -53,7 +63,23 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
         </div>
 
         {/* Кнопка действия */}
-        {isInStock ? (
+        {!isPhysicallyInStock ? (
+          <button
+            type="button"
+            disabled
+            className="py-3 px-5 rounded-xl font-medium text-xs bg-slate-100 text-slate-400 cursor-not-allowed shrink-0"
+          >
+            <span>Нет в наличии</span>
+          </button>
+        ) : availableStock === 0 ? (
+          <button
+            type="button"
+            disabled
+            className="py-3 px-5 rounded-xl font-medium text-xs bg-slate-100 text-slate-500 cursor-not-allowed shrink-0"
+          >
+            <span>В корзине (макс.)</span>
+          </button>
+        ) : (
           <button
             type="button"
             onClick={handleAddToCart}
@@ -74,14 +100,6 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
                 <span>В корзину</span>
               </>
             )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            disabled
-            className="py-3 px-5 rounded-xl font-medium text-xs bg-slate-100 text-slate-400 cursor-not-allowed shrink-0"
-          >
-            <span>Нет в наличии</span>
           </button>
         )}
       </div>

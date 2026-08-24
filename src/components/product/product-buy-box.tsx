@@ -18,25 +18,36 @@ export function ProductBuyBox({
 }: ProductBuyBoxProps) {
   const [isAdded, setIsAdded] = useState(false);
   const addItem = useCart((state) => state.addItem);
+  const quantityInCart = useCart(
+    (state) =>
+      state.items.find((item) => item.productId === product.id)?.quantity ?? 0
+  );
 
-  const isInStock = product.stock > 0;
-  const effectiveQty = quantity > 0 ? quantity : 1;
-  const totalPrice = product.price * effectiveQty;
+  const availableStock = Math.max(0, product.stock - quantityInCart);
+  const isPhysicallyInStock = product.stock > 0;
+  const canAddToCart = availableStock > 0;
+
+  // Ограничиваем выбранное количество реально доступным остатком
+  const effectiveQty = canAddToCart
+    ? Math.min(Math.max(1, quantity), availableStock)
+    : 0;
+  const displayQty = canAddToCart ? effectiveQty : 1;
+  const totalPrice = product.price * displayQty;
 
   const handleIncrement = () => {
-    if (quantity < product.stock) {
-      onQuantityChange(quantity + 1);
+    if (effectiveQty < availableStock) {
+      onQuantityChange(effectiveQty + 1);
     }
   };
 
   const handleDecrement = () => {
-    if (quantity > 1) {
-      onQuantityChange(quantity - 1);
+    if (effectiveQty > 1) {
+      onQuantityChange(effectiveQty - 1);
     }
   };
 
   const handleAddToCart = () => {
-    if (!isInStock || quantity <= 0) return;
+    if (!canAddToCart || effectiveQty <= 0) return;
 
     addItem({
       productId: product.id,
@@ -44,7 +55,7 @@ export function ProductBuyBox({
       price: product.price,
       image: product.image,
       stock: product.stock,
-      quantity,
+      quantity: effectiveQty,
     });
 
     setIsAdded(true);
@@ -85,9 +96,9 @@ export function ProductBuyBox({
             <span className="text-sm font-bold text-slate-900 uppercase tracking-wider">
               Итого:
             </span>
-            {quantity > 1 && (
+            {canAddToCart && effectiveQty > 1 && (
               <span className="text-xs text-[#06B6D4] font-medium">
-                (за {quantity} шт.)
+                (за {effectiveQty} шт.)
               </span>
             )}
           </div>
@@ -99,14 +110,48 @@ export function ProductBuyBox({
 
       {/* 5. Выбор количества и кнопка добавления */}
       <div className="space-y-4">
-        {isInStock ? (
+        {!isPhysicallyInStock ? (
+          <div className="space-y-3">
+            <button
+              type="button"
+              disabled
+              className="w-full py-4 px-6 rounded-xl font-bold text-sm sm:text-base bg-slate-100 text-slate-400 cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span>Товар временно отсутствует</span>
+            </button>
+          </div>
+        ) : availableStock === 0 ? (
+          <div className="space-y-3">
+            <div className="p-3 bg-sky-50 border border-sky-100 rounded-xl text-xs text-sky-800 text-center font-medium">
+              Весь доступный остаток ({product.stock} шт.) уже добавлен в вашу корзину
+            </div>
+            <button
+              type="button"
+              disabled
+              className="w-full py-4 px-6 rounded-xl font-bold text-sm sm:text-base bg-slate-100 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2"
+            >
+              <span>В корзине ({quantityInCart} шт. — максимум)</span>
+            </button>
+          </div>
+        ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
                 Количество:
               </span>
-              <span className="text-xs text-slate-400 font-medium">
-                Доступно: {product.stock} шт.
+              <span className="text-xs text-slate-500 font-medium">
+                {availableStock <= 3 ? (
+                  <span className="text-amber-600 font-semibold">
+                    Осталось {availableStock} шт.
+                  </span>
+                ) : (
+                  <span>В наличии ({availableStock} шт.)</span>
+                )}
+                {quantityInCart > 0 && (
+                  <span className="text-slate-400 ml-1">
+                    (в корзине: {quantityInCart})
+                  </span>
+                )}
               </span>
             </div>
 
@@ -116,19 +161,19 @@ export function ProductBuyBox({
                 <button
                   type="button"
                   onClick={handleDecrement}
-                  disabled={quantity <= 1}
+                  disabled={effectiveQty <= 1}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   aria-label="Уменьшить количество"
                 >
                   <Minus className="w-4 h-4" />
                 </button>
                 <span className="w-12 text-center font-mono font-bold text-base text-slate-900 select-none">
-                  {quantity}
+                  {effectiveQty}
                 </span>
                 <button
                   type="button"
                   onClick={handleIncrement}
-                  disabled={quantity >= product.stock}
+                  disabled={effectiveQty >= availableStock}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
                   aria-label="Увеличить количество"
                 >
@@ -149,7 +194,7 @@ export function ProductBuyBox({
                 {isAdded ? (
                   <>
                     <Check className="w-5 h-5 animate-in zoom-in" />
-                    <span>Добавлено ({quantity} шт.)</span>
+                    <span>Добавлено ({effectiveQty} шт.)</span>
                   </>
                 ) : (
                   <>
@@ -159,16 +204,6 @@ export function ProductBuyBox({
                 )}
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="space-y-3">
-            <button
-              type="button"
-              disabled
-              className="w-full py-4 px-6 rounded-xl font-bold text-sm sm:text-base bg-slate-100 text-slate-400 cursor-not-allowed flex items-center justify-center gap-2"
-            >
-              <span>Товар временно отсутствует</span>
-            </button>
           </div>
         )}
       </div>
