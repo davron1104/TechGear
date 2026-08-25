@@ -1,20 +1,43 @@
 "use client";
 
+import { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { User, Mail, Phone, MapPin, Building, Home, MessageSquare, Truck, Store, ArrowRight, Loader2 } from "lucide-react";
+import { useSession } from "next-auth/react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  Home,
+  MessageSquare,
+  Truck,
+  Store,
+  ArrowRight,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
 import { checkoutSchema, CheckoutInput } from "@/lib/validations/checkout";
 
 interface CheckoutFormProps {
   onSubmit: (data: CheckoutInput) => Promise<void> | void;
   isLoading: boolean;
+  serverError?: string | null;
 }
 
-export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
+export function CheckoutForm({
+  onSubmit,
+  isLoading,
+  serverError,
+}: CheckoutFormProps) {
+  const { data: session } = useSession();
+
   const {
     register,
     handleSubmit,
     control,
+    setValue,
     formState: { errors },
   } = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
@@ -31,6 +54,18 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
     },
   });
 
+  // Автозаполнение контактных данных из сессии пользователя
+  useEffect(() => {
+    if (session?.user) {
+      if (session.user.name) {
+        setValue("name", session.user.name, { shouldValidate: true });
+      }
+      if (session.user.email) {
+        setValue("email", session.user.email, { shouldValidate: true });
+      }
+    }
+  }, [session, setValue]);
+
   const deliveryMethod = useWatch({
     control,
     name: "deliveryMethod",
@@ -38,6 +73,20 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+      {/* Серверная ошибка */}
+      {serverError && (
+        <div
+          className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm flex items-start gap-3 animate-in fade-in"
+          role="alert"
+        >
+          <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+          <div>
+            <h4 className="font-bold text-rose-900">Не удалось оформить заказ</h4>
+            <p className="text-xs text-rose-700 mt-0.5">{serverError}</p>
+          </div>
+        </div>
+      )}
+
       {/* 1. Контактная информация */}
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
         <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
@@ -63,13 +112,17 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                 placeholder="Иван Иванов"
                 {...register("name")}
                 className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                  errors.name ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
+                  errors.name
+                    ? "border-rose-400 focus:ring-rose-400"
+                    : "border-slate-200"
                 }`}
               />
               <User className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
             {errors.name && (
-              <p className="text-xs text-rose-600 mt-1 font-medium">{errors.name.message}</p>
+              <p className="text-xs text-rose-600 mt-1 font-medium">
+                {errors.name.message}
+              </p>
             )}
           </div>
 
@@ -88,13 +141,17 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                 placeholder="name@example.com"
                 {...register("email")}
                 className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                  errors.email ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
+                  errors.email
+                    ? "border-rose-400 focus:ring-rose-400"
+                    : "border-slate-200"
                 }`}
               />
               <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
             {errors.email && (
-              <p className="text-xs text-rose-600 mt-1 font-medium">{errors.email.message}</p>
+              <p className="text-xs text-rose-600 mt-1 font-medium">
+                {errors.email.message}
+              </p>
             )}
           </div>
 
@@ -113,13 +170,17 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                 placeholder="+7 (999) 000-00-00"
                 {...register("phone")}
                 className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                  errors.phone ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
+                  errors.phone
+                    ? "border-rose-400 focus:ring-rose-400"
+                    : "border-slate-200"
                 }`}
               />
               <Phone className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             </div>
             {errors.phone && (
-              <p className="text-xs text-rose-600 mt-1 font-medium">{errors.phone.message}</p>
+              <p className="text-xs text-rose-600 mt-1 font-medium">
+                {errors.phone.message}
+              </p>
             )}
           </div>
         </div>
@@ -154,7 +215,7 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                 <span>Курьерская доставка</span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Доставка до двери курьером в течение 1–2 дней
+                Доставка до двери курьером в течение 1–2 дней (490 ₽, бесплатно от 5 000 ₽)
               </p>
             </div>
           </label>
@@ -200,7 +261,9 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
               Флагманский пункт выдачи TechGear:
             </p>
             <p>г. Москва, ул. Тверская, д. 12, стр. 1</p>
-            <p className="text-slate-500">Время работы: ежедневно с 09:00 до 21:00</p>
+            <p className="text-slate-500">
+              Время работы: ежедневно с 09:00 до 21:00
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-6 gap-4">
@@ -219,13 +282,17 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                   placeholder="Москва"
                   {...register("city")}
                   className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                    errors.city ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
+                    errors.city
+                      ? "border-rose-400 focus:ring-rose-400"
+                      : "border-slate-200"
                   }`}
                 />
                 <Building className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
               </div>
               {errors.city && (
-                <p className="text-xs text-rose-600 mt-1 font-medium">{errors.city.message}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {errors.city.message}
+                </p>
               )}
             </div>
 
@@ -243,11 +310,15 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                 placeholder="ул. Ленина"
                 {...register("street")}
                 className={`w-full px-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                  errors.street ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
+                  errors.street
+                    ? "border-rose-400 focus:ring-rose-400"
+                    : "border-slate-200"
                 }`}
               />
               {errors.street && (
-                <p className="text-xs text-rose-600 mt-1 font-medium">{errors.street.message}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {errors.street.message}
+                </p>
               )}
             </div>
 
@@ -265,11 +336,15 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
                 placeholder="10"
                 {...register("house")}
                 className={`w-full px-3 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
-                  errors.house ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
+                  errors.house
+                    ? "border-rose-400 focus:ring-rose-400"
+                    : "border-slate-200"
                 }`}
               />
               {errors.house && (
-                <p className="text-xs text-rose-600 mt-1 font-medium">{errors.house.message}</p>
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {errors.house.message}
+                </p>
               )}
             </div>
 
@@ -314,7 +389,9 @@ export function CheckoutForm({ onSubmit, isLoading }: CheckoutFormProps) {
             className="w-full p-3.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all resize-none"
           />
           {errors.comment && (
-            <p className="text-xs text-rose-600 mt-1 font-medium">{errors.comment.message}</p>
+            <p className="text-xs text-rose-600 mt-1 font-medium">
+              {errors.comment.message}
+            </p>
           )}
         </div>
       </div>

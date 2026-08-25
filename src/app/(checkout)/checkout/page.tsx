@@ -8,12 +8,14 @@ import { useCart } from "@/hooks/use-cart";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { OrderSummary } from "@/components/checkout/order-summary";
 import { CheckoutInput } from "@/lib/validations/checkout";
+import { createOrder } from "@/actions/order-actions";
 
 const emptySubscribe = () => () => {};
 
 export default function CheckoutPage() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [serverError, setServerError] = useState<string | null>(null);
 
   const isHydrated = useSyncExternalStore(
     emptySubscribe,
@@ -26,37 +28,64 @@ export default function CheckoutPage() {
   const clearCart = useCart((state) => state.clearCart);
 
   const totalPrice = isHydrated ? getTotalPrice() : 0;
-  const isFreeDelivery = totalPrice >= 5000;
-  const deliveryCost = isFreeDelivery ? 0 : 490;
-  const finalTotal = totalPrice + deliveryCost;
 
   const handleCheckoutSubmit = async (data: CheckoutInput) => {
     setIsLoading(true);
+    setServerError(null);
 
-    // Имитация создания заказа на frontend-этапе
-    setTimeout(() => {
-      const orderNumber = `TG-${Math.floor(10000 + Math.random() * 90000)}`;
+    try {
+      const payload = {
+        ...data,
+        items: items.map((item) => ({
+          productId: item.productId,
+          quantity: item.quantity,
+        })),
+      };
 
-      // Очистка локальной корзины
+      const res = await createOrder(payload);
+
+      if (!res.success) {
+        setServerError(res.error);
+        setIsLoading(false);
+        return;
+      }
+
+      const order = res.data;
+
+      // Очистка локального состояния корзины ТОЛЬКО после успешного ответа сервера
       clearCart();
 
-      // Переход на экран подтверждения
+      // Переход на экран подтверждения с реальными данными созданного заказа
       const params = new URLSearchParams({
-        orderNumber,
-        name: data.name,
-        email: data.email,
-        phone: data.phone,
-        city: data.city,
-        deliveryMethod: data.deliveryMethod,
-        total: String(finalTotal),
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        name: order.customerName,
+        email: order.customerEmail,
+        phone: order.customerPhone,
+        city: order.city,
+        deliveryMethod: order.deliveryMethod,
+        total: String(order.totalAmount),
       });
 
-      if (data.street && data.house) {
-        params.set("address", `ул. ${data.street}, д. ${data.house}${data.apartment ? `, кв. ${data.apartment}` : ""}`);
+      if (order.street && order.house) {
+        params.set(
+          "address",
+          `ул. ${order.street}, д. ${order.house}${
+            order.apartment ? `, кв. ${order.apartment}` : ""
+          }`
+        );
       }
 
       router.push(`/checkout/success?${params.toString()}`);
-    }, 800);
+    } catch (err) {
+      console.error("Checkout submit unexpected error:", err);
+      setServerError(
+        err instanceof Error
+          ? err.message
+          : "Произошла непредвиденная ошибка при оформлении заказа. Пожалуйста, попробуйте позже."
+      );
+      setIsLoading(false);
+    }
   };
 
   if (!isHydrated) {
@@ -108,7 +137,11 @@ export default function CheckoutPage() {
       {/* Двухколоночный макет: Слева форма, Справа Order Summary */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         <div className="lg:col-span-7">
-          <CheckoutForm onSubmit={handleCheckoutSubmit} isLoading={isLoading} />
+          <CheckoutForm
+            onSubmit={handleCheckoutSubmit}
+            isLoading={isLoading}
+            serverError={serverError}
+          />
         </div>
 
         <div className="lg:col-span-5">
