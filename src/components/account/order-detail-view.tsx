@@ -5,6 +5,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { Order, OrderStatus } from "@/types/order";
 import { OrderStatusBadge } from "./order-status-badge";
+import { cancelOrder } from "@/actions/order-actions";
 import {
   ArrowLeft,
   Calendar,
@@ -17,6 +18,7 @@ import {
   AlertTriangle,
   XCircle,
   Package,
+  Loader2,
 } from "lucide-react";
 
 interface OrderDetailViewProps {
@@ -27,11 +29,24 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
   const [status, setStatus] = useState<OrderStatus>(order.status);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelledMessage, setCancelledMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
 
-  const handleCancelOrder = () => {
-    setStatus("CANCELLED");
-    setIsCancelModalOpen(false);
-    setCancelledMessage("Заказ успешно отменен.");
+  const handleCancelOrder = async () => {
+    setIsCancelling(true);
+    setErrorMessage(null);
+
+    const res = await cancelOrder(order.id);
+    setIsCancelling(false);
+
+    if (res.success) {
+      setStatus("CANCELLED");
+      setIsCancelModalOpen(false);
+      setCancelledMessage("Заказ успешно отменен.");
+    } else {
+      setErrorMessage(res.error);
+      setIsCancelModalOpen(false);
+    }
   };
 
   const formattedDate = new Date(order.createdAt).toLocaleDateString("ru-RU", {
@@ -59,6 +74,13 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
         <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-center gap-2 animate-in fade-in duration-200">
           <XCircle className="w-4 h-4 text-rose-600 shrink-0" />
           <span>{cancelledMessage}</span>
+        </div>
+      )}
+
+      {errorMessage && (
+        <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2 animate-in fade-in duration-200">
+          <AlertTriangle className="w-4 h-4 text-amber-600 shrink-0" />
+          <span>{errorMessage}</span>
         </div>
       )}
 
@@ -240,18 +262,27 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
             <div className="flex items-center gap-3 pt-2">
               <button
                 type="button"
+                disabled={isCancelling}
                 onClick={() => setIsCancelModalOpen(false)}
-                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors"
+                className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
                 Оставить заказ
               </button>
 
               <button
                 type="button"
+                disabled={isCancelling}
                 onClick={handleCancelOrder}
-                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors shadow-sm"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors shadow-sm disabled:opacity-50 flex items-center justify-center gap-1.5 cursor-pointer"
               >
-                Да, отменить
+                {isCancelling ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    <span>Отмена...</span>
+                  </>
+                ) : (
+                  <span>Да, отменить</span>
+                )}
               </button>
             </div>
           </div>

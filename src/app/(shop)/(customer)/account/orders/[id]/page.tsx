@@ -1,7 +1,9 @@
 import { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { ArrowLeft, AlertCircle } from "lucide-react";
-import { mockOrders } from "@/data/mock-orders";
+import { auth } from "@/auth";
+import { getOrderById } from "@/actions/order-actions";
 import { OrderDetailView } from "@/components/account/order-detail-view";
 
 interface OrderPageProps {
@@ -14,7 +16,8 @@ export async function generateMetadata({
   params,
 }: OrderPageProps): Promise<Metadata> {
   const { id } = await params;
-  const order = mockOrders.find((o) => o.id === id || o.orderNumber === id);
+  const res = await getOrderById(id);
+  const order = res.success ? res.data : null;
 
   return {
     title: order ? `Заказ #${order.orderNumber} — TechGear` : "Заказ не найден — TechGear",
@@ -23,10 +26,15 @@ export async function generateMetadata({
 }
 
 export default async function OrderDetailPage({ params }: OrderPageProps) {
-  const { id } = await params;
-  const order = mockOrders.find((o) => o.id === id || o.orderNumber === id);
+  const session = await auth();
+  if (!session?.user) {
+    redirect("/login");
+  }
 
-  if (!order) {
+  const { id } = await params;
+  const res = await getOrderById(id);
+
+  if (!res.success) {
     return (
       <div className="w-full max-w-md mx-auto py-16 text-center bg-white border border-slate-200 rounded-2xl p-8 shadow-xs space-y-4 my-8">
         <div className="w-14 h-14 rounded-full bg-rose-50 text-rose-600 flex items-center justify-center mx-auto">
@@ -34,7 +42,7 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
         </div>
         <h1 className="text-xl font-bold text-slate-900">Заказ не найден</h1>
         <p className="text-xs text-slate-500">
-          Заказ с идентификатором <strong className="text-slate-700 font-mono">#{id}</strong> не найден в вашей истории заказов.
+          {res.error || `Заказ #${id} не найден или у вас нет прав на его просмотр.`}
         </p>
         <div className="pt-2">
           <Link
@@ -49,5 +57,5 @@ export default async function OrderDetailPage({ params }: OrderPageProps) {
     );
   }
 
-  return <OrderDetailView order={order} />;
+  return <OrderDetailView order={res.data} />;
 }
