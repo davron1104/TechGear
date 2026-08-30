@@ -157,3 +157,79 @@ export async function getPublicProductBySlug(slug: string): Promise<Product | nu
 
   return serializeProduct(product);
 }
+
+/**
+ * Fetches the featured flagship product for the HeroBanner.
+ * Selects the latest active product marked as popular in stock, with graceful fallbacks.
+ */
+export async function getFeaturedProduct(): Promise<Product | null> {
+  // 1. Primary choice: latest active popular product in stock
+  const popular = await prisma.product.findFirst({
+    where: {
+      deletedAt: null,
+      isPopular: true,
+      stock: { gt: 0 },
+    },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (popular) {
+    return serializeProduct(popular);
+  }
+
+  // 2. Fallback: any active in-stock product
+  const inStock = await prisma.product.findFirst({
+    where: {
+      deletedAt: null,
+      stock: { gt: 0 },
+    },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  if (inStock) {
+    return serializeProduct(inStock);
+  }
+
+  // 3. Final fallback: any active product
+  const anyProduct = await prisma.product.findFirst({
+    where: {
+      deletedAt: null,
+    },
+    include: {
+      category: {
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+
+  return anyProduct ? serializeProduct(anyProduct) : null;
+}

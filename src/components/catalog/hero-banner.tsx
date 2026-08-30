@@ -1,8 +1,27 @@
 /* eslint-disable @next/next/no-img-element */
 import Link from "next/link";
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Award } from "lucide-react";
+import { Product } from "@/types/product";
 
-export function HeroBanner() {
+interface HeroBannerProps {
+  featuredProduct?: Product | null;
+}
+
+export function HeroBanner({ featuredProduct }: HeroBannerProps) {
+  const image =
+    featuredProduct?.image ||
+    "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80";
+  const name = featuredProduct?.name || "CyberKeys Pro RGB Wireless";
+  const categoryLabel = featuredProduct?.categoryName
+    ? featuredProduct.categoryName
+    : "Клавиатуры • Hot-Swap";
+  const priceDisplay = featuredProduct
+    ? `${featuredProduct.price.toLocaleString("ru-RU")} ₽`
+    : "8 990 ₽";
+  const productHref = featuredProduct?.slug
+    ? `/product/${featuredProduct.slug}`
+    : "/catalog";
+
   return (
     <section className="relative overflow-hidden rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl mb-10 text-white">
       {/* Декоративное неоновое циановое свечение (радиальный градиент) */}
@@ -61,25 +80,25 @@ export function HeroBanner() {
 
             <div className="aspect-4/3 rounded-lg overflow-hidden mb-4 bg-slate-950/40 flex items-center justify-center p-2">
               <img
-                src="https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80"
-                alt="CyberKeys Pro RGB"
+                src={image}
+                alt={name}
                 className="w-full h-full object-cover rounded-md transform hover:scale-105 transition-transform duration-300"
               />
             </div>
 
             <div>
               <div className="text-xs text-[#06B6D4] font-mono uppercase mb-1">
-                Клавиатуры • Hot-Swap
+                {categoryLabel}
               </div>
-              <h3 className="text-lg font-bold text-white mb-2">
-                CyberKeys Pro RGB Wireless
+              <h3 className="text-lg font-bold text-white mb-2 line-clamp-1">
+                {name}
               </h3>
               <div className="flex items-center justify-between">
                 <span className="text-2xl font-bold font-mono text-white">
-                  8 990 ₽
+                  {priceDisplay}
                 </span>
                 <Link
-                  href="/product/cyberkeys-pro-rgb"
+                  href={productHref}
                   className="text-xs font-semibold text-[#06B6D4] hover:text-[#0891B2] flex items-center gap-1 underline underline-offset-4"
                 >
                   Подробнее

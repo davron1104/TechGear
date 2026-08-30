@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { HeroBanner } from "@/components/catalog/hero-banner";
 import { ProductCard } from "@/components/catalog/product-card";
-import { getPopularProducts } from "@/lib/products";
+import { getFeaturedProduct, getPopularProducts } from "@/lib/products";
 import prisma from "@/lib/prisma";
 
 // Красивое соответствие иконок и цветов для каждой категории
@@ -55,11 +55,12 @@ const CATEGORY_META = {
 };
 
 export default async function HomePage() {
-  // Загружаем популярные товары (isPopular: true, в наличии, не удаленные)
-  const popularProducts = await getPopularProducts(4);
-
-  // Загружаем категории из БД
-  const categories = await prisma.category.findMany();
+  // Загружаем флагманский промо-товар, популярные товары и категории
+  const [featuredProduct, popularProducts, categories] = await Promise.all([
+    getFeaturedProduct(),
+    getPopularProducts(4),
+    prisma.category.findMany(),
+  ]);
 
   // Сохраняем исходный визуальный порядок категорий
   const categoryOrder = ["keyboards", "mice", "headsets", "monitors", "storage", "accessories"];
@@ -80,7 +81,7 @@ export default async function HomePage() {
   return (
     <div className="w-full pb-16 space-y-16">
       {/* 1. Hero-баннер */}
-      <HeroBanner />
+      <HeroBanner featuredProduct={featuredProduct} />
 
       {/* 2. Блок категорий товаров */}
       <section className="space-y-6">
