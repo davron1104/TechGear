@@ -2,6 +2,10 @@
 
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import {
+  sendOrderTelegramNotification,
+  TelegramOrderItem,
+} from "@/lib/telegram";
 import { createOrderSchema } from "@/lib/validations/order";
 import { Order, OrderStatus } from "@/types/order";
 import { revalidatePath } from "next/cache";
@@ -275,20 +279,48 @@ export async function createOrder(
 
       const orderNumber = `TG-${order.id.slice(0, 5).toUpperCase()}`;
 
+      const notificationItems: TelegramOrderItem[] = targetItems.map((item) => {
+        const product = productMap.get(item.productId)!;
+        return {
+          productName: product.name,
+          price: Number(product.price),
+          quantity: item.quantity,
+        };
+      });
+
       return {
-        id: order.id,
-        orderNumber,
-        totalAmount,
-        goodsTotal,
-        deliveryCost,
-        customerName: order.customerName,
-        customerEmail: order.customerEmail,
-        customerPhone: order.customerPhone,
-        deliveryMethod: order.deliveryMethod,
-        city: order.city,
-        street: order.street,
-        house: order.house,
-        apartment: order.apartment,
+        orderData: {
+          id: order.id,
+          orderNumber,
+          totalAmount,
+          goodsTotal,
+          deliveryCost,
+          customerName: order.customerName,
+          customerEmail: order.customerEmail,
+          customerPhone: order.customerPhone,
+          deliveryMethod: order.deliveryMethod,
+          city: order.city,
+          street: order.street,
+          house: order.house,
+          apartment: order.apartment,
+        },
+        notificationPayload: {
+          orderNumber,
+          createdAt: order.createdAt,
+          customerName: order.customerName,
+          customerPhone: order.customerPhone,
+          customerEmail: order.customerEmail,
+          deliveryMethod: order.deliveryMethod,
+          city: order.city,
+          street: order.street,
+          house: order.house,
+          apartment: order.apartment,
+          comment: order.comment,
+          items: notificationItems,
+          goodsTotal,
+          deliveryCost,
+          totalAmount,
+        },
       };
     });
 
@@ -298,9 +330,17 @@ export async function createOrder(
       // Игнорируем ошибки revalidatePath при выполнении вне контекста HTTP-запроса Next.js
     }
 
+    // Асинхронная отправка уведомления в Telegram (Fire-and-forget)
+    // Выполняется строго ПОСЛЕ успешного завершения транзакции в БД и не блокирует ответ клиенту
+    sendOrderTelegramNotification(createdOrder.notificationPayload).catch(
+      (err) => {
+        console.error("Telegram notification error:", err);
+      }
+    );
+
     return {
       success: true,
-      data: createdOrder,
+      data: createdOrder.orderData,
     };
   } catch (error: unknown) {
     const message =
