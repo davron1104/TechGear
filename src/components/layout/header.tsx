@@ -1,6 +1,6 @@
 "use client";
 
-import { useSyncExternalStore, useState, useEffect, useRef } from "react";
+import { useSyncExternalStore, useState, useEffect, useRef, Suspense } from "react";
 import Link from "next/link";
 import {
   Search,
@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useSession, signOut } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 const emptySubscribe = () => () => {};
 
@@ -82,23 +83,17 @@ export function Header() {
             TechGear<span className="text-[#06B6D4] text-3xl leading-none">.</span>
           </Link>
 
-          {/* Центрированный поиск (UI-заглушка) */}
+          {/* Центрированный поиск с поддержкой Suspense */}
           <div className="flex-1 max-w-lg mx-4 hidden sm:block">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Поиск девайсов и аксессуаров..."
-                className="w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] focus:border-transparent transition-all"
-              />
-              <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-              <button
-                type="button"
-                className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#06B6D4] hover:bg-[#0891B2] text-white p-1.5 rounded-md transition-colors"
-                aria-label="Искать"
-              >
-                <Search className="w-4 h-4" />
-              </button>
-            </div>
+            <Suspense
+              fallback={
+                <div className="relative">
+                  <div className="w-full h-[42px] bg-slate-50 border border-slate-200 rounded-lg animate-pulse" />
+                </div>
+              }
+            >
+              <SearchBar />
+            </Suspense>
           </div>
 
           {/* Правый блок действий */}
@@ -198,5 +193,47 @@ export function Header() {
         </div>
       </div>
     </header>
+  );
+}
+
+function SearchBar() {
+  const searchParams = useSearchParams();
+  const currentSearch = searchParams.get("search") || "";
+
+  return <SearchBarForm key={currentSearch} initialSearch={currentSearch} />;
+}
+
+function SearchBarForm({ initialSearch }: { initialSearch: string }) {
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState(initialSearch);
+
+  const handleSearchSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const trimmed = searchQuery.trim();
+    if (trimmed) {
+      router.push(`/catalog?search=${encodeURIComponent(trimmed)}`);
+    } else {
+      router.push(`/catalog`);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSearchSubmit} className="relative">
+      <input
+        type="text"
+        placeholder="Поиск девайсов и аксессуаров..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="w-full pl-10 pr-12 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] focus:border-transparent transition-all"
+      />
+      <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
+      <button
+        type="submit"
+        className="absolute right-1.5 top-1/2 -translate-y-1/2 bg-[#06B6D4] hover:bg-[#0891B2] text-white p-1.5 rounded-md transition-colors cursor-pointer"
+        aria-label="Искать"
+      >
+        <Search className="w-4 h-4" />
+      </button>
+    </form>
   );
 }

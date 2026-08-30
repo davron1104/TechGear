@@ -84,6 +84,7 @@ export interface GetPublicProductsOptions {
   categorySlug?: string | null;
   inStockOnly?: boolean;
   limit?: number;
+  search?: string;
 }
 
 /**
@@ -92,13 +93,26 @@ export interface GetPublicProductsOptions {
 export async function getPublicProducts(
   options: GetPublicProductsOptions = {}
 ): Promise<Product[]> {
-  const { categorySlug, inStockOnly, limit } = options;
+  const { categorySlug, inStockOnly, limit, search } = options;
+
+  const searchFilter = search?.trim()
+    ? {
+        OR: [
+          { name: { contains: search.trim(), mode: "insensitive" as const } },
+          { brand: { contains: search.trim(), mode: "insensitive" as const } },
+          { shortDescription: { contains: search.trim(), mode: "insensitive" as const } },
+          { description: { contains: search.trim(), mode: "insensitive" as const } },
+          { category: { name: { contains: search.trim(), mode: "insensitive" as const } } },
+        ],
+      }
+    : {};
 
   const products = await prisma.product.findMany({
     where: {
       deletedAt: null,
       ...(categorySlug ? { category: { slug: categorySlug } } : {}),
       ...(inStockOnly ? { stock: { gt: 0 } } : {}),
+      ...searchFilter,
     },
     include: {
       category: {

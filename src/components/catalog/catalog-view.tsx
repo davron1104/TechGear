@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
+import { X } from "lucide-react";
 import { CatalogFilters } from "./catalog-filters";
 import { ProductGrid } from "./product-grid";
 import { FilterState, Product } from "@/types/product";
@@ -10,12 +11,14 @@ interface CatalogViewProps {
   products: Product[];
   categorySlug?: string | null;
   categoryName?: string | null;
+  search?: string;
 }
 
 export function CatalogView({
   products = [],
   categorySlug = null,
   categoryName = null,
+  search,
 }: CatalogViewProps) {
   const router = useRouter();
 
@@ -58,6 +61,14 @@ export function CatalogView({
       inStockOnly: next.inStockOnly,
       sortBy: next.sortBy,
     });
+  };
+
+  const handleResetSearch = () => {
+    if (categorySlug) {
+      router.push(`/catalog/${categorySlug}`);
+    } else {
+      router.push("/catalog");
+    }
   };
 
   const handleResetFilters = () => {
@@ -114,6 +125,12 @@ export function CatalogView({
       "Каталог товаров"
     : "Все товары";
 
+  const displayTitle = search
+    ? categorySlug
+      ? `Поиск: «${search}» в категории «${categoryName || headerTitle}»`
+      : `Результаты поиска: «${search}»`
+    : headerTitle;
+
   return (
     <div id="catalog-grid" className="scroll-mt-24">
       <div className="flex flex-col lg:flex-row gap-8 items-start">
@@ -127,10 +144,23 @@ export function CatalogView({
 
         {/* Сетка товаров */}
         <div className="flex-1 w-full">
-          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200">
-            <h2 className="text-xl font-bold text-slate-900">
-              {headerTitle}
-            </h2>
+          <div className="flex items-center justify-between mb-4 pb-2 border-b border-slate-200 flex-wrap gap-2">
+            <div className="flex items-center gap-3 flex-wrap">
+              <h2 className="text-xl font-bold text-slate-900">
+                {displayTitle}
+              </h2>
+              {search && (
+                <button
+                  type="button"
+                  onClick={handleResetSearch}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs text-slate-600 font-semibold cursor-pointer transition-colors"
+                  title="Очистить поиск"
+                >
+                  <span>очистить поиск</span>
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
             <span className="text-xs text-slate-500 font-medium">
               Показано: {filteredProducts.length} из {products.length}
             </span>
@@ -138,7 +168,9 @@ export function CatalogView({
 
           <ProductGrid
             products={filteredProducts}
-            onResetFilters={handleResetFilters}
+            onResetFilters={products.length === 0 ? handleResetSearch : handleResetFilters}
+            isSearchEmpty={products.length === 0 && !!search}
+            searchQuery={search}
           />
         </div>
       </div>

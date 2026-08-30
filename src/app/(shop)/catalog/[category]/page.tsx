@@ -9,12 +9,17 @@ interface CategoryPageProps {
   params: Promise<{
     category: string;
   }>;
+  searchParams: Promise<{
+    search?: string;
+  }>;
 }
 
 export async function generateMetadata({
   params,
+  searchParams,
 }: CategoryPageProps): Promise<Metadata> {
   const { category } = await params;
+  const { search } = await searchParams;
   const categoryObject = await prisma.category.findUnique({
     where: { slug: category },
   });
@@ -25,14 +30,25 @@ export async function generateMetadata({
     };
   }
 
+  if (search?.trim()) {
+    return {
+      title: `Поиск: ${search.trim()} в ${categoryObject.name} — TechGear`,
+      description: `Результаты поиска по запросу "${search.trim()}" в категории ${categoryObject.name} интернет-магазина TechGear.`,
+    };
+  }
+
   return {
     title: `${categoryObject.name} — купить в TechGear`,
     description: `Качественные ${categoryObject.name.toLowerCase()} по лучшим ценам с гарантией и быстрой доставкой в интернет-магазине TechGear.`,
   };
 }
 
-export default async function CategoryPage({ params }: CategoryPageProps) {
+export default async function CategoryPage({
+  params,
+  searchParams,
+}: CategoryPageProps) {
   const { category } = await params;
+  const { search } = await searchParams;
   const categoryObject = await prisma.category.findUnique({
     where: { slug: category },
   });
@@ -41,7 +57,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound();
   }
 
-  const products = await getPublicProducts({ categorySlug: category });
+  const products = await getPublicProducts({
+    categorySlug: category,
+    search,
+  });
 
   return (
     <div className="w-full pb-12">
@@ -56,6 +75,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
           products={products}
           categorySlug={category}
           categoryName={categoryObject.name}
+          search={search}
         />
       </Suspense>
     </div>
