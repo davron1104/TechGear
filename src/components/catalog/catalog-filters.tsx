@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { SlidersHorizontal, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { FilterState, SortOption } from "@/types/product";
+import { useCurrency } from "@/context/currency-context";
 
 interface CatalogFiltersProps {
   filters: FilterState;
@@ -17,6 +18,7 @@ export function CatalogFilters({
   onReset,
   totalFound,
 }: CatalogFiltersProps) {
+  const { currency } = useCurrency();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const hasActiveFilters =
@@ -115,7 +117,7 @@ export function CatalogFilters({
         {/* 3. Диапазон цен */}
         <div>
           <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
-            Цена (₽)
+            {currency === "USD" ? "Цена ($)" : "Цена (сум)"}
           </span>
           <div className="grid grid-cols-2 gap-2">
             <div>
@@ -123,6 +125,7 @@ export function CatalogFilters({
                 type="number"
                 placeholder="От 0"
                 min="0"
+                step={currency === "USD" ? "any" : "1000"}
                 value={filters.minPrice ?? ""}
                 onChange={(e) => {
                   const val = e.target.value ? Number(e.target.value) : null;
@@ -134,8 +137,9 @@ export function CatalogFilters({
             <div>
               <input
                 type="number"
-                placeholder="До 100 000"
+                placeholder={currency === "USD" ? "До 1 000" : "До 10 000 000"}
                 min="0"
+                step={currency === "USD" ? "any" : "1000"}
                 value={filters.maxPrice ?? ""}
                 onChange={(e) => {
                   const val = e.target.value ? Number(e.target.value) : null;

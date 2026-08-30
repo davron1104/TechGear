@@ -1,13 +1,17 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import Link from "next/link";
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Award } from "lucide-react";
 import { Product } from "@/types/product";
+import { useCurrency } from "@/context/currency-context";
 
 interface HeroBannerProps {
   featuredProduct?: Product | null;
 }
 
 export function HeroBanner({ featuredProduct }: HeroBannerProps) {
+  const { formatPrice } = useCurrency();
   const image =
     featuredProduct?.image ||
     "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80";
@@ -16,8 +20,8 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
     ? featuredProduct.categoryName
     : "Клавиатуры • Hot-Swap";
   const priceDisplay = featuredProduct
-    ? `${featuredProduct.price.toLocaleString("ru-RU")} ₽`
-    : "8 990 ₽";
+    ? formatPrice(featuredProduct.price)
+    : formatPrice(8990);
   const productHref = featuredProduct?.slug
     ? `/product/${featuredProduct.slug}`
     : "/catalog";

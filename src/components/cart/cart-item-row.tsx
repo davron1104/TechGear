@@ -4,12 +4,14 @@
 import { Plus, Minus, Trash2 } from "lucide-react";
 import { CartItem } from "@/types/cart";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/context/currency-context";
 
 interface CartItemRowProps {
   item: CartItem;
 }
 
 export function CartItemRow({ item }: CartItemRowProps) {
+  const { formatPrice } = useCurrency();
   const updateQuantity = useCart((state) => state.updateQuantity);
   const removeItem = useCart((state) => state.removeItem);
 
@@ -86,11 +88,11 @@ export function CartItemRow({ item }: CartItemRowProps) {
           {/* Итоговая цена за позицию */}
           <div className="text-right">
             <div className="text-sm font-bold text-slate-900 font-mono">
-              {lineTotal.toLocaleString("ru-RU")} ₽
+              {formatPrice(lineTotal)}
             </div>
             {item.quantity > 1 && (
               <div className="text-[10px] text-slate-400 font-mono">
-                {item.price.toLocaleString("ru-RU")} ₽/шт.
+                {formatPrice(item.price)}/шт.
               </div>
             )}
           </div>

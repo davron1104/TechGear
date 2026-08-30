@@ -24,7 +24,7 @@ export function Footer() {
             </div>
             <div>
               <h4 className="text-sm font-semibold text-white">Быстрая доставка</h4>
-              <p className="text-xs text-slate-400">Бесплатно от 5 000 ₽</p>
+              <p className="text-xs text-slate-400">Бесплатно от 500 000 сум</p>
             </div>
           </div>
 

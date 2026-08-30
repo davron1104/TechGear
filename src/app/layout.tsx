@@ -3,6 +3,8 @@ import { Inter, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "next-auth/react";
 import { CartSyncProvider } from "@/components/cart/cart-sync-provider";
+import { CurrencyProvider } from "@/context/currency-context";
+import { getServerCurrency, getExchangeRate } from "@/lib/currency-server";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -22,11 +24,16 @@ export const metadata: Metadata = {
     "Премиальная компьютерная периферия, клавиатуры, мыши, гарнитуры, мониторы и аксессуары с быстрой доставкой.",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const [initialCurrency, initialExchangeRate] = await Promise.all([
+    getServerCurrency(),
+    getExchangeRate(),
+  ]);
+
   return (
     <html
       lang="ru"
@@ -34,8 +41,13 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#F8FAFC] text-[#0F172A] font-sans">
         <SessionProvider>
-          <CartSyncProvider />
-          {children}
+          <CurrencyProvider
+            initialCurrency={initialCurrency}
+            initialExchangeRate={initialExchangeRate}
+          >
+            <CartSyncProvider />
+            {children}
+          </CurrencyProvider>
         </SessionProvider>
       </body>
     </html>

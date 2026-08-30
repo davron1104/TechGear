@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ShoppingCart, Check } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/context/currency-context";
 
 interface ProductStickyBarProps {
   product: Product;
@@ -11,6 +12,7 @@ interface ProductStickyBarProps {
 }
 
 export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
+  const { formatPrice } = useCurrency();
   const [isAdded, setIsAdded] = useState(false);
   const addItem = useCart((state) => state.addItem);
   const quantityInCart = useCart(
@@ -58,7 +60,7 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
             )}
           </span>
           <span className="text-xl font-extrabold text-slate-900 font-mono">
-            {totalPrice.toLocaleString("ru-RU")} ₽
+            {formatPrice(totalPrice)}
           </span>
         </div>
 

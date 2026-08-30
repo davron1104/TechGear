@@ -4,11 +4,13 @@ import { useEffect, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ShoppingCart, X, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/context/currency-context";
 import { CartItemRow } from "./cart-item-row";
 
 const emptySubscribe = () => () => {};
 
 export function CartDrawer() {
+  const { formatPrice } = useCurrency();
   const isHydrated = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -133,7 +135,7 @@ export function CartDrawer() {
                   Итого к оплате:
                 </span>
                 <span className="text-2xl font-extrabold text-slate-900 font-mono">
-                  {totalPrice.toLocaleString("ru-RU")} ₽
+                  {formatPrice(totalPrice)}
                 </span>
               </div>
 

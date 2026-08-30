@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
+import { CurrencySwitcher } from "@/components/layout/currency-switcher";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 
@@ -64,10 +65,11 @@ export function Header() {
           </div>
 
           <div className="flex items-center gap-4 text-slate-400">
-            <div className="flex items-center gap-1.5">
+            <div className="hidden sm:flex items-center gap-1.5">
               <ShieldCheck className="w-3.5 h-3.5 text-[#10B981]" />
-              <span>Бесплатная доставка от 5 000 ₽</span>
+              <span>Бесплатная доставка от 500 000 сум</span>
             </div>
+            <CurrencySwitcher />
           </div>
         </div>
       </div>

@@ -20,6 +20,8 @@ export interface TelegramOrderPayload {
   goodsTotal: number;
   deliveryCost: number;
   totalAmount: number;
+  currency?: string;
+  exchangeRate?: number;
 }
 
 /**
@@ -42,6 +44,8 @@ export function formatOrderMessage(order: TelegramOrderPayload): string {
   const safePhone = escapeHtml(order.customerPhone);
   const safeEmail = escapeHtml(order.customerEmail);
   const safeCity = escapeHtml(order.city);
+  const rate =
+    order.exchangeRate && order.exchangeRate > 0 ? order.exchangeRate : 12500;
 
   const deliveryMethodText =
     order.deliveryMethod === "courier" ? "Курьерская доставка" : "Самовывоз";
@@ -60,9 +64,12 @@ export function formatOrderMessage(order: TelegramOrderPayload): string {
   const itemsLines = order.items
     .map((item, index) => {
       const safeName = escapeHtml(item.productName);
-      const itemTotal = (item.price * item.quantity).toLocaleString("ru-RU");
-      const itemPrice = item.price.toLocaleString("ru-RU");
-      return `${index + 1}. <b>${safeName}</b> — ${item.quantity} шт. × ${itemPrice} ₽ = ${itemTotal} ₽`;
+      const itemTotal = (item.price * item.quantity).toLocaleString("ru-RU").replace(/\s/g, " ");
+      const itemPrice = item.price.toLocaleString("ru-RU").replace(/\s/g, " ");
+      const itemUsd = (
+        Math.round(((item.price * item.quantity) / rate) * 100) / 100
+      ).toLocaleString("en-US");
+      return `${index + 1}. <b>${safeName}</b> — ${item.quantity} шт. × ${itemPrice} сум = ${itemTotal} сум ($${itemUsd})`;
     })
     .join("\n");
 
@@ -100,14 +107,25 @@ export function formatOrderMessage(order: TelegramOrderPayload): string {
     lines.push(`💬 <b>Комментарий:</b> ${escapeHtml(order.comment.trim())}`);
   }
 
+  const totalUsd = (
+    Math.round((order.totalAmount / rate) * 100) / 100
+  ).toLocaleString("en-US");
+  const goodsUsd = (
+    Math.round((order.goodsTotal / rate) * 100) / 100
+  ).toLocaleString("en-US");
+  const deliveryUsd = (
+    Math.round((order.deliveryCost / rate) * 100) / 100
+  ).toLocaleString("en-US");
+
   lines.push(
     "",
     `🛒 <b>Состав заказа:</b>`,
     itemsLines || "<i>(нет товаров)</i>",
     "",
-    `Сумма товаров: ${order.goodsTotal.toLocaleString("ru-RU")} ₽`,
-    `Доставка: ${order.deliveryCost.toLocaleString("ru-RU")} ₽`,
-    `💵 <b>Итого к оплате:</b> ${order.totalAmount.toLocaleString("ru-RU")} ₽`
+    `Сумма товаров: ${order.goodsTotal.toLocaleString("ru-RU").replace(/\s/g, " ")} сум ($${goodsUsd})`,
+    `Доставка: ${order.deliveryCost.toLocaleString("ru-RU").replace(/\s/g, " ")} сум ($${deliveryUsd})`,
+    `💵 <b>Итого к оплате:</b> ${order.totalAmount.toLocaleString("ru-RU").replace(/\s/g, " ")} сум ($${totalUsd})`,
+    `<i>(Курс: 1 USD = ${rate.toLocaleString("ru-RU").replace(/\s/g, " ")} сум)</i>`
   );
 
   return lines.join("\n");

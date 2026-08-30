@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ShoppingCart, Check, Plus, Minus, ShieldCheck, Truck, RotateCcw } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/context/currency-context";
 
 interface ProductBuyBoxProps {
   product: Product;
@@ -16,6 +17,7 @@ export function ProductBuyBox({
   quantity,
   onQuantityChange,
 }: ProductBuyBoxProps) {
+  const { formatPrice } = useCurrency();
   const [isAdded, setIsAdded] = useState(false);
   const addItem = useCart((state) => state.addItem);
   const quantityInCart = useCart(
@@ -87,7 +89,7 @@ export function ProductBuyBox({
         <div className="flex items-center justify-between text-xs text-slate-500">
           <span>Цена за 1 шт.:</span>
           <span className="font-mono font-semibold text-slate-700">
-            {product.price.toLocaleString("ru-RU")} ₽
+            {formatPrice(product.price)}
           </span>
         </div>
 
@@ -103,7 +105,7 @@ export function ProductBuyBox({
             )}
           </div>
           <div className="text-3xl sm:text-4xl font-extrabold text-slate-900 font-mono">
-            {totalPrice.toLocaleString("ru-RU")} ₽
+            {formatPrice(totalPrice)}
           </div>
         </div>
       </div>

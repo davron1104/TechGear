@@ -149,6 +149,22 @@ describe("Telegram Service", () => {
       expect(message).toContain("Монитор 27\" &lt;4K &amp; OLED&gt;");
       expect(message).not.toContain("<b>Hacker</b>");
     });
+
+    it("should display USD amounts calculated using the order's specific exchange rate", () => {
+      const orderWithRate: TelegramOrderPayload = {
+        ...baseOrder,
+        totalAmount: 1300000,
+        goodsTotal: 1300000,
+        deliveryCost: 0,
+        currency: "UZS",
+        exchangeRate: 13000,
+        items: [{ productName: "Гарнитура HyperX", price: 1300000, quantity: 1 }],
+      };
+
+      const message = formatOrderMessage(orderWithRate);
+      expect(message).toContain("1 300 000 сум ($100)");
+      expect(message).toContain("Курс: 1 USD = 13 000 сум");
+    });
   });
 
   describe("sendOrderTelegramNotification", () => {

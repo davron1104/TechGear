@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Order, OrderStatus } from "@/types/order";
 import { OrderStatusBadge } from "./order-status-badge";
 import { cancelOrder } from "@/actions/order-actions";
+import { formatCurrency, CurrencyType } from "@/lib/currency";
 import {
   ArrowLeft,
   Calendar,
@@ -194,12 +195,21 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                   {item.name}
                 </h4>
                 <span className="text-xs text-slate-400 font-mono mt-0.5 block">
-                  {item.quantity} шт. × {item.price.toLocaleString("ru-RU")} ₽
+                  {item.quantity} шт. ×{" "}
+                  {formatCurrency(
+                    item.price,
+                    (order.currency as CurrencyType) || "UZS",
+                    order.exchangeRate || 12500
+                  )}
                 </span>
               </div>
 
               <div className="text-sm font-bold text-slate-900 font-mono shrink-0">
-                {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
+                {formatCurrency(
+                  item.price * item.quantity,
+                  (order.currency as CurrencyType) || "UZS",
+                  order.exchangeRate || 12500
+                )}
               </div>
             </div>
           ))}
@@ -210,7 +220,11 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
           <div className="flex items-center justify-between text-slate-600">
             <span>Стоимость товаров:</span>
             <span className="font-mono font-semibold text-slate-900">
-              {order.totalPrice.toLocaleString("ru-RU")} ₽
+              {formatCurrency(
+                order.totalPrice,
+                (order.currency as CurrencyType) || "UZS",
+                order.exchangeRate || 12500
+              )}
             </span>
           </div>
 
@@ -221,7 +235,11 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                 <span className="text-emerald-600 font-semibold">Бесплатно</span>
               ) : (
                 <span className="font-mono font-semibold text-slate-900">
-                  {order.deliveryCost} ₽
+                  {formatCurrency(
+                    order.deliveryCost,
+                    (order.currency as CurrencyType) || "UZS",
+                    order.exchangeRate || 12500
+                  )}
                 </span>
               )}
             </span>
@@ -232,7 +250,11 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
               Итого к оплате:
             </span>
             <span className="text-xl sm:text-2xl font-extrabold text-slate-900 font-mono">
-              {order.finalTotal.toLocaleString("ru-RU")} ₽
+              {formatCurrency(
+                order.finalTotal,
+                (order.currency as CurrencyType) || "UZS",
+                order.exchangeRate || 12500
+              )}
             </span>
           </div>
         </div>

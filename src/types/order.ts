@@ -25,4 +25,6 @@ export interface Order {
   totalPrice: number;
   deliveryCost: number;
   finalTotal: number;
+  currency?: string;
+  exchangeRate?: number;
 }

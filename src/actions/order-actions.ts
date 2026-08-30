@@ -2,6 +2,7 @@
 
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
+import { getExchangeRate } from "@/lib/currency-server";
 import {
   sendOrderTelegramNotification,
   TelegramOrderItem,
@@ -28,6 +29,8 @@ export interface CreatedOrderData {
   street: string | null;
   house: string | null;
   apartment: string | null;
+  currency: string;
+  exchangeRate: number;
 }
 
 interface DbOrderItem {
@@ -53,6 +56,8 @@ interface DbOrder {
   apartment: string | null;
   comment: string | null;
   totalAmount: unknown;
+  currency?: unknown;
+  exchangeRate?: unknown;
   items: DbOrderItem[];
 }
 
@@ -97,6 +102,8 @@ function formatOrderResponse(dbOrder: DbOrder): Order {
     totalPrice: goodsTotal,
     deliveryCost,
     finalTotal: Number(dbOrder.totalAmount),
+    currency: dbOrder.currency ? String(dbOrder.currency) : "UZS",
+    exchangeRate: dbOrder.exchangeRate ? Number(dbOrder.exchangeRate) : 12500,
   };
 }
 
@@ -151,6 +158,8 @@ export async function createOrder(
       comment,
       items: guestItems,
     } = parseResult.data;
+
+    const currentExchangeRate = await getExchangeRate();
 
     const createdOrder = await prisma.$transaction(async (tx) => {
       let rawItems: Array<{ productId: string; quantity: number }> = [];
@@ -236,7 +245,7 @@ export async function createOrder(
         deliveryMethod === "pickup" || goodsTotal >= 5000 ? 0 : 490;
       const totalAmount = goodsTotal + deliveryCost;
 
-      // 5. Создание записи заказа Order и позиций OrderItem
+      // 5. Создание записи заказа Order и позиций OrderItem с фиксацией валюты и курса
       const order = await tx.order.create({
         data: {
           userId,
@@ -251,6 +260,8 @@ export async function createOrder(
           apartment: apartment?.trim() || null,
           comment: comment?.trim() || null,
           totalAmount,
+          currency: "UZS",
+          exchangeRate: currentExchangeRate,
           items: {
             create: targetItems.map((item) => {
               const product = productMap.get(item.productId)!;
@@ -303,6 +314,8 @@ export async function createOrder(
           street: order.street,
           house: order.house,
           apartment: order.apartment,
+          currency: order.currency,
+          exchangeRate: Number(order.exchangeRate),
         },
         notificationPayload: {
           orderNumber,
@@ -320,6 +333,8 @@ export async function createOrder(
           goodsTotal,
           deliveryCost,
           totalAmount,
+          currency: order.currency,
+          exchangeRate: Number(order.exchangeRate),
         },
       };
     });

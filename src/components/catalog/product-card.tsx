@@ -6,12 +6,14 @@ import Link from "next/link";
 import { ShoppingCart, Check } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
+import { useCurrency } from "@/context/currency-context";
 
 interface ProductCardProps {
   product: Product;
 }
 
 export function ProductCard({ product }: ProductCardProps) {
+  const { formatPrice } = useCurrency();
   const [isAdded, setIsAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
@@ -175,7 +177,7 @@ export function ProductCard({ product }: ProductCardProps) {
         <div className="flex items-baseline justify-between mb-3">
           <span className="text-xs text-slate-400">Цена:</span>
           <span className="text-lg font-bold text-slate-900 font-mono">
-            {product.price.toLocaleString("ru-RU")} ₽
+            {formatPrice(product.price)}
           </span>
         </div>
 

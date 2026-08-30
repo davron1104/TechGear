@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Order } from "@/types/order";
 import { OrderStatusBadge } from "./order-status-badge";
 import { Package, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
+import { formatCurrency, CurrencyType } from "@/lib/currency";
 
 interface OrdersHistoryTableProps {
   orders: Order[];
@@ -76,7 +77,11 @@ export function OrdersHistoryTable({ orders }: OrdersHistoryTableProps) {
                     Сумма заказа
                   </span>
                   <span className="font-mono font-extrabold text-base text-slate-900">
-                    {order.finalTotal.toLocaleString("ru-RU")} ₽
+                    {formatCurrency(
+                      order.finalTotal,
+                      (order.currency as CurrencyType) || "UZS",
+                      order.exchangeRate || 12500
+                    )}
                   </span>
                 </div>
 

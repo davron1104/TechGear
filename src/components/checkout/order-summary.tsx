@@ -1,6 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
+"use client";
+
 import { CartItem } from "@/types/cart";
 import { ShieldCheck, Truck, CreditCard } from "lucide-react";
+import { useCurrency } from "@/context/currency-context";
 
 interface OrderSummaryProps {
   items: CartItem[];
@@ -8,6 +11,7 @@ interface OrderSummaryProps {
 }
 
 export function OrderSummary({ items, totalPrice }: OrderSummaryProps) {
+  const { formatPrice } = useCurrency();
   const isFreeDelivery = totalPrice >= 5000;
   const deliveryCost = isFreeDelivery ? 0 : 490;
   const finalTotal = totalPrice + deliveryCost;
@@ -35,11 +39,11 @@ export function OrderSummary({ items, totalPrice }: OrderSummaryProps) {
                 {item.name}
               </h4>
               <span className="text-[11px] text-slate-400 font-mono">
-                {item.quantity} × {item.price.toLocaleString("ru-RU")} ₽
+                {item.quantity} × {formatPrice(item.price)}
               </span>
             </div>
             <div className="text-xs font-bold text-slate-900 font-mono shrink-0">
-              {(item.price * item.quantity).toLocaleString("ru-RU")} ₽
+              {formatPrice(item.price * item.quantity)}
             </div>
           </div>
         ))}
@@ -50,7 +54,7 @@ export function OrderSummary({ items, totalPrice }: OrderSummaryProps) {
         <div className="flex items-center justify-between text-slate-600">
           <span>Стоимость товаров:</span>
           <span className="font-mono font-semibold text-slate-900">
-            {totalPrice.toLocaleString("ru-RU")} ₽
+            {formatPrice(totalPrice)}
           </span>
         </div>
 
@@ -65,7 +69,7 @@ export function OrderSummary({ items, totalPrice }: OrderSummaryProps) {
             </span>
           ) : (
             <span className="font-mono font-semibold text-slate-900">
-              490 ₽
+              {formatPrice(490)}
             </span>
           )}
         </div>
@@ -74,7 +78,7 @@ export function OrderSummary({ items, totalPrice }: OrderSummaryProps) {
           <p className="text-[11px] text-slate-400 leading-tight">
             Добавьте товаров еще на{" "}
             <strong className="text-slate-700 font-mono">
-              {(5000 - totalPrice).toLocaleString("ru-RU")} ₽
+              {formatPrice(5000 - totalPrice)}
             </strong>{" "}
             для бесплатной доставки.
           </p>
@@ -85,7 +89,7 @@ export function OrderSummary({ items, totalPrice }: OrderSummaryProps) {
             Итого к оплате:
           </span>
           <span className="text-2xl font-extrabold text-slate-900 font-mono">
-            {finalTotal.toLocaleString("ru-RU")} ₽
+            {formatPrice(finalTotal)}
           </span>
         </div>
       </div>

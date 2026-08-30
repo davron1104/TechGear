@@ -4,8 +4,10 @@ import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, PackageCheck, ArrowRight, Mail, Phone, MapPin, Truck, User } from "lucide-react";
+import { useCurrency } from "@/context/currency-context";
 
 function SuccessContent() {
+  const { formatPrice } = useCurrency();
   const searchParams = useSearchParams();
 
   const orderNumber = searchParams.get("orderNumber") || "TG-84920";
@@ -46,7 +48,7 @@ function SuccessContent() {
               Детали заказа
             </span>
             <span className="font-mono font-bold text-base text-slate-900">
-              {total > 0 ? `${total.toLocaleString("ru-RU")} ₽` : "Оплата при получении"}
+              {total > 0 ? formatPrice(total) : "Оплата при получении"}
             </span>
           </div>
 
