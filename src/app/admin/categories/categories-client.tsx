@@ -177,6 +177,9 @@ export function AdminCategoriesClient({ initialCategories }: AdminCategoriesClie
               <Link href="/admin/orders" className="text-slate-500 hover:text-slate-900 transition-colors py-4">
                 Заказы
               </Link>
+              <Link href="/admin/settings" className="text-slate-500 hover:text-slate-900 transition-colors py-4">
+                Настройки
+              </Link>
             </nav>
           </div>
           <Link href="/" className="text-xs text-slate-500 hover:text-slate-900 transition-colors flex items-center gap-1">

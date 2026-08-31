@@ -4,8 +4,16 @@ import {
   CurrencyType,
   DEFAULT_USD_EXCHANGE_RATE,
   USD_EXCHANGE_RATE_SETTING_KEY,
+  USD_EXCHANGE_RATE_UPDATED_AT_KEY,
+  USD_EXCHANGE_RATE_SOURCE_KEY,
   CURRENCY_COOKIE_NAME,
 } from "./currency";
+
+export interface ExchangeRateDetails {
+  exchangeRate: number;
+  updatedAt: string | null;
+  source: string | null;
+}
 
 /**
  * Retrieves the current USD exchange rate from the database.
@@ -31,6 +39,52 @@ export async function getExchangeRate(): Promise<number> {
   }
 
   return DEFAULT_USD_EXCHANGE_RATE;
+}
+
+/**
+ * Retrieves full details about the USD exchange rate (rate, updatedAt, source).
+ */
+export async function getExchangeRateDetails(): Promise<ExchangeRateDetails> {
+  let exchangeRate = DEFAULT_USD_EXCHANGE_RATE;
+  let updatedAt: string | null = null;
+  let source: string | null = null;
+
+  try {
+    const settings = await prisma.systemSetting.findMany({
+      where: {
+        key: {
+          in: [
+            USD_EXCHANGE_RATE_SETTING_KEY,
+            USD_EXCHANGE_RATE_UPDATED_AT_KEY,
+            USD_EXCHANGE_RATE_SOURCE_KEY,
+          ],
+        },
+      },
+    });
+
+    const rateSetting = settings.find((s) => s.key === USD_EXCHANGE_RATE_SETTING_KEY);
+    const updatedSetting = settings.find((s) => s.key === USD_EXCHANGE_RATE_UPDATED_AT_KEY);
+    const sourceSetting = settings.find((s) => s.key === USD_EXCHANGE_RATE_SOURCE_KEY);
+
+    if (rateSetting && rateSetting.value) {
+      const parsedRate = parseFloat(rateSetting.value);
+      if (!isNaN(parsedRate) && parsedRate > 0) {
+        exchangeRate = parsedRate;
+      }
+    }
+
+    if (updatedSetting && updatedSetting.value) {
+      updatedAt = updatedSetting.value;
+    }
+
+    if (sourceSetting && sourceSetting.value) {
+      source = sourceSetting.value;
+    }
+  } catch (error) {
+    console.error("Failed to load USD exchange rate details from database:", error);
+  }
+
+  return { exchangeRate, updatedAt, source };
 }
 
 /**

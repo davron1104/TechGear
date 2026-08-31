@@ -484,6 +484,12 @@ export function AdminProductsClient({
               >
                 Заказы
               </Link>
+              <Link
+                href="/admin/settings"
+                className="text-slate-500 hover:text-slate-900 transition-colors py-4"
+              >
+                Настройки
+              </Link>
             </nav>
           </div>
           <Link

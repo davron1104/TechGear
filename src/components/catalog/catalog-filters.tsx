@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { SlidersHorizontal, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { FilterState, SortOption } from "@/types/product";
 import { useCurrency } from "@/context/currency-context";
+import { convertUzsToUsd, CurrencyType } from "@/lib/currency";
 
 interface CatalogFiltersProps {
   filters: FilterState;
@@ -12,14 +13,80 @@ interface CatalogFiltersProps {
   totalFound: number;
 }
 
+function toDisplayString(
+  canonicalUzs: number | null,
+  currency: CurrencyType,
+  exchangeRate: number
+): string {
+  if (canonicalUzs === null || canonicalUzs === undefined) return "";
+  if (currency === "USD") {
+    const usd = convertUzsToUsd(canonicalUzs, exchangeRate);
+    return usd !== 0 ? usd.toString() : "0";
+  }
+  return Math.round(canonicalUzs).toString();
+}
+
 export function CatalogFilters({
   filters,
   onFilterChange,
   onReset,
   totalFound,
 }: CatalogFiltersProps) {
-  const { currency } = useCurrency();
+  const { currency, exchangeRate } = useCurrency();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  const [minInputStr, setMinInputStr] = useState(() =>
+    toDisplayString(filters.minPrice, currency, exchangeRate)
+  );
+  const [maxInputStr, setMaxInputStr] = useState(() =>
+    toDisplayString(filters.maxPrice, currency, exchangeRate)
+  );
+
+  // Синхронизация отображаемых строк при смене валюты, изменении курса или внешнем сбросе фильтров
+  useEffect(() => {
+    setMinInputStr(toDisplayString(filters.minPrice, currency, exchangeRate));
+    setMaxInputStr(toDisplayString(filters.maxPrice, currency, exchangeRate));
+  }, [currency, exchangeRate, filters.minPrice === null, filters.maxPrice === null]);
+
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setMinInputStr(raw);
+
+    const trimmed = raw.trim();
+    if (!trimmed || isNaN(Number(trimmed))) {
+      onFilterChange((prev) => ({ ...prev, minPrice: null }));
+      return;
+    }
+
+    const num = Number(trimmed);
+    if (num < 0) {
+      onFilterChange((prev) => ({ ...prev, minPrice: 0 }));
+      return;
+    }
+
+    const canonicalUzs = currency === "USD" ? num * exchangeRate : num;
+    onFilterChange((prev) => ({ ...prev, minPrice: canonicalUzs }));
+  };
+
+  const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value;
+    setMaxInputStr(raw);
+
+    const trimmed = raw.trim();
+    if (!trimmed || isNaN(Number(trimmed))) {
+      onFilterChange((prev) => ({ ...prev, maxPrice: null }));
+      return;
+    }
+
+    const num = Number(trimmed);
+    if (num < 0) {
+      onFilterChange((prev) => ({ ...prev, maxPrice: 0 }));
+      return;
+    }
+
+    const canonicalUzs = currency === "USD" ? num * exchangeRate : num;
+    onFilterChange((prev) => ({ ...prev, maxPrice: canonicalUzs }));
+  };
 
   const hasActiveFilters =
     filters.minPrice !== null ||
@@ -126,11 +193,8 @@ export function CatalogFilters({
                 placeholder="От 0"
                 min="0"
                 step={currency === "USD" ? "any" : "1000"}
-                value={filters.minPrice ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value ? Number(e.target.value) : null;
-                  onFilterChange((prev) => ({ ...prev, minPrice: val }));
-                }}
+                value={minInputStr}
+                onChange={handleMinChange}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#06B6D4]"
               />
             </div>
@@ -140,11 +204,8 @@ export function CatalogFilters({
                 placeholder={currency === "USD" ? "До 1 000" : "До 10 000 000"}
                 min="0"
                 step={currency === "USD" ? "any" : "1000"}
-                value={filters.maxPrice ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value ? Number(e.target.value) : null;
-                  onFilterChange((prev) => ({ ...prev, maxPrice: val }));
-                }}
+                value={maxInputStr}
+                onChange={handleMaxChange}
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2 text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#06B6D4]"
               />
             </div>

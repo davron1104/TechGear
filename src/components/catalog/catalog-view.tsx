@@ -1,13 +1,11 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import { CatalogFilters } from "./catalog-filters";
 import { ProductGrid } from "./product-grid";
 import { FilterState, Product } from "@/types/product";
-import { useCurrency } from "@/context/currency-context";
-import { convertUzsToUsd } from "@/lib/currency";
 
 interface CatalogViewProps {
   products: Product[];
@@ -23,10 +21,8 @@ export function CatalogView({
   search,
 }: CatalogViewProps) {
   const router = useRouter();
-  const { currency, exchangeRate } = useCurrency();
-  const prevCurrencyRef = useRef(currency);
 
-  // Локальные фильтры цены, наличия и сортировки
+  // Локальные фильтры цены (канонически в UZS), наличия и сортировки
   const [filterValues, setFilterValues] = useState<
     Omit<FilterState, "categorySlug">
   >({
@@ -35,51 +31,6 @@ export function CatalogView({
     inStockOnly: false,
     sortBy: "popular",
   });
-
-  // Автоматическая конвертация введенного диапазона цен при переключении UZS ↔ USD
-  useEffect(() => {
-    const prevCurrency = prevCurrencyRef.current;
-    if (prevCurrency !== currency) {
-      prevCurrencyRef.current = currency;
-
-      setFilterValues((prev) => {
-        if (prev.minPrice === null && prev.maxPrice === null) {
-          return prev;
-        }
-
-        let nextMin = prev.minPrice;
-        let nextMax = prev.maxPrice;
-
-        if (currency === "USD") {
-          // Переход UZS -> USD
-          nextMin =
-            prev.minPrice !== null
-              ? convertUzsToUsd(prev.minPrice, exchangeRate)
-              : null;
-          nextMax =
-            prev.maxPrice !== null
-              ? convertUzsToUsd(prev.maxPrice, exchangeRate)
-              : null;
-        } else {
-          // Переход USD -> UZS
-          nextMin =
-            prev.minPrice !== null
-              ? Math.round(prev.minPrice * exchangeRate)
-              : null;
-          nextMax =
-            prev.maxPrice !== null
-              ? Math.round(prev.maxPrice * exchangeRate)
-              : null;
-        }
-
-        return {
-          ...prev,
-          minPrice: nextMin,
-          maxPrice: nextMax,
-        };
-      });
-    }
-  }, [currency, exchangeRate]);
 
   // Единый объект фильтров (категория из пропсов + локальные фильтры цены и сортировки)
   const filters: FilterState = useMemo(
@@ -129,23 +80,8 @@ export function CatalogView({
     });
   };
 
-  // Фильтрация и сортировка товаров
+  // Фильтрация и сортировка товаров (напрямую в базовой валюте UZS)
   const filteredProducts = useMemo(() => {
-    // Расчет эффективного диапазона в базовой валюте UZS для корректного сравнения с ценами товаров
-    const minPriceUzs =
-      filters.minPrice !== null
-        ? currency === "USD"
-          ? Math.round(filters.minPrice * exchangeRate)
-          : filters.minPrice
-        : null;
-
-    const maxPriceUzs =
-      filters.maxPrice !== null
-        ? currency === "USD"
-          ? Math.round(filters.maxPrice * exchangeRate)
-          : filters.maxPrice
-        : null;
-
     return products
       .filter((product: Product) => {
         // 1. Фильтр по категории
@@ -156,13 +92,13 @@ export function CatalogView({
           return false;
         }
 
-        // 2. Фильтр по минимальной цене
-        if (minPriceUzs !== null && product.price < minPriceUzs) {
+        // 2. Фильтр по минимальной цене (канонически в UZS)
+        if (filters.minPrice !== null && product.price < filters.minPrice) {
           return false;
         }
 
-        // 3. Фильтр по максимальной цене
-        if (maxPriceUzs !== null && product.price > maxPriceUzs) {
+        // 3. Фильтр по максимальной цене (канонически в UZS)
+        if (filters.maxPrice !== null && product.price > filters.maxPrice) {
           return false;
         }
 
@@ -182,7 +118,7 @@ export function CatalogView({
         }
         return 0; // "popular"
       });
-  }, [products, filters, currency, exchangeRate]);
+  }, [products, filters]);
 
   const headerTitle = filters.categorySlug
     ? categoryName ||

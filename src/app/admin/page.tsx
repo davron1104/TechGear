@@ -14,6 +14,8 @@ import {
   CheckCircle2,
   ExternalLink,
   Clock,
+  Sliders,
+  DollarSign,
 } from "lucide-react";
 
 export const metadata: Metadata = {
@@ -120,6 +122,15 @@ export default async function AdminDashboardPage() {
       badge: `${ordersCount} заказов`,
       badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
     },
+    {
+      title: "Настройки и курс валют",
+      description:
+        "Управление курсом пересчета USD к базовой валюте UZS и системными параметрами магазина.",
+      href: "/admin/settings",
+      icon: DollarSign,
+      badge: "Курс USD",
+      badgeColor: "bg-amber-50 text-amber-700 border-amber-200",
+    },
   ];
 
   return (
@@ -156,6 +167,12 @@ export default async function AdminDashboardPage() {
                 className="text-slate-500 hover:text-slate-900 transition-colors py-4"
               >
                 Заказы
+              </Link>
+              <Link
+                href="/admin/settings"
+                className="text-slate-500 hover:text-slate-900 transition-colors py-4"
+              >
+                Настройки
               </Link>
             </nav>
           </div>

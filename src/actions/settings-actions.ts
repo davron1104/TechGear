@@ -5,8 +5,18 @@ import prisma from "@/lib/prisma";
 import {
   DEFAULT_USD_EXCHANGE_RATE,
   USD_EXCHANGE_RATE_SETTING_KEY,
+  USD_EXCHANGE_RATE_UPDATED_AT_KEY,
+  USD_EXCHANGE_RATE_SOURCE_KEY,
 } from "@/lib/currency";
-import { getExchangeRate } from "@/lib/currency-server";
+import {
+  getExchangeRate,
+  getExchangeRateDetails,
+  ExchangeRateDetails,
+} from "@/lib/currency-server";
+import {
+  syncExchangeRateFromCbu,
+  MANUAL_SOURCE_LABEL,
+} from "@/lib/exchange-rate-service";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -59,14 +69,47 @@ export async function getAdminExchangeRate(): Promise<
 }
 
 /**
- * Updates the USD exchange rate in the database (Admin only).
+ * Retrieves full details of the USD exchange rate (Admin).
+ */
+export async function getAdminExchangeRateDetails(): Promise<
+  ActionResponse<ExchangeRateDetails>
+> {
+  try {
+    await assertAdmin();
+    const details = await getExchangeRateDetails();
+    return {
+      success: true,
+      data: details,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Не удалось получить подробности о курсе валюты.";
+    console.error("Get admin exchange rate details error:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * Updates the USD exchange rate manually in the database (Admin only).
  * - Validates input with Zod.
  * - Enforces role-based access control.
+ * - Records manual source label and timestamp.
  * - Does not alter base product prices in UZS.
  */
 export async function updateExchangeRate(
   data: unknown
-): Promise<ActionResponse<{ exchangeRate: number }>> {
+): Promise<
+  ActionResponse<{
+    exchangeRate: number;
+    updatedAt?: string;
+    source?: string;
+  }>
+> {
   try {
     await assertAdmin();
 
@@ -83,20 +126,44 @@ export async function updateExchangeRate(
     }
 
     const { rate } = parseResult.data;
+    const nowIso = new Date().toISOString();
 
     // Upsert into SystemSetting
-    const setting = await prisma.systemSetting.upsert({
-      where: { key: USD_EXCHANGE_RATE_SETTING_KEY },
-      create: {
-        key: USD_EXCHANGE_RATE_SETTING_KEY,
-        value: rate.toString(),
-      },
-      update: {
-        value: rate.toString(),
-      },
-    });
+    const [rateSetting] = await prisma.$transaction([
+      prisma.systemSetting.upsert({
+        where: { key: USD_EXCHANGE_RATE_SETTING_KEY },
+        create: {
+          key: USD_EXCHANGE_RATE_SETTING_KEY,
+          value: rate.toString(),
+        },
+        update: {
+          value: rate.toString(),
+        },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: USD_EXCHANGE_RATE_UPDATED_AT_KEY },
+        create: {
+          key: USD_EXCHANGE_RATE_UPDATED_AT_KEY,
+          value: nowIso,
+        },
+        update: {
+          value: nowIso,
+        },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: USD_EXCHANGE_RATE_SOURCE_KEY },
+        create: {
+          key: USD_EXCHANGE_RATE_SOURCE_KEY,
+          value: MANUAL_SOURCE_LABEL,
+        },
+        update: {
+          value: MANUAL_SOURCE_LABEL,
+        },
+      }),
+    ]);
 
-    const parsedRate = parseFloat(setting.value) || DEFAULT_USD_EXCHANGE_RATE;
+    const parsedRate =
+      parseFloat(rateSetting.value) || DEFAULT_USD_EXCHANGE_RATE;
 
     try {
       revalidatePath("/admin");
@@ -107,12 +174,61 @@ export async function updateExchangeRate(
 
     return {
       success: true,
-      data: { exchangeRate: parsedRate },
+      data: {
+        exchangeRate: parsedRate,
+        updatedAt: nowIso,
+        source: MANUAL_SOURCE_LABEL,
+      },
     };
   } catch (error: unknown) {
     const message =
-      error instanceof Error ? error.message : "Не удалось обновить курс валюты.";
+      error instanceof Error
+        ? error.message
+        : "Не удалось обновить курс валюты.";
     console.error("Update exchange rate error:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * Triggers an immediate fetch and synchronization of USD exchange rate from CBU (Admin only).
+ */
+export async function refreshExchangeRateFromCbu(): Promise<
+  ActionResponse<{
+    exchangeRate: number;
+    updatedAt: string;
+    source: string;
+  }>
+> {
+  try {
+    await assertAdmin();
+
+    const result = await syncExchangeRateFromCbu();
+
+    if (!result.success || !result.exchangeRate || !result.updatedAt || !result.source) {
+      return {
+        success: false,
+        error: result.error || "Не удалось получить актуальный курс от ЦБ РУз.",
+      };
+    }
+
+    return {
+      success: true,
+      data: {
+        exchangeRate: result.exchangeRate,
+        updatedAt: result.updatedAt,
+        source: result.source,
+      },
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Не удалось выполнить синхронизацию с ЦБ РУз.";
+    console.error("Refresh exchange rate from CBU error:", error);
     return {
       success: false,
       error: message,
