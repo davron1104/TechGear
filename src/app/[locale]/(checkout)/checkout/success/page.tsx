@@ -5,16 +5,18 @@ import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { CheckCircle2, PackageCheck, ArrowRight, Mail, Phone, MapPin, Truck, User } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
 
 function SuccessContent() {
   const { formatPrice } = useCurrency();
+  const { t } = useTranslation();
   const searchParams = useSearchParams();
 
   const orderNumber = searchParams.get("orderNumber") || "TG-84920";
-  const name = searchParams.get("name") || "Покупатель";
+  const name = searchParams.get("name") || "Customer";
   const email = searchParams.get("email") || "client@example.com";
-  const phone = searchParams.get("phone") || "+7 (999) 000-00-00";
-  const city = searchParams.get("city") || "Москва";
+  const phone = searchParams.get("phone") || "+998 90 123-45-67";
+  const city = searchParams.get("city") || t("checkout.cityPlaceholder");
   const address = searchParams.get("address");
   const deliveryMethod = searchParams.get("deliveryMethod") || "courier";
   const total = searchParams.get("total") ? Number(searchParams.get("total")) : 0;
@@ -30,13 +32,13 @@ function SuccessContent() {
         {/* Заголовок */}
         <div className="space-y-2">
           <span className="text-xs font-bold uppercase tracking-wider text-emerald-600 bg-emerald-50 px-3 py-1 rounded-full border border-emerald-200">
-            Заказ принят в обработку
+            {t("checkout.orderAccepted")}
           </span>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Спасибо за ваш заказ!
+            {t("checkout.thankYou")}
           </h1>
           <p className="text-sm text-slate-500 max-w-md mx-auto">
-            Ваш заказ <strong className="text-slate-900 font-mono font-bold">#{orderNumber}</strong> успешно зарегистрирован и передан на комплектацию.
+            {t("checkout.orderSuccessMessage", { number: orderNumber })}
           </p>
         </div>
 
@@ -45,10 +47,10 @@ function SuccessContent() {
           <div className="flex items-center justify-between pb-3 border-b border-slate-200">
             <span className="font-bold text-slate-900 text-sm flex items-center gap-1.5">
               <PackageCheck className="w-4 h-4 text-[#06B6D4]" />
-              Детали заказа
+              {t("checkout.orderDetailsTitle")}
             </span>
             <span className="font-mono font-bold text-base text-slate-900">
-              {total > 0 ? formatPrice(total) : "Оплата при получении"}
+              {total > 0 ? formatPrice(total) : t("checkout.paymentOnReceiptShort")}
             </span>
           </div>
 
@@ -69,16 +71,16 @@ function SuccessContent() {
               <Truck className="w-4 h-4 text-slate-400 shrink-0" />
               <span>
                 {deliveryMethod === "courier"
-                  ? "Курьерская доставка"
-                  : "Самовывоз из флагманского магазина"}
+                  ? t("checkout.courierDelivery")
+                  : t("checkout.pickupDelivery")}
               </span>
             </div>
             <div className="flex items-center gap-2 sm:col-span-2">
               <MapPin className="w-4 h-4 text-slate-400 shrink-0" />
               <span>
                 {deliveryMethod === "courier"
-                  ? `г. ${city}${address ? `, ${address}` : ""}`
-                  : "г. Москва, ул. Тверская, д. 12, стр. 1"}
+                  ? `${city}${address ? `, ${address}` : ""}`
+                  : t("checkout.flagshipStoreAddress")}
               </span>
             </div>
           </div>
@@ -86,7 +88,7 @@ function SuccessContent() {
 
         {/* Информационная подсказка */}
         <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
-          Подтверждение заказа отправлено на вашу электронную почту. В ближайшее время менеджер свяжется с вами для согласования времени доставки.
+          {t("checkout.confirmationNotice")}
         </p>
 
         {/* Кнопка возврата в каталог */}
@@ -95,7 +97,7 @@ function SuccessContent() {
             href="/"
             className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold shadow-md transition-all hover:scale-[1.01]"
           >
-            <span>Вернуться в каталог</span>
+            <span>{t("checkout.backToCatalog")}</span>
             <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -105,11 +107,12 @@ function SuccessContent() {
 }
 
 export default function CheckoutSuccessPage() {
+  const { t } = useTranslation();
   return (
     <Suspense
       fallback={
         <div className="w-full py-20 text-center text-slate-400">
-          Загрузка подтверждения заказа...
+          {t("common.loading")}
         </div>
       }
     >

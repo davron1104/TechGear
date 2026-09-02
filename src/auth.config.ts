@@ -8,7 +8,9 @@ export const authConfig = {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
       const isAdminRoute = nextUrl.pathname.startsWith("/admin");
-      const isAccountRoute = nextUrl.pathname.startsWith("/account");
+      const isAccountRoute =
+        nextUrl.pathname.startsWith("/account") ||
+        /^\/(ru|uz|en)\/account/.test(nextUrl.pathname);
 
       if (isAdminRoute) {
         return isLoggedIn && auth?.user?.role === "ADMIN";

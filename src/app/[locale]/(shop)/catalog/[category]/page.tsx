@@ -4,6 +4,9 @@ import { Suspense } from "react";
 import { CatalogView } from "@/components/catalog/catalog-view";
 import prisma from "@/lib/prisma";
 import { getPublicProducts } from "@/lib/products";
+import { getServerLocale } from "@/i18n/server";
+import { getLocalizedCategory } from "@/i18n";
+import { CategoryTranslations } from "@/types/product";
 
 interface CategoryPageProps {
   params: Promise<{
@@ -57,6 +60,15 @@ export default async function CategoryPage({
     notFound();
   }
 
+  const locale = await getServerLocale();
+  const localizedCat = getLocalizedCategory(
+    {
+      ...categoryObject,
+      translations: categoryObject.translations as CategoryTranslations | null,
+    },
+    locale
+  );
+
   const products = await getPublicProducts({
     categorySlug: category,
     search,
@@ -74,7 +86,7 @@ export default async function CategoryPage({
         <CatalogView
           products={products}
           categorySlug={category}
-          categoryName={categoryObject.name}
+          categoryName={localizedCat.name}
           search={search}
         />
       </Suspense>

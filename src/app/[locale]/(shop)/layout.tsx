@@ -4,18 +4,32 @@ import { CategoryBar } from "@/components/layout/category-bar";
 import { Footer } from "@/components/layout/footer";
 import { CartDrawer } from "@/components/cart/cart-drawer";
 import prisma from "@/lib/prisma";
+import { getShopSettings } from "@/lib/settings-server";
+import { Category } from "@/types/category";
+import { CategoryTranslations } from "@/types/product";
 
 export default async function ShopLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // Загружаем категории из БД
-  const categories = await prisma.category.findMany();
+  // Загружаем категории и настройки магазина параллельно
+  const [categories, shopSettings] = await Promise.all([
+    prisma.category.findMany(),
+    getShopSettings(),
+  ]);
+
+  // Приводим категории к строгому типу Category
+  const typedCategories: Category[] = categories.map((cat) => ({
+    id: cat.id,
+    name: cat.name,
+    slug: cat.slug,
+    translations: (cat.translations as CategoryTranslations | null) ?? null,
+  }));
 
   // Сохраняем исходный визуальный порядок категорий
   const categoryOrder = ["keyboards", "mice", "headsets", "monitors", "storage", "accessories"];
-  const sortedCategories = [...categories].sort((a, b) => {
+  const sortedCategories = [...typedCategories].sort((a, b) => {
     const indexA = categoryOrder.indexOf(a.slug);
     const indexB = categoryOrder.indexOf(b.slug);
 
@@ -31,7 +45,7 @@ export default async function ShopLayout({
 
   return (
     <>
-      <Header />
+      <Header shopSettings={shopSettings} />
       <Suspense
         fallback={<div className="h-14 bg-white border-b border-slate-200" />}
       >
@@ -40,7 +54,7 @@ export default async function ShopLayout({
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6">
         {children}
       </main>
-      <Footer />
+      <Footer shopSettings={shopSettings} />
       <CartDrawer />
     </>
   );

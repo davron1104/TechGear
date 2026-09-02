@@ -13,6 +13,9 @@ import { HeroBanner } from "@/components/catalog/hero-banner";
 import { ProductCard } from "@/components/catalog/product-card";
 import { getFeaturedProduct, getPopularProducts } from "@/lib/products";
 import prisma from "@/lib/prisma";
+import { getServerLocale } from "@/i18n/server";
+import { createTranslator, getLocalizedCategory } from "@/i18n";
+import { CategoryTranslations } from "@/types/product";
 
 // Красивое соответствие иконок и цветов для каждой категории
 const CATEGORY_META = {
@@ -55,6 +58,9 @@ const CATEGORY_META = {
 };
 
 export default async function HomePage() {
+  const locale = await getServerLocale();
+  const t = createTranslator(locale);
+
   // Загружаем флагманский промо-товар, популярные товары и категории
   const [featuredProduct, popularProducts, categories] = await Promise.all([
     getFeaturedProduct(),
@@ -62,9 +68,14 @@ export default async function HomePage() {
     prisma.category.findMany(),
   ]);
 
+  const typedCategories = categories.map((cat) => ({
+    ...cat,
+    translations: (cat.translations as CategoryTranslations | null) ?? null,
+  }));
+
   // Сохраняем исходный визуальный порядок категорий
   const categoryOrder = ["keyboards", "mice", "headsets", "monitors", "storage", "accessories"];
-  const sortedCategories = [...categories].sort((a, b) => {
+  const sortedCategories = [...typedCategories].sort((a, b) => {
     const indexA = categoryOrder.indexOf(a.slug);
     const indexB = categoryOrder.indexOf(b.slug);
 
@@ -87,15 +98,16 @@ export default async function HomePage() {
       <section className="space-y-6">
         <div className="flex flex-col space-y-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
-            <span>Категории товаров</span>
+            <span>{t("footer.catalogTitle")}</span>
           </h2>
           <p className="text-sm text-slate-500 max-w-xl">
-            Выберите интересующий раздел, чтобы просмотреть высококлассные девайсы и комплектующие.
+            {t("catalog.allProducts")}
           </p>
         </div>
 
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
           {sortedCategories.map((category) => {
+            const localizedCat = getLocalizedCategory(category, locale);
             const meta = CATEGORY_META[category.slug as keyof typeof CATEGORY_META] || {
               icon: Laptop,
               bgGradient: "from-slate-50 to-slate-100 hover:from-slate-100 hover:to-slate-200",
@@ -114,10 +126,10 @@ export default async function HomePage() {
                   <Icon className="w-6 h-6" />
                 </div>
                 <span className="mt-4 text-sm font-semibold text-slate-800 group-hover:text-slate-950 transition-colors text-center">
-                  {category.name}
+                  {localizedCat.name}
                 </span>
                 <div className="mt-2 flex items-center text-xs font-medium text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <span>Перейти</span>
+                  <span>{t("common.details")}</span>
                   <ArrowRight className="w-3.5 h-3.5 ml-1 transition-transform group-hover:translate-x-0.5" />
                 </div>
               </Link>
@@ -133,10 +145,10 @@ export default async function HomePage() {
             <div className="space-y-2">
               <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 flex items-center gap-2">
                 <Sparkles className="w-6 h-6 text-amber-500 fill-amber-500" />
-                <span>Популярные товары</span>
+                <span>{t("catalog.sortPopular")}</span>
               </h2>
               <p className="text-sm text-slate-500 max-w-xl">
-                Наши лучшие предложения, заслужившие высокие оценки покупателей и киберспортсменов.
+                {t("hero.subtitle")}
               </p>
             </div>
 
@@ -144,7 +156,7 @@ export default async function HomePage() {
               href="/catalog"
               className="inline-flex items-center gap-2 text-sm font-bold text-[#06B6D4] hover:text-[#0891B2] transition-colors shrink-0 group"
             >
-              <span>Смотреть весь каталог</span>
+              <span>{t("hero.viewCatalog")}</span>
               <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
             </Link>
           </div>
