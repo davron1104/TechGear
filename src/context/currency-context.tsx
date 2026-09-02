@@ -8,6 +8,8 @@ import {
   DEFAULT_USD_EXCHANGE_RATE,
   formatCurrency,
 } from "@/lib/currency";
+import { useLanguage } from "@/context/language-context";
+import { DEFAULT_LOCALE } from "@/i18n";
 
 interface CurrencyContextValue {
   currency: CurrencyType;
@@ -57,7 +59,7 @@ export function CurrencyProvider({
 
   const formatPrice = useCallback(
     (amountUzs: number) => {
-      return formatCurrency(amountUzs, currency, initialExchangeRate);
+      return formatCurrency(amountUzs, currency, initialExchangeRate, DEFAULT_LOCALE);
     },
     [currency, initialExchangeRate]
   );
@@ -82,6 +84,8 @@ export function CurrencyProvider({
 
 export function useCurrency(): CurrencyContextValue {
   const context = useContext(CurrencyContext);
+  const { locale } = useLanguage();
+
   if (!context) {
     // Безопасный fallback, если хук вызван вне провайдера
     return {
@@ -90,8 +94,13 @@ export function useCurrency(): CurrencyContextValue {
       isPending: false,
       setCurrency: () => {},
       formatPrice: (amountUzs: number) =>
-        formatCurrency(amountUzs, "UZS", DEFAULT_USD_EXCHANGE_RATE),
+        formatCurrency(amountUzs, "UZS", DEFAULT_USD_EXCHANGE_RATE, locale),
     };
   }
-  return context;
+
+  return {
+    ...context,
+    formatPrice: (amountUzs: number) =>
+      formatCurrency(amountUzs, context.currency, context.exchangeRate, locale),
+  };
 }

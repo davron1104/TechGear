@@ -50,14 +50,31 @@ describe("Currency Service", () => {
   });
 
   describe("formatUzs", () => {
-    it("should format number with spaces and сум suffix", () => {
-      const result = formatUzs(1500000);
-      expect(result).toContain("1 500 000");
-      expect(result).toContain("сум");
+    it("should format number with spaces and сум suffix for ru locale (default)", () => {
+      const result = formatUzs(1500000, "ru");
+      expect(result).toBe("1 500 000 сум");
     });
 
-    it("should handle zero amount", () => {
-      expect(formatUzs(0)).toBe("0 сум");
+    it("should format number with spaces and so'm suffix for uz locale", () => {
+      const result = formatUzs(1500000, "uz");
+      expect(result).toBe("1 500 000 so'm");
+    });
+
+    it("should format number with commas and UZS suffix for en locale", () => {
+      const result = formatUzs(1500000, "en");
+      expect(result).toBe("1,500,000 UZS");
+    });
+
+    it("should handle zero amount across all locales", () => {
+      expect(formatUzs(0, "ru")).toBe("0 сум");
+      expect(formatUzs(0, "uz")).toBe("0 so'm");
+      expect(formatUzs(0, "en")).toBe("0 UZS");
+    });
+
+    it("should format 1990 according to spec", () => {
+      expect(formatUzs(1990, "ru")).toBe("1 990 сум");
+      expect(formatUzs(1990, "uz")).toBe("1 990 so'm");
+      expect(formatUzs(1990, "en")).toBe("1,990 UZS");
     });
   });
 
@@ -68,19 +85,35 @@ describe("Currency Service", () => {
 
     it("should format decimal dollars with 2 fractional digits", () => {
       expect(formatUsd(98.77)).toBe("$98.77");
+      expect(formatUsd(0.16)).toBe("$0.16");
+    });
+
+    it("should format consistently regardless of locale", () => {
+      expect(formatUsd(0.16, "ru")).toBe("$0.16");
+      expect(formatUsd(0.16, "uz")).toBe("$0.16");
+      expect(formatUsd(0.16, "en")).toBe("$0.16");
     });
   });
 
   describe("formatCurrency", () => {
-    it("should format as UZS when currency is UZS", () => {
-      const formatted = formatCurrency(1500000, "UZS");
-      expect(formatted).toContain("1 500 000");
-      expect(formatted).toContain("сум");
+    it("should format as UZS with localized suffix across ru, uz, en", () => {
+      expect(formatCurrency(1990, "UZS", 12500, "ru")).toBe("1 990 сум");
+      expect(formatCurrency(1990, "UZS", 12500, "uz")).toBe("1 990 so'm");
+      expect(formatCurrency(1990, "UZS", 12500, "en")).toBe("1,990 UZS");
     });
 
-    it("should format as USD when currency is USD", () => {
-      const formatted = formatCurrency(1500000, "USD", 12500);
-      expect(formatted).toBe("$120");
+    it("should format as USD consistently across ru, uz, en", () => {
+      expect(formatCurrency(1500000, "USD", 12500, "ru")).toBe("$120");
+      expect(formatCurrency(1500000, "USD", 12500, "uz")).toBe("$120");
+      expect(formatCurrency(1500000, "USD", 12500, "en")).toBe("$120");
+
+      expect(formatCurrency(1990, "USD", 12500, "ru")).toBe("$0.16");
+      expect(formatCurrency(1990, "USD", 12500, "uz")).toBe("$0.16");
+      expect(formatCurrency(1990, "USD", 12500, "en")).toBe("$0.16");
+    });
+
+    it("should default to ru locale and UZS currency if omitted", () => {
+      expect(formatCurrency(1500000)).toBe("1 500 000 сум");
     });
   });
 

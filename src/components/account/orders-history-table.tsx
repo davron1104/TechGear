@@ -6,6 +6,7 @@ import { OrderStatusBadge } from "./order-status-badge";
 import { Package, Calendar, ChevronRight, ShoppingBag } from "lucide-react";
 import { formatCurrency, CurrencyType } from "@/lib/currency";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 
 interface OrdersHistoryTableProps {
   orders: Order[];
@@ -26,7 +27,7 @@ export function OrdersHistoryTable({ orders }: OrdersHistoryTableProps) {
         </p>
         <div className="pt-2">
           <Link
-            href="/"
+            href={getLocalizedHref("/catalog", locale)}
             className="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-xs font-bold transition-colors"
           >
             {t("cart.goToCatalog")}
@@ -87,13 +88,14 @@ export function OrdersHistoryTable({ orders }: OrdersHistoryTableProps) {
                     {formatCurrency(
                       order.finalTotal,
                       (order.currency as CurrencyType) || "UZS",
-                      order.exchangeRate || 12500
+                      order.exchangeRate || 12500,
+                      locale
                     )}
                   </span>
                 </div>
 
                 <Link
-                  href={`/account/orders/${order.id}`}
+                  href={getLocalizedHref(`/account/orders/${order.id}`, locale)}
                   className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-100 hover:bg-[#06B6D4] hover:text-white text-slate-800 text-xs font-semibold transition-all group"
                 >
                   <span>{t("account.details")}</span>

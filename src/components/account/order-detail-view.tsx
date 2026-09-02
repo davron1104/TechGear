@@ -8,6 +8,7 @@ import { OrderStatusBadge } from "./order-status-badge";
 import { cancelOrder } from "@/actions/order-actions";
 import { formatCurrency, CurrencyType } from "@/lib/currency";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 import {
   ArrowLeft,
   Calendar,
@@ -67,7 +68,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
       {/* Навигация назад */}
       <div>
         <Link
-          href="/account"
+          href={getLocalizedHref("/account", locale)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#06B6D4] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -203,7 +204,8 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                   {formatCurrency(
                     item.price,
                     (order.currency as CurrencyType) || "UZS",
-                    order.exchangeRate || 12500
+                    order.exchangeRate || 12500,
+                    locale
                   )}
                 </span>
               </div>
@@ -212,7 +214,8 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                 {formatCurrency(
                   item.price * item.quantity,
                   (order.currency as CurrencyType) || "UZS",
-                  order.exchangeRate || 12500
+                  order.exchangeRate || 12500,
+                  locale
                 )}
               </div>
             </div>
@@ -227,7 +230,8 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
               {formatCurrency(
                 order.totalPrice,
                 (order.currency as CurrencyType) || "UZS",
-                order.exchangeRate || 12500
+                order.exchangeRate || 12500,
+                locale
               )}
             </span>
           </div>
@@ -242,7 +246,8 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                   {formatCurrency(
                     order.deliveryCost,
                     (order.currency as CurrencyType) || "UZS",
-                    order.exchangeRate || 12500
+                    order.exchangeRate || 12500,
+                    locale
                   )}
                 </span>
               )}
@@ -257,7 +262,8 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
               {formatCurrency(
                 order.finalTotal,
                 (order.currency as CurrencyType) || "UZS",
-                order.exchangeRate || 12500
+                order.exchangeRate || 12500,
+                locale
               )}
             </span>
           </div>
