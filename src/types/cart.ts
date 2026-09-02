@@ -2,6 +2,8 @@
  * Минимальный TypeScript-контракт для элементов корзины и Zustand-хранилища
  */
 
+import { ProductTranslations } from "./product";
+
 export interface CartItem {
   productId: string;
   name: string;
@@ -9,6 +11,7 @@ export interface CartItem {
   image: string;
   quantity: number;
   stock?: number;
+  translations?: ProductTranslations | null;
 }
 
 export interface CartStore {

@@ -2,18 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { DEFAULT_CATEGORIES } from "@/types/category";
+import { Category, DEFAULT_CATEGORIES } from "@/types/category";
+import { useTranslation } from "@/context/language-context";
+import { getLocalizedCategory } from "@/i18n";
 
 interface CategoryBarProps {
-  categories?: { id: string; name: string; slug: string }[];
+  categories?: Category[];
 }
 
 export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProps) {
   const pathname = usePathname();
+  const { t, locale } = useTranslation();
 
   return (
     <nav
-      aria-label="Категории каталога"
+      aria-label={t("catalog.categoriesNav")}
       className="bg-white border-b border-slate-200 py-3"
     >
       <div className="max-w-7xl mx-auto px-4">
@@ -27,11 +30,12 @@ export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProp
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F172A]"
             }`}
           >
-            Все товары
+            {t("catalog.allProducts")}
           </Link>
 
           {/* Список категорий */}
           {categories.map((category) => {
+            const localized = getLocalizedCategory(category, locale);
             const isActive = pathname === `/catalog/${category.slug}`;
             return (
               <Link
@@ -43,7 +47,7 @@ export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProp
                     : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F172A]"
                 }`}
               >
-                {category.name}
+                {localized.name}
               </Link>
             );
           })}
@@ -52,4 +56,3 @@ export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProp
     </nav>
   );
 }
-

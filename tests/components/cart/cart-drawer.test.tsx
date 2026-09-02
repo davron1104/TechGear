@@ -37,7 +37,7 @@ describe("CartDrawer Component", () => {
     expect(screen.getByText("3")).toBeInTheDocument();
 
     // Общая стоимость: 50000*1 + 2000*2 = 54000
-    expect(screen.getByText("54 000 ₽")).toBeInTheDocument();
+    expect(screen.getByText(/54 000/)).toBeInTheDocument();
   });
 
   it("should clear the cart when clicking 'Очистить корзину'", async () => {

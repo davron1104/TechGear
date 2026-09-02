@@ -17,6 +17,17 @@ import {
   syncExchangeRateFromCbu,
   MANUAL_SOURCE_LABEL,
 } from "@/lib/exchange-rate-service";
+import {
+  ShopSettings,
+  SHOP_PHONE_KEY,
+  SHOP_EMAIL_KEY,
+  SHOP_ADDRESS_KEY,
+  SHOP_WORKING_HOURS_KEY,
+  DELIVERY_COST_UZS_KEY,
+  FREE_DELIVERY_THRESHOLD_UZS_KEY,
+} from "@/lib/settings";
+import { getShopSettings } from "@/lib/settings-server";
+import { updateShopSettingsSchema } from "@/lib/validations/settings";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 
@@ -229,6 +240,128 @@ export async function refreshExchangeRateFromCbu(): Promise<
         ? error.message
         : "Не удалось выполнить синхронизацию с ЦБ РУз.";
     console.error("Refresh exchange rate from CBU error:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * Retrieves the current shop settings (Admin only).
+ */
+export async function getAdminShopSettings(): Promise<ActionResponse<ShopSettings>> {
+  try {
+    await assertAdmin();
+    const settings = await getShopSettings();
+    return {
+      success: true,
+      data: settings,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Не удалось получить настройки магазина.";
+    console.error("Get admin shop settings error:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * Updates shop settings in the database (Admin only).
+ * - Validates input with Zod.
+ * - Enforces role-based access control.
+ * - Batch upserts into SystemSetting.
+ * - Revalidates all relevant paths.
+ */
+export async function updateShopSettings(
+  data: unknown
+): Promise<ActionResponse<ShopSettings>> {
+  try {
+    await assertAdmin();
+
+    const parseResult = updateShopSettingsSchema.safeParse(data);
+    if (!parseResult.success) {
+      return {
+        success: false,
+        error: "Ошибка валидации настроек магазина.",
+        fields: parseResult.error.flatten().fieldErrors as Record<string, string[]>,
+      };
+    }
+
+    const {
+      phone,
+      email,
+      address,
+      workingHours,
+      deliveryCostUzs,
+      freeDeliveryThresholdUzs,
+    } = parseResult.data;
+
+    // Batch upsert into SystemSetting
+    await prisma.$transaction([
+      prisma.systemSetting.upsert({
+        where: { key: SHOP_PHONE_KEY },
+        create: { key: SHOP_PHONE_KEY, value: phone },
+        update: { value: phone },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: SHOP_EMAIL_KEY },
+        create: { key: SHOP_EMAIL_KEY, value: email },
+        update: { value: email },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: SHOP_ADDRESS_KEY },
+        create: { key: SHOP_ADDRESS_KEY, value: address },
+        update: { value: address },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: SHOP_WORKING_HOURS_KEY },
+        create: { key: SHOP_WORKING_HOURS_KEY, value: workingHours },
+        update: { value: workingHours },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: DELIVERY_COST_UZS_KEY },
+        create: { key: DELIVERY_COST_UZS_KEY, value: deliveryCostUzs.toString() },
+        update: { value: deliveryCostUzs.toString() },
+      }),
+      prisma.systemSetting.upsert({
+        where: { key: FREE_DELIVERY_THRESHOLD_UZS_KEY },
+        create: {
+          key: FREE_DELIVERY_THRESHOLD_UZS_KEY,
+          value: freeDeliveryThresholdUzs.toString(),
+        },
+        update: { value: freeDeliveryThresholdUzs.toString() },
+      }),
+    ]);
+
+    try {
+      revalidatePath("/admin");
+      revalidatePath("/admin/settings");
+      revalidatePath("/");
+      revalidatePath("/checkout");
+      revalidatePath("/catalog");
+    } catch {}
+
+    const updatedSettings: ShopSettings = {
+      phone,
+      email,
+      address,
+      workingHours,
+      deliveryCostUzs,
+      freeDeliveryThresholdUzs,
+    };
+
+    return {
+      success: true,
+      data: updatedSettings,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error ? error.message : "Не удалось сохранить настройки магазина.";
+    console.error("Update shop settings error:", error);
     return {
       success: false,
       error: message,

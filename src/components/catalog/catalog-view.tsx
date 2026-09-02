@@ -6,6 +6,7 @@ import { X } from "lucide-react";
 import { CatalogFilters } from "./catalog-filters";
 import { ProductGrid } from "./product-grid";
 import { FilterState, Product } from "@/types/product";
+import { useTranslation } from "@/context/language-context";
 
 interface CatalogViewProps {
   products: Product[];
@@ -21,6 +22,7 @@ export function CatalogView({
   search,
 }: CatalogViewProps) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   // Локальные фильтры цены (канонически в UZS), наличия и сортировки
   const [filterValues, setFilterValues] = useState<
@@ -124,13 +126,13 @@ export function CatalogView({
     ? categoryName ||
       products.find((p) => p.categorySlug === filters.categorySlug)
         ?.categoryName ||
-      "Каталог товаров"
-    : "Все товары";
+      t("catalog.title")
+    : t("catalog.allProducts");
 
   const displayTitle = search
     ? categorySlug
-      ? `Поиск: «${search}» в категории «${categoryName || headerTitle}»`
-      : `Результаты поиска: «${search}»`
+      ? `${t("common.search")}: «${search}» (${categoryName || headerTitle})`
+      : `${t("common.search")}: «${search}»`
     : headerTitle;
 
   return (
@@ -156,15 +158,15 @@ export function CatalogView({
                   type="button"
                   onClick={handleResetSearch}
                   className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-xs text-slate-600 font-semibold cursor-pointer transition-colors"
-                  title="Очистить поиск"
+                  title={t("catalog.resetFilters")}
                 >
-                  <span>очистить поиск</span>
+                  <span>{t("common.reset")}</span>
                   <X className="w-3.5 h-3.5" />
                 </button>
               )}
             </div>
             <span className="text-xs text-slate-500 font-medium">
-              Показано: {filteredProducts.length} из {products.length}
+              {t("catalog.found", { count: filteredProducts.length })}
             </span>
           </div>
 

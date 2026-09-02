@@ -3,12 +3,14 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getExchangeRateDetails } from "@/lib/currency-server";
+import { getShopSettings } from "@/lib/settings-server";
 import { ExchangeRateForm } from "@/components/admin/settings/exchange-rate-form";
+import { ShopSettingsForm } from "@/components/admin/settings/shop-settings-form";
 import { ArrowLeft, Sliders, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Настройки системы и валют — TechGear Admin",
-  description: "Управление глобальными системными настройками и курсом валют магазина TechGear.",
+  title: "Настройки системы и магазина — TechGear Admin",
+  description: "Управление глобальными системными настройками, контактами, доставкой и курсом валют магазина TechGear.",
 };
 
 export default async function AdminSettingsPage() {
@@ -18,6 +20,7 @@ export default async function AdminSettingsPage() {
   }
 
   const { exchangeRate, updatedAt, source } = await getExchangeRateDetails();
+  const shopSettings = await getShopSettings();
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -72,7 +75,7 @@ export default async function AdminSettingsPage() {
       </header>
 
       {/* Main Content Area */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 space-y-6">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-8 space-y-8">
         {/* Page Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
           <div>
@@ -88,17 +91,34 @@ export default async function AdminSettingsPage() {
               Настройки магазина и курсы валют
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Управление курсом пересчета USD к базовой валюте UZS и глобальными параметрами.
+              Управление курсом пересчета USD к базовой валюте UZS, контактными данными, графиком работы и тарифами доставки.
             </p>
           </div>
         </div>
 
-        {/* Форма изменения курса */}
-        <ExchangeRateForm
-          initialRate={exchangeRate}
-          initialUpdatedAt={updatedAt}
-          initialSource={source}
-        />
+        {/* 1. Секция управления курсом валют */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-slate-900">
+              1. Курс валют (USD / UZS)
+            </h2>
+          </div>
+          <ExchangeRateForm
+            initialRate={exchangeRate}
+            initialUpdatedAt={updatedAt}
+            initialSource={source}
+          />
+        </section>
+
+        {/* 2. Секция настроек магазина (контакты, режим работы, доставка) */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-slate-900">
+              2. Параметры магазина и доставки
+            </h2>
+          </div>
+          <ShopSettingsForm initialSettings={shopSettings} />
+        </section>
       </main>
     </div>
   );

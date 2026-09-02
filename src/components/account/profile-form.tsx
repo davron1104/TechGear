@@ -6,8 +6,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { User, Mail, Phone, Loader2, CheckCircle2, Save } from "lucide-react";
 import { profileSchema, ProfileInput } from "@/lib/validations/profile";
 import { mockUserProfile } from "@/data/mock-orders";
+import { useTranslation } from "@/context/language-context";
 
 export function ProfileForm() {
+  const { t } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -31,7 +33,7 @@ export function ProfileForm() {
     // Имитация сохранения данных на клиенте
     setTimeout(() => {
       setIsLoading(false);
-      setSuccessMessage(`Профиль обновлен: ${data.name}, ${data.email}`);
+      setSuccessMessage(`${t("account.profileUpdated")}: ${data.name}, ${data.email}`);
     }, 600);
   };
 
@@ -43,10 +45,10 @@ export function ProfileForm() {
         </div>
         <div>
           <h2 className="text-lg font-bold text-slate-900">
-            Персональные данные
+            {t("account.personalData")}
           </h2>
           <p className="text-xs text-slate-500">
-            Управляйте своими контактными данными для быстрого оформления заказов
+            {t("account.personalDataSubtitle")}
           </p>
         </div>
       </div>
@@ -65,13 +67,13 @@ export function ProfileForm() {
             htmlFor="name"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Имя и фамилия *
+            {t("checkout.nameLabel")} *
           </label>
           <div className="relative">
             <input
               id="name"
               type="text"
-              placeholder="Алексей Смирнов"
+              placeholder={t("auth.namePlaceholder")}
               {...register("name")}
               className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                 errors.name ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
@@ -90,7 +92,7 @@ export function ProfileForm() {
             htmlFor="email"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Электронная почта *
+            {t("checkout.emailLabel")} *
           </label>
           <div className="relative">
             <input
@@ -115,13 +117,13 @@ export function ProfileForm() {
             htmlFor="phone"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Номер телефона *
+            {t("checkout.phoneLabel")} *
           </label>
           <div className="relative">
             <input
               id="phone"
               type="tel"
-              placeholder="+7 (999) 000-00-00"
+              placeholder="+998 90 123-45-67"
               {...register("phone")}
               className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                 errors.phone ? "border-rose-400 focus:ring-rose-400" : "border-slate-200"
@@ -144,12 +146,12 @@ export function ProfileForm() {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Сохранение...</span>
+                <span>{t("common.saving")}</span>
               </>
             ) : (
               <>
                 <Save className="w-4 h-4" />
-                <span>Сохранить изменения</span>
+                <span>{t("account.saveChanges")}</span>
               </>
             )}
           </button>

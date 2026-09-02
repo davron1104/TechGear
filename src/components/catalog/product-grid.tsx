@@ -3,6 +3,7 @@
 import { PackageX, RotateCcw } from "lucide-react";
 import { Product } from "@/types/product";
 import { ProductCard } from "./product-card";
+import { useTranslation } from "@/context/language-context";
 
 interface ProductGridProps {
   products: Product[];
@@ -17,11 +18,13 @@ export function ProductGrid({
   isSearchEmpty = false,
   searchQuery = "",
 }: ProductGridProps) {
+  const { t } = useTranslation();
+
   if (products.length === 0) {
     const description = isSearchEmpty
-      ? `По запросу «${searchQuery}» ничего не найдено. Попробуйте изменить поисковый запрос или использовать другое название товара.`
-      : "По выбранным параметрам ничего не найдено. Попробуйте изменить диапазон цен или выбрать другую категорию.";
-    const buttonText = isSearchEmpty ? "Очистить поиск" : "Сбросить фильтры";
+      ? t("catalog.noSearchResults", { query: searchQuery })
+      : t("catalog.noFilterResults");
+    const buttonText = isSearchEmpty ? t("catalog.clearSearch") : t("catalog.resetFilters");
 
     return (
       <div className="w-full py-16 px-4 text-center bg-white border border-slate-200 rounded-2xl flex flex-col items-center justify-center space-y-4">
@@ -29,7 +32,7 @@ export function ProductGrid({
           <PackageX className="w-10 h-10" />
         </div>
         <h3 className="text-lg font-bold text-slate-900">
-          Товары не найдены
+          {t("catalog.noProductsFound")}
         </h3>
         <p className="text-sm text-slate-500 max-w-sm">
           {description}

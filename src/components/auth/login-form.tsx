@@ -8,6 +8,7 @@ import { Mail, Lock, Eye, EyeOff, Loader2, ArrowRight } from "lucide-react";
 import { loginSchema, LoginInput } from "@/lib/validations/auth";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
+import { useTranslation } from "@/context/language-context";
 
 export function LoginForm() {
   const searchParams = useSearchParams();
@@ -15,6 +16,7 @@ export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const {
     register,
@@ -40,20 +42,15 @@ export function LoginForm() {
         redirect: false,
       });
 
-
       if (res?.error) {
-        setStatusMessage(
-          "Неверный адрес электронной почты или пароль."
-        );
+        setStatusMessage(t("auth.invalidCredentials"));
         return;
       }
 
-      window.location.href = callbackUrl;
+      window.location.assign(callbackUrl);
     } catch (err) {
       console.error(err);
-      setStatusMessage(
-        "Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз."
-      );
+      setStatusMessage(t("auth.unexpectedError"));
     } finally {
       setIsLoading(false);
     }
@@ -64,10 +61,10 @@ export function LoginForm() {
       {/* Шапка формы */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Вход в аккаунт
+          {t("auth.loginTitle")}
         </h1>
         <p className="text-sm text-slate-500 mt-1.5">
-          Войдите, чтобы отслеживать заказы и управлять профилем
+          {t("auth.loginSubtitle")}
         </p>
       </div>
 
@@ -85,7 +82,7 @@ export function LoginForm() {
             htmlFor="email"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Электронная почта
+            {t("auth.emailLabel")}
           </label>
           <div className="relative">
             <input
@@ -93,10 +90,11 @@ export function LoginForm() {
               type="email"
               placeholder="name@example.com"
               {...register("email")}
-              className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${errors.email
-                ? "border-rose-400 focus:ring-rose-400"
-                : "border-slate-200"
-                }`}
+              className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
+                errors.email
+                  ? "border-rose-400 focus:ring-rose-400"
+                  : "border-slate-200"
+              }`}
             />
             <Mail className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           </div>
@@ -114,13 +112,13 @@ export function LoginForm() {
               htmlFor="password"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider"
             >
-              Пароль
+              {t("auth.passwordLabel")}
             </label>
             <Link
               href="/reset-password"
               className="text-xs text-[#06B6D4] hover:text-[#0891B2] font-medium transition-colors"
             >
-              Забыли пароль?
+              {t("auth.forgotPassword")}
             </Link>
           </div>
           <div className="relative">
@@ -129,17 +127,18 @@ export function LoginForm() {
               type={showPassword ? "text" : "password"}
               placeholder="••••••••"
               {...register("password")}
-              className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${errors.password
-                ? "border-rose-400 focus:ring-rose-400"
-                : "border-slate-200"
-                }`}
+              className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
+                errors.password
+                  ? "border-rose-400 focus:ring-rose-400"
+                  : "border-slate-200"
+              }`}
             />
             <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <button
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
-              aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+              aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
             >
               {showPassword ? (
                 <EyeOff className="w-4 h-4" />
@@ -164,11 +163,11 @@ export function LoginForm() {
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Проверка данных...</span>
+              <span>{t("auth.checkingCredentials")}</span>
             </>
           ) : (
             <>
-              <span>Войти</span>
+              <span>{t("auth.loginButton")}</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
@@ -177,12 +176,12 @@ export function LoginForm() {
 
       {/* Переход к регистрации */}
       <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
-        Нет учетной записи?{" "}
+        {t("auth.noAccount")}{" "}
         <Link
           href="/register"
           className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
         >
-          Зарегистрироваться
+          {t("auth.registerLink")}
         </Link>
       </div>
     </div>

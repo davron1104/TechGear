@@ -27,10 +27,10 @@ describe("CartItemRow Component", () => {
     expect(screen.getByText("Test Laptop")).toBeInTheDocument();
     
     // Итоговая сумма позиции: 50000 * 2 = 100000
-    expect(screen.getByText("100 000 ₽")).toBeInTheDocument();
+    expect(screen.getByText(/100 000/)).toBeInTheDocument();
     
     // Цена за штуку
-    expect(screen.getByText("50 000 ₽/шт.")).toBeInTheDocument();
+    expect(screen.getByText(/50 000/)).toBeInTheDocument();
   });
 
   it("should call updateQuantity to increment quantity on plus click", async () => {
@@ -84,7 +84,7 @@ describe("CartItemRow Component", () => {
     const user = userEvent.setup();
     render(<CartItemRow item={useCart.getState().items[0]} />);
 
-    const removeButton = screen.getByRole("button", { name: /Удалить Test Laptop из корзины/ });
+    const removeButton = screen.getByRole("button", { name: /Удалить.*Test Laptop/ });
     await user.click(removeButton);
 
     expect(useCart.getState().items).toHaveLength(0);

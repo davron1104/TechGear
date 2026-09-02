@@ -19,6 +19,8 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { checkoutSchema, CheckoutInput } from "@/lib/validations/checkout";
+import { useTranslation } from "@/context/language-context";
+import { useCurrency } from "@/context/currency-context";
 
 interface CheckoutFormProps {
   onSubmit: (data: CheckoutInput) => Promise<void> | void;
@@ -32,6 +34,8 @@ export function CheckoutForm({
   serverError,
 }: CheckoutFormProps) {
   const { data: session } = useSession();
+  const { t } = useTranslation();
+  const { formatPrice } = useCurrency();
 
   const {
     register,
@@ -46,7 +50,7 @@ export function CheckoutForm({
       email: "",
       phone: "",
       deliveryMethod: "courier",
-      city: "Москва",
+      city: "",
       street: "",
       house: "",
       apartment: "",
@@ -81,7 +85,7 @@ export function CheckoutForm({
         >
           <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
           <div>
-            <h4 className="font-bold text-rose-900">Не удалось оформить заказ</h4>
+            <h4 className="font-bold text-rose-900">{t("checkout.orderFailed")}</h4>
             <p className="text-xs text-rose-700 mt-0.5">{serverError}</p>
           </div>
         </div>
@@ -92,7 +96,7 @@ export function CheckoutForm({
         <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
           <User className="w-5 h-5 text-[#06B6D4]" />
           <h3 className="text-base font-bold text-slate-900">
-            1. Контактные данные
+            {t("checkout.contactStep")}
           </h3>
         </div>
 
@@ -103,13 +107,13 @@ export function CheckoutForm({
               htmlFor="name"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Имя и фамилия получателя *
+              {t("checkout.nameLabel")} *
             </label>
             <div className="relative">
               <input
                 id="name"
                 type="text"
-                placeholder="Иван Иванов"
+                placeholder={t("checkout.namePlaceholder")}
                 {...register("name")}
                 className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                   errors.name
@@ -132,7 +136,7 @@ export function CheckoutForm({
               htmlFor="email"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Электронная почта *
+              {t("checkout.emailLabel")} *
             </label>
             <div className="relative">
               <input
@@ -161,13 +165,13 @@ export function CheckoutForm({
               htmlFor="phone"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Номер телефона *
+              {t("checkout.phoneLabel")} *
             </label>
             <div className="relative">
               <input
                 id="phone"
                 type="tel"
-                placeholder="+7 (999) 000-00-00"
+                placeholder="+998 90 123-45-67"
                 {...register("phone")}
                 className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                   errors.phone
@@ -191,7 +195,7 @@ export function CheckoutForm({
         <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
           <Truck className="w-5 h-5 text-[#06B6D4]" />
           <h3 className="text-base font-bold text-slate-900">
-            2. Способ доставки
+            {t("checkout.deliveryStep")}
           </h3>
         </div>
 
@@ -212,10 +216,10 @@ export function CheckoutForm({
             <div>
               <div className="flex items-center gap-1.5 font-semibold text-sm text-slate-900">
                 <Truck className="w-4 h-4 text-[#06B6D4]" />
-                <span>Курьерская доставка</span>
+                <span>{t("checkout.courierDelivery")}</span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Доставка до двери курьером в течение 1–2 дней (бесплатно при заказе от 500 000 сум)
+                {t("checkout.courierDeliverySub", { threshold: formatPrice(500000) })}
               </p>
             </div>
           </label>
@@ -236,10 +240,10 @@ export function CheckoutForm({
             <div>
               <div className="flex items-center gap-1.5 font-semibold text-sm text-slate-900">
                 <Store className="w-4 h-4 text-[#06B6D4]" />
-                <span>Самовывоз из магазина</span>
+                <span>{t("checkout.pickupDelivery")}</span>
               </div>
               <p className="text-xs text-slate-500 mt-1">
-                Бесплатно из флагманского магазина TechGear
+                {t("checkout.pickupDeliverySub")}
               </p>
             </div>
           </label>
@@ -251,18 +255,18 @@ export function CheckoutForm({
         <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
           <MapPin className="w-5 h-5 text-[#06B6D4]" />
           <h3 className="text-base font-bold text-slate-900">
-            3. Адрес {deliveryMethod === "pickup" ? "пункта выдачи" : "доставки"}
+            {deliveryMethod === "pickup" ? t("checkout.pickupAddressStep") : t("checkout.addressStep")}
           </h3>
         </div>
 
         {deliveryMethod === "pickup" ? (
           <div className="p-4 rounded-xl bg-[#F8FAFC] border border-slate-200 text-xs text-slate-700 space-y-1">
             <p className="font-semibold text-slate-900">
-              Флагманский пункт выдачи TechGear:
+              {t("checkout.flagshipStoreTitle")}:
             </p>
-            <p>г. Москва, ул. Тверская, д. 12, стр. 1</p>
+            <p>{t("checkout.flagshipStoreAddress")}</p>
             <p className="text-slate-500">
-              Время работы: ежедневно с 09:00 до 21:00
+              {t("checkout.flagshipStoreHours")}
             </p>
           </div>
         ) : (
@@ -273,13 +277,13 @@ export function CheckoutForm({
                 htmlFor="city"
                 className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
               >
-                Город *
+                {t("checkout.cityLabel")} *
               </label>
               <div className="relative">
                 <input
                   id="city"
                   type="text"
-                  placeholder="Москва"
+                  placeholder={t("checkout.cityPlaceholder")}
                   {...register("city")}
                   className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                     errors.city
@@ -302,12 +306,12 @@ export function CheckoutForm({
                 htmlFor="street"
                 className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
               >
-                Улица *
+                {t("checkout.streetLabel")} *
               </label>
               <input
                 id="street"
                 type="text"
-                placeholder="ул. Ленина"
+                placeholder={t("checkout.streetPlaceholder")}
                 {...register("street")}
                 className={`w-full px-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                   errors.street
@@ -328,7 +332,7 @@ export function CheckoutForm({
                 htmlFor="house"
                 className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
               >
-                Дом *
+                {t("checkout.houseLabel")} *
               </label>
               <input
                 id="house"
@@ -354,13 +358,13 @@ export function CheckoutForm({
                 htmlFor="apartment"
                 className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
               >
-                Квартира / Офис
+                {t("checkout.apartmentLabel")}
               </label>
               <div className="relative">
                 <input
                   id="apartment"
                   type="text"
-                  placeholder="кв. 42"
+                  placeholder="42"
                   {...register("apartment")}
                   className="w-full pl-9 pr-3 py-2.5 bg-[#F8FAFC] border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all"
                 />
@@ -376,7 +380,7 @@ export function CheckoutForm({
         <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
           <MessageSquare className="w-5 h-5 text-[#06B6D4]" />
           <h3 className="text-base font-bold text-slate-900">
-            4. Комментарий к заказу (опционально)
+            {t("checkout.commentStep")}
           </h3>
         </div>
 
@@ -384,7 +388,7 @@ export function CheckoutForm({
           <textarea
             id="comment"
             rows={3}
-            placeholder="Укажите код домофона или удобное время доставки..."
+            placeholder={t("checkout.commentPlaceholder")}
             {...register("comment")}
             className="w-full p-3.5 bg-[#F8FAFC] border border-slate-200 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all resize-none"
           />
@@ -405,11 +409,11 @@ export function CheckoutForm({
         {isLoading ? (
           <>
             <Loader2 className="w-5 h-5 animate-spin" />
-            <span>Оформление заказа...</span>
+            <span>{t("checkout.submitting")}</span>
           </>
         ) : (
           <>
-            <span>Подтвердить заказ</span>
+            <span>{t("checkout.submitOrder")}</span>
             <ArrowRight className="w-5 h-5" />
           </>
         )}

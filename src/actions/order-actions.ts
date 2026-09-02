@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { getExchangeRate } from "@/lib/currency-server";
+import { getShopSettings } from "@/lib/settings-server";
 import {
   sendOrderTelegramNotification,
   TelegramOrderItem,
@@ -69,8 +70,8 @@ function formatOrderResponse(dbOrder: DbOrder): Order {
     (sum: number, item: DbOrderItem) => sum + Number(item.price) * item.quantity,
     0
   );
-  const deliveryCost =
-    dbOrder.deliveryMethod === "pickup" || goodsTotal >= 5000 ? 0 : 490;
+  const totalAmountNum = Number(dbOrder.totalAmount);
+  const deliveryCost = Math.max(0, totalAmountNum - goodsTotal);
 
   const address =
     dbOrder.street && dbOrder.house
@@ -240,9 +241,12 @@ export async function createOrder(
         return sum + Number(product.price) * item.quantity;
       }, 0);
 
-      // Доставка бесплатна при сумме от 5000 ₽ или при самовывозе
-      const deliveryCost =
-        deliveryMethod === "pickup" || goodsTotal >= 5000 ? 0 : 490;
+      // Получаем актуальные настройки тарифов доставки из SystemSetting
+      const shopSettings = await getShopSettings();
+      const isFreeDelivery =
+        deliveryMethod === "pickup" ||
+        goodsTotal >= shopSettings.freeDeliveryThresholdUzs;
+      const deliveryCost = isFreeDelivery ? 0 : shopSettings.deliveryCostUzs;
       const totalAmount = goodsTotal + deliveryCost;
 
       // 5. Создание записи заказа Order и позиций OrderItem с фиксацией валюты и курса

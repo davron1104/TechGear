@@ -9,9 +9,11 @@ import { registerSchema, RegisterInput } from "@/lib/validations/auth";
 import { registerUser } from "@/actions/auth-actions";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "@/context/language-context";
 
 export function RegisterForm() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -41,10 +43,10 @@ export function RegisterForm() {
 
       if (!result.success) {
         setIsLoading(false);
-        setStatusMessage(result.error || "Произошла ошибка при регистрации");
+        setStatusMessage(result.error || t("auth.registrationError"));
         if (result.fields) {
           Object.entries(result.fields).forEach(([field, messages]) => {
-            setError(field as any, {
+            setError(field as keyof RegisterInput, {
               type: "server",
               message: messages[0],
             });
@@ -62,9 +64,7 @@ export function RegisterForm() {
 
       if (loginResult?.error) {
         setIsLoading(false);
-        setStatusMessage(
-          "Регистрация успешна, но автоматический вход не удался. Перенаправление на страницу входа..."
-        );
+        setStatusMessage(t("auth.autoLoginFailed"));
         setTimeout(() => {
           router.push("/login");
         }, 2000);
@@ -75,7 +75,7 @@ export function RegisterForm() {
     } catch (err) {
       console.error(err);
       setIsLoading(false);
-      setStatusMessage("Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз.");
+      setStatusMessage(t("auth.unexpectedError"));
     }
   };
 
@@ -84,10 +84,10 @@ export function RegisterForm() {
       {/* Шапка формы */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Создание аккаунта
+          {t("auth.registerTitle")}
         </h1>
         <p className="text-sm text-slate-500 mt-1.5">
-          Зарегистрируйтесь для оформления заказов и сохранения истории
+          {t("auth.registerSubtitle")}
         </p>
       </div>
 
@@ -105,13 +105,13 @@ export function RegisterForm() {
             htmlFor="name"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Ваше имя
+            {t("auth.nameLabel")}
           </label>
           <div className="relative">
             <input
               id="name"
               type="text"
-              placeholder="Алексей"
+              placeholder={t("auth.namePlaceholder")}
               {...register("name")}
               className={`w-full pl-10 pr-4 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                 errors.name
@@ -134,7 +134,7 @@ export function RegisterForm() {
             htmlFor="email"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Электронная почта
+            {t("auth.emailLabel")}
           </label>
           <div className="relative">
             <input
@@ -163,13 +163,13 @@ export function RegisterForm() {
             htmlFor="password"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Пароль
+            {t("auth.passwordLabel")}
           </label>
           <div className="relative">
             <input
               id="password"
               type={showPassword ? "text" : "password"}
-              placeholder="Минимум 6 символов"
+              placeholder={t("auth.passwordPlaceholder")}
               {...register("password")}
               className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                 errors.password
@@ -182,7 +182,7 @@ export function RegisterForm() {
               type="button"
               onClick={() => setShowPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
-              aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+              aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
             >
               {showPassword ? (
                 <EyeOff className="w-4 h-4" />
@@ -204,13 +204,13 @@ export function RegisterForm() {
             htmlFor="confirmPassword"
             className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
           >
-            Подтверждение пароля
+            {t("auth.confirmPasswordLabel")}
           </label>
           <div className="relative">
             <input
               id="confirmPassword"
               type={showConfirmPassword ? "text" : "password"}
-              placeholder="Повторите пароль"
+              placeholder={t("auth.confirmPasswordPlaceholder")}
               {...register("confirmPassword")}
               className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                 errors.confirmPassword
@@ -224,7 +224,7 @@ export function RegisterForm() {
               onClick={() => setShowConfirmPassword((prev) => !prev)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
               aria-label={
-                showConfirmPassword ? "Скрыть пароль" : "Показать пароль"
+                showConfirmPassword ? t("auth.hidePassword") : t("auth.showPassword")
               }
             >
               {showConfirmPassword ? (
@@ -250,11 +250,11 @@ export function RegisterForm() {
           {isLoading ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              <span>Создание аккаунта...</span>
+              <span>{t("auth.creatingAccount")}</span>
             </>
           ) : (
             <>
-              <span>Зарегистрироваться</span>
+              <span>{t("auth.registerButton")}</span>
               <ArrowRight className="w-4 h-4" />
             </>
           )}
@@ -263,12 +263,12 @@ export function RegisterForm() {
 
       {/* Переход к входу */}
       <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
-        Уже есть аккаунт?{" "}
+        {t("auth.haveAccount")}{" "}
         <Link
           href="/login"
           className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
         >
-          Войти
+          {t("auth.loginLink")}
         </Link>
       </div>
     </div>

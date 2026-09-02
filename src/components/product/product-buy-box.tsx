@@ -5,6 +5,8 @@ import { ShoppingCart, Check, Plus, Minus, ShieldCheck, Truck, RotateCcw } from 
 import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
+import { getLocalizedProduct } from "@/i18n";
 
 interface ProductBuyBoxProps {
   product: Product;
@@ -18,7 +20,11 @@ export function ProductBuyBox({
   onQuantityChange,
 }: ProductBuyBoxProps) {
   const { formatPrice } = useCurrency();
+  const { t, locale } = useTranslation();
   const [isAdded, setIsAdded] = useState(false);
+
+  const localized = getLocalizedProduct(product, locale);
+
   const addItem = useCart((state) => state.addItem);
   const quantityInCart = useCart(
     (state) =>
@@ -54,6 +60,7 @@ export function ProductBuyBox({
     addItem({
       productId: product.id,
       name: product.name,
+      translations: product.translations,
       price: product.price,
       image: product.image,
       stock: product.stock,
@@ -70,24 +77,24 @@ export function ProductBuyBox({
     <div className="w-full bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs space-y-6">
       {/* 1. Категория и бренд */}
       <div className="flex items-center justify-between text-xs font-semibold uppercase tracking-wider text-slate-400">
-        <span>{product.categoryName}</span>
-        <span className="text-[#06B6D4]">{product.brand}</span>
+        <span>{localized.categoryName}</span>
+        <span className="text-[#06B6D4]">{localized.brand}</span>
       </div>
 
       {/* 2. Заголовок */}
       <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-snug">
-        {product.name}
+        {localized.name}
       </h1>
 
       {/* 3. Краткое описание */}
       <p className="text-sm text-slate-600 leading-relaxed">
-        {product.shortDescription}
+        {localized.shortDescription}
       </p>
 
       {/* 4. Блок цены и Итого */}
       <div className="pt-3 pb-3 border-y border-slate-100 space-y-2">
         <div className="flex items-center justify-between text-xs text-slate-500">
-          <span>Цена за 1 шт.:</span>
+          <span>{t("product.pricePerItem")}</span>
           <span className="font-mono font-semibold text-slate-700">
             {formatPrice(product.price)}
           </span>
@@ -96,11 +103,11 @@ export function ProductBuyBox({
         <div className="flex items-baseline justify-between pt-1 border-t border-slate-50">
           <div className="flex items-baseline gap-1.5">
             <span className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Итого:
+              {t("product.total")}
             </span>
             {canAddToCart && effectiveQty > 1 && (
               <span className="text-xs text-[#06B6D4] font-medium">
-                (за {effectiveQty} шт.)
+                {t("product.forCount", { count: effectiveQty })}
               </span>
             )}
           </div>
@@ -119,39 +126,39 @@ export function ProductBuyBox({
               disabled
               className="w-full py-4 px-6 rounded-xl font-bold text-sm sm:text-base bg-slate-100 text-slate-400 cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <span>Товар временно отсутствует</span>
+              <span>{t("product.outOfStockTemp")}</span>
             </button>
           </div>
         ) : availableStock === 0 ? (
           <div className="space-y-3">
             <div className="p-3 bg-sky-50 border border-sky-100 rounded-xl text-xs text-sky-800 text-center font-medium">
-              Весь доступный остаток ({product.stock} шт.) уже добавлен в вашу корзину
+              {t("product.allInCart", { count: product.stock })}
             </div>
             <button
               type="button"
               disabled
               className="w-full py-4 px-6 rounded-xl font-bold text-sm sm:text-base bg-slate-100 text-slate-500 cursor-not-allowed flex items-center justify-center gap-2"
             >
-              <span>В корзине ({quantityInCart} шт. — максимум)</span>
+              <span>{t("product.inCartCount", { count: quantityInCart })}</span>
             </button>
           </div>
         ) : (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                Количество:
+                {t("product.quantity")}
               </span>
               <span className="text-xs text-slate-500 font-medium">
                 {availableStock <= 3 ? (
                   <span className="text-amber-600 font-semibold">
-                    Осталось {availableStock} шт.
+                    {t("product.lowStock", { count: availableStock })}
                   </span>
                 ) : (
-                  <span>В наличии ({availableStock} шт.)</span>
+                  <span>{t("product.inStock", { count: availableStock })}</span>
                 )}
                 {quantityInCart > 0 && (
                   <span className="text-slate-400 ml-1">
-                    (в корзине: {quantityInCart})
+                    {t("product.inCartLabel", { count: quantityInCart })}
                   </span>
                 )}
               </span>
@@ -165,7 +172,7 @@ export function ProductBuyBox({
                   onClick={handleDecrement}
                   disabled={effectiveQty <= 1}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                  aria-label="Уменьшить количество"
+                  aria-label={t("product.decreaseQuantity")}
                 >
                   <Minus className="w-4 h-4" />
                 </button>
@@ -177,7 +184,7 @@ export function ProductBuyBox({
                   onClick={handleIncrement}
                   disabled={effectiveQty >= availableStock}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                  aria-label="Увеличить количество"
+                  aria-label={t("product.increaseQuantity")}
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -196,12 +203,12 @@ export function ProductBuyBox({
                 {isAdded ? (
                   <>
                     <Check className="w-5 h-5 animate-in zoom-in" />
-                    <span>Добавлено ({effectiveQty} шт.)</span>
+                    <span>{t("product.added", { count: effectiveQty })}</span>
                   </>
                 ) : (
                   <>
                     <ShoppingCart className="w-5 h-5" />
-                    <span>Добавить в корзину</span>
+                    <span>{t("product.addToCart")}</span>
                   </>
                 )}
               </button>
@@ -214,15 +221,15 @@ export function ProductBuyBox({
       <div className="pt-4 border-t border-slate-100 grid grid-cols-1 gap-2.5 text-xs text-slate-600">
         <div className="flex items-center gap-2.5">
           <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
-          <span>Официальная гарантия 12 месяцев</span>
+          <span>{t("product.guarantee")}</span>
         </div>
         <div className="flex items-center gap-2.5">
           <Truck className="w-4 h-4 text-[#06B6D4] shrink-0" />
-          <span>Быстрая отправка в день заказа</span>
+          <span>{t("product.fastDelivery")}</span>
         </div>
         <div className="flex items-center gap-2.5">
           <RotateCcw className="w-4 h-4 text-[#F59E0B] shrink-0" />
-          <span>14 дней на обмен или возврат без лишних вопросов</span>
+          <span>{t("product.freeReturnsSub")}</span>
         </div>
       </div>
     </div>

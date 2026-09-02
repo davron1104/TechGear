@@ -1,28 +1,34 @@
+"use client";
+
 import { Product } from "@/types/product";
+import { useTranslation } from "@/context/language-context";
+import { getLocalizedProduct } from "@/i18n";
 
 interface ProductSpecsProps {
   product: Product;
 }
 
 export function ProductSpecs({ product }: ProductSpecsProps) {
-  const specsEntries = Object.entries(product.characteristics || {});
+  const { t, locale } = useTranslation();
+  const localized = getLocalizedProduct(product, locale);
+  const specsEntries = Object.entries(localized.characteristics || {});
 
   return (
     <div className="w-full space-y-8 mt-12 pt-8 border-t border-slate-200">
       {/* 1. Подробное описание товара */}
       <section className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
         <h2 className="text-xl font-bold text-slate-900 mb-4 pb-2 border-b border-slate-100">
-          Описание товара
+          {t("product.description")}
         </h2>
         <div className="text-sm text-slate-700 leading-relaxed space-y-4">
-          <p>{product.description}</p>
+          <p>{localized.description}</p>
         </div>
       </section>
 
       {/* 2. Таблица технических характеристик */}
       <section className="bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-xs">
         <h2 className="text-xl font-bold text-slate-900 mb-6 pb-2 border-b border-slate-100">
-          Технические характеристики
+          {t("product.characteristics")}
         </h2>
 
         {specsEntries.length > 0 ? (
@@ -49,7 +55,7 @@ export function ProductSpecs({ product }: ProductSpecsProps) {
           </div>
         ) : (
           <p className="text-sm text-slate-400">
-            Характеристики для данного товара уточняются.
+            {t("common.notFound")}
           </p>
         )}
       </section>

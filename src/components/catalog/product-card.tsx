@@ -7,6 +7,8 @@ import { ShoppingCart, Check } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
+import { getLocalizedProduct } from "@/i18n";
 
 interface ProductCardProps {
   product: Product;
@@ -14,9 +16,12 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { formatPrice } = useCurrency();
+  const { t, locale } = useTranslation();
   const [isAdded, setIsAdded] = useState(false);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const touchStartX = useRef<number | null>(null);
+
+  const localized = getLocalizedProduct(product, locale);
 
   const addItem = useCart((state) => state.addItem);
   const quantityInCart = useCart(
@@ -88,6 +93,7 @@ export function ProductCard({ product }: ProductCardProps) {
     addItem({
       productId: product.id,
       name: product.name,
+      translations: product.translations,
       price: product.price,
       image: product.image,
       stock: product.stock,
@@ -115,7 +121,7 @@ export function ProductCard({ product }: ProductCardProps) {
         >
           <img
             src={currentImage}
-            alt={product.name}
+            alt={localized.name}
             loading="lazy"
             className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300 pointer-events-none"
           />
@@ -124,19 +130,19 @@ export function ProductCard({ product }: ProductCardProps) {
           <div className="absolute top-2.5 left-2.5 pointer-events-none z-10">
             {!isPhysicallyInStock ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-rose-50 text-rose-700 border border-rose-200">
-                Нет в наличии
+                {t("product.outOfStock")}
               </span>
             ) : availableStock === 0 ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                В корзине (макс.)
+                {t("product.maxInCart")}
               </span>
             ) : availableStock <= 3 ? (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                Осталось {availableStock} шт.
+                {t("product.lowStock", { count: availableStock })}
               </span>
             ) : (
               <span className="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                В наличии
+                {t("product.inStock", { count: availableStock })}
               </span>
             )}
           </div>
@@ -160,14 +166,14 @@ export function ProductCard({ product }: ProductCardProps) {
 
         {/* Категория и бренд */}
         <div className="flex items-center justify-between text-xs text-slate-400 mb-1 font-medium">
-          <span>{product.categoryName}</span>
-          <span>{product.brand}</span>
+          <span>{localized.categoryName}</span>
+          <span>{localized.brand}</span>
         </div>
 
         {/* Название */}
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/product/${localized.slug}`}>
           <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 min-h-[40px] group-hover:text-[#06B6D4] transition-colors mb-3">
-            {product.name}
+            {localized.name}
           </h3>
         </Link>
       </div>
@@ -175,7 +181,7 @@ export function ProductCard({ product }: ProductCardProps) {
       {/* Нижняя часть: Цена и Кнопка */}
       <div className="pt-2 border-t border-slate-100">
         <div className="flex items-baseline justify-between mb-3">
-          <span className="text-xs text-slate-400">Цена:</span>
+          <span className="text-xs text-slate-400">{t("product.pricePerItem")}</span>
           <span className="text-lg font-bold text-slate-900 font-mono">
             {formatPrice(product.price)}
           </span>
@@ -187,7 +193,7 @@ export function ProductCard({ product }: ProductCardProps) {
             disabled
             className="w-full py-2.5 px-3 rounded-lg text-sm font-medium bg-slate-100 text-slate-400 cursor-not-allowed flex items-center justify-center gap-1.5"
           >
-            <span>Нет в наличии</span>
+            <span>{t("product.outOfStock")}</span>
           </button>
         ) : availableStock === 0 ? (
           <button
@@ -195,7 +201,7 @@ export function ProductCard({ product }: ProductCardProps) {
             disabled
             className="w-full py-2.5 px-3 rounded-lg text-sm font-medium bg-slate-100 text-slate-500 cursor-not-allowed flex items-center justify-center gap-1.5"
           >
-            <span>В корзине (макс.)</span>
+            <span>{t("product.maxInCart")}</span>
           </button>
         ) : (
           <button
@@ -206,17 +212,17 @@ export function ProductCard({ product }: ProductCardProps) {
                 ? "bg-emerald-600 text-white shadow-xs"
                 : "bg-[#0F172A] hover:bg-[#06B6D4] text-white active:scale-98"
             }`}
-            aria-label={`Добавить в корзину ${product.name}`}
+            aria-label={`${t("product.addToCart")}: ${localized.name}`}
           >
             {isAdded ? (
               <>
                 <Check className="w-4 h-4 animate-in zoom-in" />
-                <span>Добавлено</span>
+                <span>{t("product.added")}</span>
               </>
             ) : (
               <>
                 <ShoppingCart className="w-4 h-4" />
-                <span>В корзину</span>
+                <span>{t("product.addToCart")}</span>
               </>
             )}
           </button>

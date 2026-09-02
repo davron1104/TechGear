@@ -7,6 +7,7 @@ import { Order, OrderStatus } from "@/types/order";
 import { OrderStatusBadge } from "./order-status-badge";
 import { cancelOrder } from "@/actions/order-actions";
 import { formatCurrency, CurrencyType } from "@/lib/currency";
+import { useTranslation } from "@/context/language-context";
 import {
   ArrowLeft,
   Calendar,
@@ -27,6 +28,7 @@ interface OrderDetailViewProps {
 }
 
 export function OrderDetailView({ order }: OrderDetailViewProps) {
+  const { t, locale } = useTranslation();
   const [status, setStatus] = useState<OrderStatus>(order.status);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [cancelledMessage, setCancelledMessage] = useState<string | null>(null);
@@ -43,14 +45,16 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
     if (res.success) {
       setStatus("CANCELLED");
       setIsCancelModalOpen(false);
-      setCancelledMessage("Заказ успешно отменен.");
+      setCancelledMessage(t("account.cancelSuccess"));
     } else {
       setErrorMessage(res.error);
       setIsCancelModalOpen(false);
     }
   };
 
-  const formattedDate = new Date(order.createdAt).toLocaleDateString("ru-RU", {
+  const dateLocale = locale === "uz" ? "uz-UZ" : locale === "en" ? "en-US" : "ru-RU";
+
+  const formattedDate = new Date(order.createdAt).toLocaleDateString(dateLocale, {
     day: "numeric",
     month: "long",
     year: "numeric",
@@ -67,7 +71,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-[#06B6D4] transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          <span>Назад в личный кабинет</span>
+          <span>{t("account.backToAccount")}</span>
         </Link>
       </div>
 
@@ -96,7 +100,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
             <Calendar className="w-3.5 h-3.5 text-slate-400" />
-            <span>Оформлен: {formattedDate}</span>
+            <span>{t("account.placedOn")}: {formattedDate}</span>
           </div>
         </div>
 
@@ -109,7 +113,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
               className="px-4 py-2 rounded-xl border border-rose-300 bg-rose-50/50 hover:bg-rose-100/80 text-rose-700 text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <XCircle className="w-3.5 h-3.5" />
-              <span>Отменить заказ</span>
+              <span>{t("account.cancelOrder")}</span>
             </button>
           </div>
         )}
@@ -121,11 +125,11 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3.5">
           <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
             <User className="w-4 h-4 text-[#06B6D4]" />
-            Получатель
+            {t("account.recipient")}
           </h3>
           <div className="space-y-2 text-xs text-slate-700">
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 w-16">Имя:</span>
+              <span className="text-slate-400 w-16">{t("checkout.nameLabel")}:</span>
               <span className="font-semibold text-slate-900">{order.customerName}</span>
             </div>
             <div className="flex items-center gap-2">
@@ -143,21 +147,21 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
         <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-3.5">
           <h3 className="text-sm font-bold text-slate-900 pb-2 border-b border-slate-100 flex items-center gap-2">
             <Truck className="w-4 h-4 text-[#06B6D4]" />
-            Доставка
+            {t("checkout.deliveryStep")}
           </h3>
           <div className="space-y-2 text-xs text-slate-700">
             <div className="flex items-center gap-2">
-              <span className="text-slate-400 w-16">Способ:</span>
+              <span className="text-slate-400 w-16">{t("account.method")}:</span>
               <span className="font-semibold text-slate-900">
                 {order.deliveryMethod === "courier"
-                  ? "Курьерская доставка"
-                  : "Самовывоз из магазина"}
+                  ? t("checkout.courierDelivery")
+                  : t("checkout.pickupDelivery")}
               </span>
             </div>
             <div className="flex items-start gap-2">
               <MapPin className="w-3.5 h-3.5 text-slate-400 shrink-0 mt-0.5" />
               <span>
-                г. {order.city}
+                {order.city}
                 {order.address ? `, ${order.address}` : ""}
               </span>
             </div>
@@ -175,7 +179,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
       <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
         <h3 className="text-sm font-bold text-slate-900 pb-3 border-b border-slate-100 flex items-center gap-2">
           <Package className="w-4 h-4 text-[#06B6D4]" />
-          Товары в заказе ({order.items.reduce((acc, i) => acc + i.quantity, 0)} шт.)
+          {t("account.itemsInOrder", { count: order.items.reduce((acc, i) => acc + i.quantity, 0) })}
         </h3>
 
         <div className="divide-y divide-slate-100">
@@ -195,7 +199,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                   {item.name}
                 </h4>
                 <span className="text-xs text-slate-400 font-mono mt-0.5 block">
-                  {item.quantity} шт. ×{" "}
+                  {item.quantity} ×{" "}
                   {formatCurrency(
                     item.price,
                     (order.currency as CurrencyType) || "UZS",
@@ -218,7 +222,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
         {/* Сводка сумм */}
         <div className="pt-4 border-t border-slate-100 space-y-2 text-xs">
           <div className="flex items-center justify-between text-slate-600">
-            <span>Стоимость товаров:</span>
+            <span>{t("checkout.productsCost")}</span>
             <span className="font-mono font-semibold text-slate-900">
               {formatCurrency(
                 order.totalPrice,
@@ -229,10 +233,10 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
           </div>
 
           <div className="flex items-center justify-between text-slate-600">
-            <span>Доставка:</span>
+            <span>{t("checkout.deliveryCostLabel")}</span>
             <span>
               {order.deliveryCost === 0 ? (
-                <span className="text-emerald-600 font-semibold">Бесплатно</span>
+                <span className="text-emerald-600 font-semibold">{t("checkout.freeDelivery")}</span>
               ) : (
                 <span className="font-mono font-semibold text-slate-900">
                   {formatCurrency(
@@ -247,7 +251,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
 
           <div className="pt-3 border-t border-slate-100 flex items-baseline justify-between">
             <span className="text-sm font-bold text-slate-900 uppercase tracking-wider">
-              Итого к оплате:
+              {t("checkout.totalPayable")}
             </span>
             <span className="text-xl sm:text-2xl font-extrabold text-slate-900 font-mono">
               {formatCurrency(
@@ -274,10 +278,10 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
 
             <div className="space-y-1.5">
               <h4 className="text-base font-bold text-slate-900">
-                Отменить заказ #{order.orderNumber}?
+                {t("account.cancelOrderPrompt", { number: order.orderNumber })}
               </h4>
               <p className="text-xs text-slate-500 leading-relaxed">
-                Вы уверены, что хотите отменить этот заказ? Это действие нельзя будет отменить.
+                {t("account.cancelOrderConfirm")}
               </p>
             </div>
 
@@ -288,7 +292,7 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                 onClick={() => setIsCancelModalOpen(false)}
                 className="flex-1 py-2.5 px-4 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100 text-xs font-semibold text-slate-700 transition-colors disabled:opacity-50 cursor-pointer"
               >
-                Оставить заказ
+                {t("account.keepOrder")}
               </button>
 
               <button
@@ -300,10 +304,10 @@ export function OrderDetailView({ order }: OrderDetailViewProps) {
                 {isCancelling ? (
                   <>
                     <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Отмена...</span>
+                    <span>{t("account.cancelling")}</span>
                   </>
                 ) : (
-                  <span>Да, отменить</span>
+                  <span>{t("account.yesCancel")}</span>
                 )}
               </button>
             </div>

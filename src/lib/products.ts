@@ -10,6 +10,7 @@ interface PrismaProductWithCategory {
     id: string;
     name: string;
     slug: string;
+    translations?: unknown;
   };
   price: { toString(): string } | number;
   image: string;
@@ -19,6 +20,7 @@ interface PrismaProductWithCategory {
   stock: number;
   brand: string;
   characteristics: unknown;
+  translations?: unknown;
   deletedAt?: Date | null;
   isPopular?: boolean;
   createdAt: Date;
@@ -36,6 +38,10 @@ export function serializeProduct(item: PrismaProductWithCategory): Product {
     categoryId: item.categoryId,
     categorySlug: item.category.slug,
     categoryName: item.category.name,
+    categoryTranslations:
+      item.category.translations && typeof item.category.translations === "object"
+        ? (item.category.translations as Product["categoryTranslations"])
+        : null,
     price: Number(item.price),
     image: item.image,
     images: item.images && item.images.length > 0 ? item.images : [item.image],
@@ -47,6 +53,10 @@ export function serializeProduct(item: PrismaProductWithCategory): Product {
       item.characteristics && typeof item.characteristics === "object"
         ? (item.characteristics as Record<string, string>)
         : {},
+    translations:
+      item.translations && typeof item.translations === "object"
+        ? (item.translations as Product["translations"])
+        : null,
     isPopular: Boolean(item.isPopular),
     createdAt: item.createdAt.toISOString(),
   };
@@ -68,6 +78,7 @@ export async function getPopularProducts(limit: number = 4): Promise<Product[]> 
           id: true,
           name: true,
           slug: true,
+          translations: true,
         },
       },
     },
@@ -120,6 +131,7 @@ export async function getPublicProducts(
           id: true,
           name: true,
           slug: true,
+          translations: true,
         },
       },
     },
@@ -148,6 +160,7 @@ export async function getPublicProductBySlug(slug: string): Promise<Product | nu
           id: true,
           name: true,
           slug: true,
+          translations: true,
         },
       },
     },
@@ -176,6 +189,7 @@ export async function getFeaturedProduct(): Promise<Product | null> {
           id: true,
           name: true,
           slug: true,
+          translations: true,
         },
       },
     },
@@ -200,6 +214,7 @@ export async function getFeaturedProduct(): Promise<Product | null> {
           id: true,
           name: true,
           slug: true,
+          translations: true,
         },
       },
     },
@@ -223,6 +238,7 @@ export async function getFeaturedProduct(): Promise<Product | null> {
           id: true,
           name: true,
           slug: true,
+          translations: true,
         },
       },
     },

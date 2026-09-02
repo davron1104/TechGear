@@ -5,12 +5,14 @@ import Link from "next/link";
 import { ShoppingCart, X, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
 import { CartItemRow } from "./cart-item-row";
 
 const emptySubscribe = () => () => {};
 
 export function CartDrawer() {
   const { formatPrice } = useCurrency();
+  const { t } = useTranslation();
   const isHydrated = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -75,7 +77,7 @@ export function CartDrawer() {
             <div className="flex items-center gap-2">
               <ShoppingCart className="w-5 h-5 text-[#06B6D4]" />
               <h2 className="text-lg font-bold text-slate-900">
-                Корзина
+                {t("cart.title")}
                 {totalCount > 0 && (
                   <span className="ml-2 text-xs font-mono font-bold bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full">
                     {totalCount}
@@ -88,7 +90,7 @@ export function CartDrawer() {
               type="button"
               onClick={closeCart}
               className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              aria-label="Закрыть корзину"
+              aria-label={t("cart.closeCart")}
             >
               <X className="w-5 h-5" />
             </button>
@@ -103,10 +105,10 @@ export function CartDrawer() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-slate-900">
-                    Ваша корзина пуста
+                    {t("cart.emptyTitle")}
                   </h3>
                   <p className="text-xs text-slate-500 max-w-xs">
-                    Выберите девайсы и аксессуары в каталоге, чтобы оформить заказ.
+                    {t("cart.emptySubtitle")}
                   </p>
                 </div>
                 <button
@@ -114,7 +116,7 @@ export function CartDrawer() {
                   onClick={closeCart}
                   className="px-5 py-2.5 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-xs font-semibold transition-colors cursor-pointer"
                 >
-                  Перейти к покупкам
+                  {t("cart.goToCatalog")}
                 </button>
               </div>
             ) : (
@@ -132,7 +134,7 @@ export function CartDrawer() {
               {/* Строка с итоговой суммой */}
               <div className="flex items-baseline justify-between">
                 <span className="text-sm font-semibold text-slate-600">
-                  Итого к оплате:
+                  {t("cart.total")}
                 </span>
                 <span className="text-2xl font-extrabold text-slate-900 font-mono">
                   {formatPrice(totalPrice)}
@@ -145,7 +147,7 @@ export function CartDrawer() {
                 onClick={closeCart}
                 className="w-full py-3.5 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold text-sm shadow-md transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
               >
-                <span>Оформить заказ</span>
+                <span>{t("cart.checkout")}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
 
@@ -156,7 +158,7 @@ export function CartDrawer() {
                 className="w-full text-xs text-slate-400 hover:text-rose-600 flex items-center justify-center gap-1.5 transition-colors py-1 cursor-pointer font-medium"
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Очистить корзину</span>
+                <span>{t("cart.clear")}</span>
               </button>
             </div>
           )}

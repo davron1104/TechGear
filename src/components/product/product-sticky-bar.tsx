@@ -5,6 +5,8 @@ import { ShoppingCart, Check } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
+import { getLocalizedProduct } from "@/i18n";
 
 interface ProductStickyBarProps {
   product: Product;
@@ -13,7 +15,11 @@ interface ProductStickyBarProps {
 
 export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
   const { formatPrice } = useCurrency();
+  const { t, locale } = useTranslation();
   const [isAdded, setIsAdded] = useState(false);
+
+  const localized = getLocalizedProduct(product, locale);
+
   const addItem = useCart((state) => state.addItem);
   const quantityInCart = useCart(
     (state) =>
@@ -36,6 +42,7 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
     addItem({
       productId: product.id,
       name: product.name,
+      translations: product.translations,
       price: product.price,
       image: product.image,
       stock: product.stock,
@@ -54,9 +61,9 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
         {/* Цена и статус */}
         <div className="flex flex-col min-w-0">
           <span className="text-[10px] uppercase font-semibold text-slate-400 truncate">
-            {product.name}
+            {localized.name}
             {canAddToCart && effectiveQty > 1 && (
-              <span className="text-[#06B6D4] ml-1">({effectiveQty} шт.)</span>
+              <span className="text-[#06B6D4] ml-1">({effectiveQty} {t("product.pcs")})</span>
             )}
           </span>
           <span className="text-xl font-extrabold text-slate-900 font-mono">
@@ -71,7 +78,7 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
             disabled
             className="py-3 px-5 rounded-xl font-medium text-xs bg-slate-100 text-slate-400 cursor-not-allowed shrink-0"
           >
-            <span>Нет в наличии</span>
+            <span>{t("product.outOfStock")}</span>
           </button>
         ) : availableStock === 0 ? (
           <button
@@ -79,7 +86,7 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
             disabled
             className="py-3 px-5 rounded-xl font-medium text-xs bg-slate-100 text-slate-500 cursor-not-allowed shrink-0"
           >
-            <span>В корзине (макс.)</span>
+            <span>{t("product.maxInCart")}</span>
           </button>
         ) : (
           <button
@@ -94,12 +101,12 @@ export function ProductStickyBar({ product, quantity }: ProductStickyBarProps) {
             {isAdded ? (
               <>
                 <Check className="w-4 h-4" />
-                <span>Добавлено ({effectiveQty})</span>
+                <span>{t("product.added")}</span>
               </>
             ) : (
               <>
                 <ShoppingCart className="w-4 h-4" />
-                <span>В корзину</span>
+                <span>{t("product.addToCart")}</span>
               </>
             )}
           </button>

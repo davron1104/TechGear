@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { SlidersHorizontal, RotateCcw, ChevronDown, ChevronUp } from "lucide-react";
 import { FilterState, SortOption } from "@/types/product";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
 import { convertUzsToUsd, CurrencyType } from "@/lib/currency";
 
 interface CatalogFiltersProps {
@@ -33,6 +34,7 @@ export function CatalogFilters({
   totalFound,
 }: CatalogFiltersProps) {
   const { currency, exchangeRate } = useCurrency();
+  const { t } = useTranslation();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const [minInputStr, setMinInputStr] = useState(() =>
@@ -112,7 +114,7 @@ export function CatalogFilters({
         >
           <div className="flex items-center gap-2">
             <SlidersHorizontal className="w-4 h-4 text-[#06B6D4]" />
-            <span>Фильтры и сортировка</span>
+            <span>{t("catalog.filtersAndSort")}</span>
             {activeFiltersCount > 0 && (
               <span className="bg-[#06B6D4] text-white text-xs px-2 py-0.5 rounded-full font-bold">
                 {activeFiltersCount}
@@ -120,7 +122,7 @@ export function CatalogFilters({
             )}
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500">
-            <span>Найдено: {totalFound}</span>
+            <span>{t("catalog.found", { count: totalFound })}</span>
             {isMobileOpen ? (
               <ChevronUp className="w-4 h-4" />
             ) : (
@@ -140,7 +142,7 @@ export function CatalogFilters({
         <div className="flex items-center justify-between pb-3 border-b border-slate-100">
           <div className="flex items-center gap-2 font-bold text-slate-900 text-base">
             <SlidersHorizontal className="w-4 h-4 text-[#06B6D4]" />
-            <span>Фильтры</span>
+            <span>{t("catalog.filters")}</span>
           </div>
 
           {hasActiveFilters && (
@@ -150,7 +152,7 @@ export function CatalogFilters({
               className="text-xs text-[#06B6D4] hover:text-[#0891B2] flex items-center gap-1 font-medium cursor-pointer"
             >
               <RotateCcw className="w-3 h-3" />
-              <span>Сбросить</span>
+              <span>{t("common.reset")}</span>
             </button>
           )}
         </div>
@@ -161,7 +163,7 @@ export function CatalogFilters({
             htmlFor="sort-select"
             className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5"
           >
-            Сортировка
+            {t("catalog.sortBy")}
           </label>
           <select
             id="sort-select"
@@ -174,23 +176,22 @@ export function CatalogFilters({
             }
             className="w-full bg-slate-50 border border-slate-200 text-slate-800 text-sm rounded-lg p-2.5 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] cursor-pointer"
           >
-            <option value="popular">По популярности</option>
-            <option value="price_asc">Сначала дешевле</option>
-            <option value="price_desc">Сначала дороже</option>
+            <option value="popular">{t("catalog.sortPopular")}</option>
+            <option value="price_asc">{t("catalog.sortPriceAsc")}</option>
+            <option value="price_desc">{t("catalog.sortPriceDesc")}</option>
           </select>
         </div>
-
 
         {/* 3. Диапазон цен */}
         <div>
           <span className="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2.5">
-            {currency === "USD" ? "Цена ($)" : "Цена (сум)"}
+            {currency === "USD" ? t("catalog.priceFilterUsd") : t("catalog.priceFilterUzs")}
           </span>
           <div className="grid grid-cols-2 gap-2">
             <div>
               <input
                 type="number"
-                placeholder="От 0"
+                placeholder={t("catalog.priceFrom")}
                 min="0"
                 step={currency === "USD" ? "any" : "1000"}
                 value={minInputStr}
@@ -201,7 +202,7 @@ export function CatalogFilters({
             <div>
               <input
                 type="number"
-                placeholder={currency === "USD" ? "До 1 000" : "До 10 000 000"}
+                placeholder={currency === "USD" ? t("catalog.priceToUsd") : t("catalog.priceToUzs")}
                 min="0"
                 step={currency === "USD" ? "any" : "1000"}
                 value={maxInputStr}
@@ -227,14 +228,14 @@ export function CatalogFilters({
               className="w-4 h-4 text-[#06B6D4] rounded-sm border-slate-300 focus:ring-[#06B6D4] cursor-pointer"
             />
             <span className="text-sm font-medium text-slate-700 select-none">
-              Только в наличии
+              {t("catalog.inStockOnly")}
             </span>
           </label>
         </div>
 
         {/* Количество найденного (Desktop) */}
         <div className="pt-3 border-t border-slate-100 text-xs text-slate-400 text-center">
-          Найдено товаров: <strong className="text-slate-900">{totalFound}</strong>
+          {t("catalog.found", { count: totalFound })}
         </div>
       </div>
     </aside>

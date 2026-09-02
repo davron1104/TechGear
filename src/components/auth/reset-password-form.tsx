@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Mail, Lock, Eye, EyeOff, CheckCircle2, Loader2, ArrowLeft, ArrowRight } from "lucide-react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import {
   resetPasswordSchema,
   setNewPasswordSchema,
@@ -13,6 +13,7 @@ import {
   SetNewPasswordInput,
 } from "@/lib/validations/auth";
 import { sendPasswordResetLink, resetPassword } from "@/actions/auth-actions";
+import { useTranslation } from "@/context/language-context";
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -30,6 +31,7 @@ function RequestResetLinkForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   const {
     register,
@@ -53,12 +55,12 @@ function RequestResetLinkForm() {
         setSubmittedEmail(data.email);
         setIsSubmitted(true);
       } else {
-        setStatusMessage(res.error || "Произошла ошибка");
+        setStatusMessage(res.error || t("auth.registrationError"));
       }
     } catch (err) {
       console.error(err);
       setIsLoading(false);
-      setStatusMessage("Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз.");
+      setStatusMessage(t("auth.unexpectedError"));
     }
   };
 
@@ -67,10 +69,10 @@ function RequestResetLinkForm() {
       {/* Шапка формы */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Восстановление пароля
+          {t("auth.resetTitle")}
         </h1>
         <p className="text-sm text-slate-500 mt-1.5">
-          Укажите email, привязанный к вашему аккаунту TechGear
+          {t("auth.resetSubtitle")}
         </p>
       </div>
 
@@ -88,14 +90,13 @@ function RequestResetLinkForm() {
 
           <div className="space-y-2">
             <h3 className="text-base font-bold text-slate-900">
-              Письмо отправлено
+              {t("auth.resetEmailSentTitle")}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Мы отправили ссылку для сброса пароля на адрес{" "}
+              {t("auth.resetEmailSentText")}{" "}
               <strong className="text-slate-900 font-semibold">
                 {submittedEmail}
               </strong>
-              . Проверьте входящие сообщения и папку «Спам».
             </p>
           </div>
 
@@ -105,7 +106,7 @@ function RequestResetLinkForm() {
               className="w-full py-3 px-4 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Вернуться ко входу</span>
+              <span>{t("auth.backToLogin")}</span>
             </Link>
           </div>
         </div>
@@ -117,7 +118,7 @@ function RequestResetLinkForm() {
               htmlFor="email"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Электронная почта
+              {t("auth.emailLabel")}
             </label>
             <div className="relative">
               <input
@@ -149,11 +150,11 @@ function RequestResetLinkForm() {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Отправка ссылки...</span>
+                <span>{t("auth.sendingResetLink")}</span>
               </>
             ) : (
               <>
-                <span>Получить ссылку для сброса</span>
+                <span>{t("auth.getResetLink")}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -161,12 +162,12 @@ function RequestResetLinkForm() {
 
           {/* Ссылка возврата ко входу */}
           <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
-            Вспомнили пароль?{" "}
+            {t("auth.rememberPassword")}{" "}
             <Link
               href="/login"
               className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
             >
-              Войти
+              {t("auth.loginLink")}
             </Link>
           </div>
         </form>
@@ -176,6 +177,7 @@ function RequestResetLinkForm() {
 }
 
 function SetNewPasswordForm({ token }: { token: string }) {
+  const { t } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -205,10 +207,10 @@ function SetNewPasswordForm({ token }: { token: string }) {
       if (res.success) {
         setIsSuccess(true);
       } else {
-        setStatusMessage(res.error || "Не удалось изменить пароль");
+        setStatusMessage(res.error || t("auth.registrationError"));
         if (res.fields) {
           Object.entries(res.fields).forEach(([field, messages]) => {
-            setError(field as any, {
+            setError(field as keyof SetNewPasswordInput, {
               type: "server",
               message: messages[0],
             });
@@ -218,7 +220,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
     } catch (err) {
       console.error(err);
       setIsLoading(false);
-      setStatusMessage("Произошла неожиданная ошибка. Пожалуйста, попробуйте еще раз.");
+      setStatusMessage(t("auth.unexpectedError"));
     }
   };
 
@@ -227,10 +229,10 @@ function SetNewPasswordForm({ token }: { token: string }) {
       {/* Шапка формы */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Новый пароль
+          {t("auth.newPasswordTitle")}
         </h1>
         <p className="text-sm text-slate-500 mt-1.5">
-          Введите ваш новый пароль для доступа к аккаунту TechGear
+          {t("auth.newPasswordSubtitle")}
         </p>
       </div>
 
@@ -248,10 +250,10 @@ function SetNewPasswordForm({ token }: { token: string }) {
 
           <div className="space-y-2">
             <h3 className="text-base font-bold text-slate-900">
-              Пароль изменен!
+              {t("auth.passwordChangedTitle")}
             </h3>
             <p className="text-xs text-slate-600 leading-relaxed">
-              Ваш пароль был успешно изменен. Теперь вы можете войти в свой аккаунт, используя новые учетные данные.
+              {t("auth.passwordChangedText")}
             </p>
           </div>
 
@@ -260,7 +262,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
               href="/login"
               className="w-full py-3 px-4 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2"
             >
-              <span>Войти в аккаунт</span>
+              <span>{t("auth.loginButton")}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -273,13 +275,13 @@ function SetNewPasswordForm({ token }: { token: string }) {
               htmlFor="password"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Новый пароль
+              {t("auth.passwordLabel")}
             </label>
             <div className="relative">
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
-                placeholder="Минимум 6 символов"
+                placeholder={t("auth.passwordPlaceholder")}
                 {...register("password")}
                 className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                   errors.password
@@ -292,7 +294,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
                 type="button"
                 onClick={() => setShowPassword((prev) => !prev)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
-                aria-label={showPassword ? "Скрыть пароль" : "Показать пароль"}
+                aria-label={showPassword ? t("auth.hidePassword") : t("auth.showPassword")}
               >
                 {showPassword ? (
                   <EyeOff className="w-4 h-4" />
@@ -314,13 +316,13 @@ function SetNewPasswordForm({ token }: { token: string }) {
               htmlFor="confirmPassword"
               className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
             >
-              Подтверждение пароля
+              {t("auth.confirmPasswordLabel")}
             </label>
             <div className="relative">
               <input
                 id="confirmPassword"
                 type={showConfirmPassword ? "text" : "password"}
-                placeholder="Повторите пароль"
+                placeholder={t("auth.confirmPasswordPlaceholder")}
                 {...register("confirmPassword")}
                 className={`w-full pl-10 pr-11 py-2.5 bg-[#F8FAFC] border rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all ${
                   errors.confirmPassword
@@ -334,7 +336,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
                 onClick={() => setShowConfirmPassword((prev) => !prev)}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition-colors p-1 cursor-pointer"
                 aria-label={
-                  showConfirmPassword ? "Скрыть пароль" : "Показать пароль"
+                  showConfirmPassword ? t("auth.hidePassword") : t("auth.showPassword")
                 }
               >
                 {showConfirmPassword ? (
@@ -360,11 +362,11 @@ function SetNewPasswordForm({ token }: { token: string }) {
             {isLoading ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin" />
-                <span>Изменение пароля...</span>
+                <span>{t("auth.savingNewPassword")}</span>
               </>
             ) : (
               <>
-                <span>Сохранить новый пароль</span>
+                <span>{t("auth.saveNewPassword")}</span>
                 <ArrowRight className="w-4 h-4" />
               </>
             )}
@@ -372,12 +374,12 @@ function SetNewPasswordForm({ token }: { token: string }) {
 
           {/* Ссылка возврата ко входу */}
           <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
-            Вспомнили пароль?{" "}
+            {t("auth.rememberPassword")}{" "}
             <Link
               href="/login"
               className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
             >
-              Войти
+              {t("auth.loginLink")}
             </Link>
           </div>
         </form>

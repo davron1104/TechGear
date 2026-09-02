@@ -5,6 +5,8 @@ import Link from "next/link";
 import { Sparkles, ArrowRight, ShieldCheck, Zap, Award } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
+import { getLocalizedProduct } from "@/i18n";
 
 interface HeroBannerProps {
   featuredProduct?: Product | null;
@@ -12,18 +14,24 @@ interface HeroBannerProps {
 
 export function HeroBanner({ featuredProduct }: HeroBannerProps) {
   const { formatPrice } = useCurrency();
+  const { t, locale } = useTranslation();
+
+  const localizedProduct = featuredProduct
+    ? getLocalizedProduct(featuredProduct, locale)
+    : null;
+
   const image =
-    featuredProduct?.image ||
+    localizedProduct?.image ||
     "https://images.unsplash.com/photo-1587829741301-dc798b83add3?w=600&auto=format&fit=crop&q=80";
-  const name = featuredProduct?.name || "CyberKeys Pro RGB Wireless";
-  const categoryLabel = featuredProduct?.categoryName
-    ? featuredProduct.categoryName
-    : "Клавиатуры • Hot-Swap";
-  const priceDisplay = featuredProduct
-    ? formatPrice(featuredProduct.price)
+  const name = localizedProduct?.name || "CyberKeys Pro RGB Wireless";
+  const categoryLabel = localizedProduct?.categoryName
+    ? localizedProduct.categoryName
+    : t("hero.categoryKeyboards");
+  const priceDisplay = localizedProduct
+    ? formatPrice(localizedProduct.price)
     : formatPrice(8990);
-  const productHref = featuredProduct?.slug
-    ? `/product/${featuredProduct.slug}`
+  const productHref = localizedProduct?.slug
+    ? `/product/${localizedProduct.slug}`
     : "/catalog";
 
   return (
@@ -37,15 +45,15 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
         <div className="lg:col-span-7 space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/80 border border-slate-700 text-[#06B6D4] text-xs font-semibold uppercase tracking-wider backdrop-blur-xs">
             <Sparkles className="w-3.5 h-3.5 text-[#F59E0B]" />
-            <span>Флагманские девайсы нового поколения</span>
+            <span>{t("hero.badge")}</span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold tracking-tight leading-tight">
-            Прокачай свой сетап с <span className="text-[#06B6D4]">TechGear</span>
+            {t("hero.titlePart1")} <span className="text-[#06B6D4]">TechGear</span>
           </h1>
 
           <p className="text-slate-300 text-base sm:text-lg max-w-xl leading-relaxed">
-            Механические клавиатуры на заказных свитчах, сверхлегкие мыши 26K DPI и мониторы с частотой до 240 Гц. Точность в каждом клике.
+            {t("hero.subtitle")}
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -53,7 +61,7 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
               href="/catalog"
               className="bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold px-6 py-3.5 rounded-lg shadow-md transition-all duration-200 hover:scale-[1.02] flex items-center gap-2 text-sm sm:text-base"
             >
-              <span>Смотреть каталог</span>
+              <span>{t("hero.viewCatalog")}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -62,15 +70,15 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
           <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-800/80 text-xs text-slate-400">
             <div className="flex items-center gap-1.5">
               <Zap className="w-4 h-4 text-[#F59E0B] shrink-0" />
-              <span>Быстрая отправка</span>
+              <span>{t("hero.fastDispatch")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
-              <span>Гарантия 12 мес.</span>
+              <span>{t("hero.warranty12m")}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Award className="w-4 h-4 text-[#06B6D4] shrink-0" />
-              <span>100% Оригинал</span>
+              <span>{t("hero.original100")}</span>
             </div>
           </div>
         </div>
@@ -79,7 +87,7 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
         <div className="lg:col-span-5 hidden lg:block">
           <div className="relative p-6 rounded-xl bg-gradient-to-b from-slate-800/80 to-slate-900/80 border border-slate-700/80 backdrop-blur-md shadow-2xl">
             <div className="absolute top-4 right-4 bg-[#F59E0B] text-slate-950 font-extrabold text-xs px-2.5 py-1 rounded-full uppercase tracking-wider">
-              Хит продаж
+              {t("hero.bestseller")}
             </div>
 
             <div className="aspect-4/3 rounded-lg overflow-hidden mb-4 bg-slate-950/40 flex items-center justify-center p-2">
@@ -105,7 +113,7 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
                   href={productHref}
                   className="text-xs font-semibold text-[#06B6D4] hover:text-[#0891B2] flex items-center gap-1 underline underline-offset-4"
                 >
-                  Подробнее
+                  {t("common.details")}
                 </Link>
               </div>
             </div>

@@ -5,6 +5,7 @@ import { Package, User as UserIcon } from "lucide-react";
 import { Order } from "@/types/order";
 import { OrdersHistoryTable } from "@/components/account/orders-history-table";
 import { ProfileForm } from "@/components/account/profile-form";
+import { useTranslation } from "@/context/language-context";
 
 interface AccountClientViewProps {
   user: {
@@ -16,6 +17,7 @@ interface AccountClientViewProps {
 
 export function AccountClientView({ user, orders }: AccountClientViewProps) {
   const [activeTab, setActiveTab] = useState<"orders" | "profile">("orders");
+  const { t } = useTranslation();
 
   return (
     <div className="w-full pb-16 space-y-8">
@@ -23,10 +25,10 @@ export function AccountClientView({ user, orders }: AccountClientViewProps) {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
-            Личный кабинет
+            {t("account.title")}
           </h1>
           <p className="text-sm text-slate-500 mt-1">
-            Здравствуйте, <strong className="text-slate-900">{user.name || "Покупатель"}</strong>! Управляйте заказами и профилем.
+            {t("account.greeting", { name: user.name || "Customer" })}
           </p>
         </div>
 
@@ -42,7 +44,7 @@ export function AccountClientView({ user, orders }: AccountClientViewProps) {
             }`}
           >
             <Package className="w-4 h-4" />
-            <span>Мои заказы</span>
+            <span>{t("account.myOrders")}</span>
             <span className="px-1.5 py-0.5 rounded-full text-[10px] bg-slate-200 text-slate-700 font-mono">
               {orders.length}
             </span>
@@ -58,7 +60,7 @@ export function AccountClientView({ user, orders }: AccountClientViewProps) {
             }`}
           >
             <UserIcon className="w-4 h-4" />
-            <span>Профиль</span>
+            <span>{t("account.profile")}</span>
           </button>
         </div>
       </div>
@@ -68,7 +70,7 @@ export function AccountClientView({ user, orders }: AccountClientViewProps) {
         {activeTab === "orders" ? (
           <div className="space-y-4 animate-in fade-in duration-200">
             <h2 className="text-lg font-bold text-slate-900">
-              История заказов ({orders.length})
+              {t("account.ordersHistory")} ({orders.length})
             </h2>
             <OrdersHistoryTable orders={orders} />
           </div>

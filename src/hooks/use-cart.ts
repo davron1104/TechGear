@@ -75,6 +75,7 @@ export const useCart = create<CartStore>()(
                   image: newItem.image,
                   quantity: initialQty,
                   stock: newItem.stock,
+                  translations: newItem.translations,
                 },
               ],
             });
@@ -118,6 +119,7 @@ export const useCart = create<CartStore>()(
                   image: newItem.image,
                   quantity: initialQty,
                   stock: newItem.stock,
+                  translations: newItem.translations,
                 },
               ],
             });

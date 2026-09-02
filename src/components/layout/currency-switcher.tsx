@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
 
 interface CurrencySwitcherProps {
   className?: string;
@@ -13,6 +14,7 @@ export function CurrencySwitcher({
   variant = "dark",
 }: CurrencySwitcherProps) {
   const { currency, setCurrency, isPending } = useCurrency();
+  const { t } = useTranslation();
 
   const isDark = variant === "dark";
 
@@ -26,7 +28,7 @@ export function CurrencySwitcher({
           : "bg-slate-100 border-slate-200 text-slate-600"
       } ${className}`}
       role="group"
-      aria-label="Выбор валюты магазина"
+      aria-label={t("header.currencyLabel")}
     >
       <button
         type="button"

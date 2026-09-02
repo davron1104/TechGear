@@ -3,6 +3,7 @@
 import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { CartItem } from "@/types/cart";
+import { ProductTranslations } from "@/types/product";
 import {
   addToCartSchema,
   updateCartQuantitySchema,
@@ -61,6 +62,7 @@ async function fetchUserCartItems(
     image: item.product.image,
     quantity: item.quantity,
     stock: item.product.stock,
+    translations: (item.product.translations as ProductTranslations) ?? null,
   }));
 }
 

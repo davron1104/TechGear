@@ -5,6 +5,9 @@ import { Plus, Minus, Trash2 } from "lucide-react";
 import { CartItem } from "@/types/cart";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
+import { useTranslation } from "@/context/language-context";
+
+import { getLocalizedProductName } from "@/i18n";
 
 interface CartItemRowProps {
   item: CartItem;
@@ -12,8 +15,11 @@ interface CartItemRowProps {
 
 export function CartItemRow({ item }: CartItemRowProps) {
   const { formatPrice } = useCurrency();
+  const { t, locale } = useTranslation();
   const updateQuantity = useCart((state) => state.updateQuantity);
   const removeItem = useCart((state) => state.removeItem);
+
+  const localizedName = getLocalizedProductName(item, locale);
 
   const maxStock = item.stock ?? 999;
   const lineTotal = item.price * item.quantity;
@@ -38,7 +44,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
       <div className="w-16 h-16 shrink-0 bg-[#F8FAFC] border border-slate-200 rounded-xl p-1.5 flex items-center justify-center overflow-hidden">
         <img
           src={item.image}
-          alt={item.name}
+          alt={localizedName}
           className="w-full h-full object-contain"
           loading="lazy"
         />
@@ -48,13 +54,13 @@ export function CartItemRow({ item }: CartItemRowProps) {
       <div className="flex-1 min-w-0 flex flex-col justify-between">
         <div className="flex items-start justify-between gap-2">
           <h4 className="text-xs sm:text-sm font-semibold text-slate-900 line-clamp-2 leading-snug">
-            {item.name}
+            {localizedName}
           </h4>
           <button
             type="button"
             onClick={() => removeItem(item.productId)}
             className="text-slate-400 hover:text-rose-600 p-1 rounded-md transition-colors shrink-0 cursor-pointer"
-            aria-label={`Удалить ${item.name} из корзины`}
+            aria-label={`${t("cart.remove")}: ${localizedName}`}
           >
             <Trash2 className="w-4 h-4" />
           </button>
@@ -67,7 +73,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
               type="button"
               onClick={handleDecrement}
               className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
-              aria-label="Уменьшить количество"
+              aria-label={t("product.decreaseQuantity")}
             >
               <Minus className="w-3 h-3" />
             </button>
@@ -79,7 +85,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
               onClick={handleIncrement}
               disabled={item.quantity >= maxStock}
               className="w-6 h-6 flex items-center justify-center rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
-              aria-label="Увеличить количество"
+              aria-label={t("product.increaseQuantity")}
             >
               <Plus className="w-3 h-3" />
             </button>
@@ -92,7 +98,7 @@ export function CartItemRow({ item }: CartItemRowProps) {
             </div>
             {item.quantity > 1 && (
               <div className="text-[10px] text-slate-400 font-mono">
-                {formatPrice(item.price)}/шт.
+                {formatPrice(item.price)}
               </div>
             )}
           </div>
