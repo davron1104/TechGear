@@ -41,6 +41,7 @@
     "viewCatalog": "Go to Catalog",
     "popularBadge": "Bestseller",
     "fastDispatch": "Fast Dispatch",
+    "fastShipping": "Fast Dispatch",
     "warranty12m": "12-month Warranty",
     "original100": "100% Original",
     "bestseller": "Bestseller",
@@ -267,6 +268,9 @@
     "workingHoursLabel": "Working hours:",
     "addressLabel": "Address:",
     "copyright": "© {{year}} TechGear. All rights reserved.",
+    "allRightsReserved": "All rights reserved.",
+    "privacyPolicy": "Privacy Policy",
+    "termsOfService": "Terms of Service",
     "standards": "Built according to modern e-commerce standards"
   }
 }

@@ -41,6 +41,7 @@
     "viewCatalog": "Перейти в каталог",
     "popularBadge": "Хит продаж",
     "fastDispatch": "Быстрая отправка",
+    "fastShipping": "Быстрая отправка",
     "warranty12m": "Гарантия 12 мес.",
     "original100": "100% Оригинал",
     "bestseller": "Бестселлер",
@@ -267,6 +268,9 @@
     "workingHoursLabel": "Режим работы:",
     "addressLabel": "Адрес:",
     "copyright": "© {{year}} TechGear. Все права защищены.",
+    "allRightsReserved": "Все права защищены.",
+    "privacyPolicy": "Политика конфиденциальности",
+    "termsOfService": "Условия обслуживания",
     "standards": "Разработано по стандартам современной электронной коммерции"
   }
 }

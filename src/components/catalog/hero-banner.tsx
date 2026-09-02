@@ -6,18 +6,20 @@ import { Sparkles, ArrowRight, ShieldCheck, Zap, Award } from "lucide-react";
 import { Product } from "@/types/product";
 import { useCurrency } from "@/context/currency-context";
 import { useTranslation } from "@/context/language-context";
-import { getLocalizedProduct } from "@/i18n";
+import { getLocalizedProduct, getLocalizedHref } from "@/i18n";
 
 interface HeroBannerProps {
   featuredProduct?: Product | null;
+  product?: Product | null;
 }
 
-export function HeroBanner({ featuredProduct }: HeroBannerProps) {
+export function HeroBanner({ featuredProduct, product }: HeroBannerProps) {
+  const currentProduct = featuredProduct || product;
   const { formatPrice } = useCurrency();
   const { t, locale } = useTranslation();
 
-  const localizedProduct = featuredProduct
-    ? getLocalizedProduct(featuredProduct, locale)
+  const localizedProduct = currentProduct
+    ? getLocalizedProduct(currentProduct, locale)
     : null;
 
   const image =
@@ -30,9 +32,10 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
   const priceDisplay = localizedProduct
     ? formatPrice(localizedProduct.price)
     : formatPrice(8990);
-  const productHref = localizedProduct?.slug
-    ? `/product/${localizedProduct.slug}`
-    : "/catalog";
+  const productHref = getLocalizedHref(
+    localizedProduct?.slug ? `/product/${localizedProduct.slug}` : "/catalog",
+    locale
+  );
 
   return (
     <section className="relative overflow-hidden rounded-2xl bg-[#0F172A] border border-slate-800 shadow-xl mb-10 text-white">
@@ -58,7 +61,7 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <Link
-              href="/catalog"
+              href={getLocalizedHref("/catalog", locale)}
               className="bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold px-6 py-3.5 rounded-lg shadow-md transition-all duration-200 hover:scale-[1.02] flex items-center gap-2 text-sm sm:text-base"
             >
               <span>{t("hero.viewCatalog")}</span>
@@ -67,16 +70,16 @@ export function HeroBanner({ featuredProduct }: HeroBannerProps) {
           </div>
 
           {/* Плашки преимуществ */}
-          <div className="grid grid-cols-3 gap-3 pt-4 border-t border-slate-800/80 text-xs text-slate-400">
-            <div className="flex items-center gap-1.5">
+          <div className="grid grid-cols-3 gap-4 pt-4 border-t border-slate-800/80 text-xs text-slate-400 font-medium">
+            <div className="flex items-center gap-2">
               <Zap className="w-4 h-4 text-[#F59E0B] shrink-0" />
               <span>{t("hero.fastDispatch")}</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#10B981] shrink-0" />
               <span>{t("hero.warranty12m")}</span>
             </div>
-            <div className="flex items-center gap-1.5">
+            <div className="flex items-center gap-2">
               <Award className="w-4 h-4 text-[#06B6D4] shrink-0" />
               <span>{t("hero.original100")}</span>
             </div>

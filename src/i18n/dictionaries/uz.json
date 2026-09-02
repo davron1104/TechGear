@@ -41,6 +41,7 @@
     "viewCatalog": "Katalogga o'tish",
     "popularBadge": "Xit savdo",
     "fastDispatch": "Tezkor jo'natish",
+    "fastShipping": "Tezkor jo'natish",
     "warranty12m": "12 oy kafolat",
     "original100": "100% Asl",
     "bestseller": "Bestseller",
@@ -267,6 +268,9 @@
     "workingHoursLabel": "Ish vaqti:",
     "addressLabel": "Manzil:",
     "copyright": "© {{year}} TechGear. Barcha huquqlar himoyalangan.",
+    "allRightsReserved": "Barcha huquqlar himoyalangan.",
+    "privacyPolicy": "Maxfiylik siyosati",
+    "termsOfService": "Xizmat ko'rsatish shartlari",
     "standards": "Zamonaviy elektron tijorat standartlari asosida ishlab chiqilgan"
   }
 }

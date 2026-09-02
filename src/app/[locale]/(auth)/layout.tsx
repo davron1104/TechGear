@@ -46,14 +46,14 @@ export default async function AuthLayout({
       {/* 3. Компактный подвал */}
       <footer className="w-full py-6 px-4 border-t border-slate-200 bg-white text-xs text-slate-400">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
-          <span>© 2026 TechGear. Все права защищены.</span>
+          <span>{translate(locale, "footer.copyright", { year: new Date().getFullYear() })}</span>
           <div className="flex items-center gap-4 text-slate-500 text-xs">
             <span className="hover:text-slate-700 transition-colors cursor-pointer">
-              Политика конфиденциальности
+              {translate(locale, "footer.privacyPolicy")}
             </span>
             <span>•</span>
             <span className="hover:text-slate-700 transition-colors cursor-pointer">
-              Пользовательское соглашение
+              {translate(locale, "footer.termsOfService")}
             </span>
           </div>
         </div>
