@@ -19,6 +19,7 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { useSession, signOut } from "next-auth/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 import { useCurrency } from "@/context/currency-context";
 
 import { ShopSettings, DEFAULT_SHOP_SETTINGS } from "@/lib/settings";
@@ -33,7 +34,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
   const { data: session, status } = useSession();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const { formatPrice } = useCurrency();
 
   useEffect(() => {
@@ -97,7 +98,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
         <div className="max-w-7xl mx-auto px-4 h-[72px] flex items-center justify-between gap-4">
           {/* Логотип */}
           <Link
-            href="/"
+            href={getLocalizedHref("/", locale)}
             className="text-2xl font-bold tracking-tight text-[#0F172A] flex items-center shrink-0 hover:opacity-95 transition-opacity"
           >
             TechGear<span className="text-[#06B6D4] text-3xl leading-none">.</span>
@@ -148,7 +149,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
 
                     <div className="py-1">
                       <Link
-                        href="/account"
+                        href={getLocalizedHref("/account", locale)}
                         onClick={() => setIsMenuOpen(false)}
                         className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#0F172A] transition-colors"
                       >
@@ -158,7 +159,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
 
                       {session.user.role === "ADMIN" && (
                         <Link
-                          href="/admin"
+                          href={getLocalizedHref("/admin", locale)}
                           onClick={() => setIsMenuOpen(false)}
                           className="flex items-center gap-2 px-4 py-2 text-xs text-slate-700 hover:bg-slate-50 hover:text-[#0F172A] transition-colors"
                         >
@@ -173,7 +174,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
                         type="button"
                         onClick={() => {
                           setIsMenuOpen(false);
-                          signOut({ callbackUrl: "/" });
+                          signOut({ callbackUrl: getLocalizedHref("/", locale) });
                         }}
                         className="flex items-center gap-2 w-full text-left px-4 py-2 text-xs text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-colors cursor-pointer border-none bg-transparent"
                       >
@@ -186,7 +187,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
               </div>
             ) : (
               <Link
-                href="/login"
+                href={getLocalizedHref("/login", locale)}
                 className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-slate-700 hover:text-[#0F172A] hover:bg-slate-100 rounded-lg transition-colors"
               >
                 <User className="w-5 h-5 text-slate-600" />
@@ -226,15 +227,15 @@ function SearchBar() {
 function SearchBarForm({ initialSearch }: { initialSearch: string }) {
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(initialSearch);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmed = searchQuery.trim();
     if (trimmed) {
-      router.push(`/catalog?search=${encodeURIComponent(trimmed)}`);
+      router.push(getLocalizedHref(`/catalog?search=${encodeURIComponent(trimmed)}`, locale));
     } else {
-      router.push(`/catalog`);
+      router.push(getLocalizedHref("/catalog", locale));
     }
   };
 

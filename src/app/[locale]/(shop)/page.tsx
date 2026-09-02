@@ -14,7 +14,7 @@ import { ProductCard } from "@/components/catalog/product-card";
 import { getFeaturedProduct, getPopularProducts } from "@/lib/products";
 import prisma from "@/lib/prisma";
 import { getServerLocale } from "@/i18n/server";
-import { createTranslator, getLocalizedCategory } from "@/i18n";
+import { createTranslator, getLocalizedCategory, getLocalizedHref } from "@/i18n";
 import { CategoryTranslations } from "@/types/product";
 
 // Красивое соответствие иконок и цветов для каждой категории
@@ -119,7 +119,7 @@ export default async function HomePage() {
             return (
               <Link
                 key={category.id}
-                href={`/catalog/${category.slug}`}
+                href={getLocalizedHref(`/catalog/${category.slug}`, locale)}
                 className={`group flex flex-col items-center justify-center p-6 bg-gradient-to-br ${meta.bgGradient} border border-slate-100 rounded-2xl transition-all duration-300 hover:shadow-md hover:-translate-y-1 ${meta.borderColor}`}
               >
                 <div className={`p-4 rounded-xl bg-white shadow-xs group-hover:scale-110 transition-transform duration-300 ${meta.iconColor}`}>
@@ -153,7 +153,7 @@ export default async function HomePage() {
             </div>
 
             <Link
-              href="/catalog"
+              href={getLocalizedHref("/catalog", locale)}
               className="inline-flex items-center gap-2 text-sm font-bold text-[#06B6D4] hover:text-[#0891B2] transition-colors shrink-0 group"
             >
               <span>{t("hero.viewCatalog")}</span>

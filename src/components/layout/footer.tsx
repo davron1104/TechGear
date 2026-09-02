@@ -5,7 +5,7 @@ import { ShieldCheck, Truck, Headphones, RotateCcw } from "lucide-react";
 import { DEFAULT_CATEGORIES } from "@/types/category";
 import { useTranslation } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
-import { getLocalizedCategory } from "@/i18n";
+import { getLocalizedCategory, getLocalizedHref } from "@/i18n";
 import { ShopSettings, DEFAULT_SHOP_SETTINGS } from "@/lib/settings";
 
 interface FooterProps {
@@ -75,7 +75,7 @@ export function Footer({ shopSettings = DEFAULT_SHOP_SETTINGS }: FooterProps) {
           {/* Колонка 1: О магазине */}
           <div className="space-y-4">
             <Link
-              href="/"
+              href={getLocalizedHref("/", locale)}
               className="text-2xl font-bold tracking-tight text-white flex items-center"
             >
               TechGear<span className="text-[#06B6D4] text-3xl leading-none">.</span>
@@ -96,7 +96,7 @@ export function Footer({ shopSettings = DEFAULT_SHOP_SETTINGS }: FooterProps) {
                 return (
                   <li key={category.id}>
                     <Link
-                      href={`/catalog/${category.slug}`}
+                      href={getLocalizedHref(`/catalog/${category.slug}`, locale)}
                       className="hover:text-white transition-colors"
                     >
                       {localized.name}
@@ -114,12 +114,12 @@ export function Footer({ shopSettings = DEFAULT_SHOP_SETTINGS }: FooterProps) {
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link href="/account" className="hover:text-white transition-colors">
+                <Link href={getLocalizedHref("/account", locale)} className="hover:text-white transition-colors">
                   {t("nav.profile")}
                 </Link>
               </li>
               <li>
-                <Link href="/login" className="hover:text-white transition-colors">
+                <Link href={getLocalizedHref("/login", locale)} className="hover:text-white transition-colors">
                   {t("nav.login")} / {t("nav.register")}
                 </Link>
               </li>

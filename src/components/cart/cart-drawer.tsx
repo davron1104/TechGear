@@ -6,13 +6,14 @@ import { ShoppingCart, X, Trash2, ArrowRight } from "lucide-react";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 import { CartItemRow } from "./cart-item-row";
 
 const emptySubscribe = () => () => {};
 
 export function CartDrawer() {
   const { formatPrice } = useCurrency();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const isHydrated = useSyncExternalStore(
     emptySubscribe,
     () => true,
@@ -143,7 +144,7 @@ export function CartDrawer() {
 
               {/* Кнопка оформления заказа */}
               <Link
-                href="/checkout"
+                href={getLocalizedHref("/checkout", locale)}
                 onClick={closeCart}
                 className="w-full py-3.5 px-6 rounded-xl bg-[#F59E0B] hover:bg-[#D97706] text-slate-950 font-bold text-sm shadow-md transition-all duration-200 flex items-center justify-center gap-2 hover:scale-[1.01] active:scale-[0.99]"
               >

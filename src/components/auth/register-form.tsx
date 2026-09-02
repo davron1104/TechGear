@@ -10,10 +10,11 @@ import { registerUser } from "@/actions/auth-actions";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 
 export function RegisterForm() {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -66,10 +67,10 @@ export function RegisterForm() {
         setIsLoading(false);
         setStatusMessage(t("auth.autoLoginFailed"));
         setTimeout(() => {
-          router.push("/login");
+          router.push(getLocalizedHref("/login", locale));
         }, 2000);
       } else {
-        router.push("/");
+        router.push(getLocalizedHref("/", locale));
         router.refresh();
       }
     } catch (err) {
@@ -265,7 +266,7 @@ export function RegisterForm() {
       <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
         {t("auth.haveAccount")}{" "}
         <Link
-          href="/login"
+          href={getLocalizedHref("/login", locale)}
           className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
         >
           {t("auth.loginLink")}

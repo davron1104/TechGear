@@ -7,6 +7,7 @@ import { CatalogFilters } from "./catalog-filters";
 import { ProductGrid } from "./product-grid";
 import { FilterState, Product } from "@/types/product";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 
 interface CatalogViewProps {
   products: Product[];
@@ -22,7 +23,7 @@ export function CatalogView({
   search,
 }: CatalogViewProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   // Локальные фильтры цены (канонически в UZS), наличия и сортировки
   const [filterValues, setFilterValues] = useState<
@@ -51,9 +52,9 @@ export function CatalogView({
     // Если изменилась категория, выполняем навигацию на соответствующий маршрут
     if (next.categorySlug !== categorySlug) {
       if (next.categorySlug) {
-        router.push(`/catalog/${next.categorySlug}`, { scroll: false });
+        router.push(getLocalizedHref(`/catalog/${next.categorySlug}`, locale), { scroll: false });
       } else {
-        router.push("/catalog", { scroll: false });
+        router.push(getLocalizedHref("/catalog", locale), { scroll: false });
       }
     }
 
@@ -67,9 +68,9 @@ export function CatalogView({
 
   const handleResetSearch = () => {
     if (categorySlug) {
-      router.push(`/catalog/${categorySlug}`);
+      router.push(getLocalizedHref(`/catalog/${categorySlug}`, locale));
     } else {
-      router.push("/catalog");
+      router.push(getLocalizedHref("/catalog", locale));
     }
   };
 

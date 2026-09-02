@@ -1,7 +1,15 @@
 "use client";
 
-import React, { createContext, useContext, useState, useTransition, useCallback, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useTransition,
+  useCallback,
+  useMemo,
+  useEffect,
+} from "react";
+import { useRouter, usePathname } from "next/navigation";
 import {
   Locale,
   DEFAULT_LOCALE,
@@ -10,6 +18,7 @@ import {
   TranslationKey,
   createTranslator,
   translate,
+  getLocalizedHref,
 } from "@/i18n";
 
 interface LanguageContextValue {
@@ -35,6 +44,14 @@ export function LanguageProvider({
   );
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const pathname = usePathname();
+
+  // Синхронизация состояния при изменении initialLocale из URL (навигация Next.js)
+  useEffect(() => {
+    if (isValidLocale(initialLocale) && initialLocale !== locale) {
+      setLocaleState(initialLocale);
+    }
+  }, [initialLocale]);
 
   const setLocale = useCallback(
     (newLocale: Locale) => {
@@ -44,17 +61,24 @@ export function LanguageProvider({
       // 1. Оптимистично обновляем состояние на клиенте
       setLocaleState(newLocale);
 
-      // 2. Устанавливаем cookie NEXT_LOCALE для всех маршрутов
+      // 2. Устанавливаем cookie NEXT_LOCALE для сохранения предпочтения пользователя
       if (typeof document !== "undefined") {
         document.cookie = `${LOCALE_COOKIE_NAME}=${newLocale}; path=/; max-age=31536000; SameSite=Lax`;
       }
 
-      // 3. Запускаем ревалидацию серверных компонентов
-      startTransition(() => {
-        router.refresh();
-      });
+      // 3. Выполняем переход на новый URL с сохранением текущего пути и параметров запроса
+      if (typeof window !== "undefined") {
+        const currentPath = pathname || window.location.pathname;
+        const currentSearch = window.location.search.replace(/^\?/, "");
+        const targetPath = getLocalizedHref(currentPath, newLocale);
+        const targetUrl = currentSearch ? `${targetPath}?${currentSearch}` : targetPath;
+
+        startTransition(() => {
+          router.push(targetUrl);
+        });
+      }
     },
-    [locale, router]
+    [locale, pathname, router]
   );
 
   const t = useMemo(() => createTranslator(locale), [locale]);

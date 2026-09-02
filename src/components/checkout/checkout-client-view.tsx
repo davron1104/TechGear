@@ -10,6 +10,7 @@ import { OrderSummary } from "@/components/checkout/order-summary";
 import { CheckoutInput } from "@/lib/validations/checkout";
 import { createOrder } from "@/actions/order-actions";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 import { ShopSettings, DEFAULT_SHOP_SETTINGS } from "@/lib/settings";
 
 const emptySubscribe = () => () => {};
@@ -22,7 +23,7 @@ export function CheckoutClientView({
   shopSettings = DEFAULT_SHOP_SETTINGS,
 }: CheckoutClientViewProps) {
   const router = useRouter();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [isLoading, setIsLoading] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
 
@@ -85,7 +86,7 @@ export function CheckoutClientView({
         );
       }
 
-      router.push(`/checkout/success?${params.toString()}`);
+      router.push(getLocalizedHref(`/checkout/success?${params.toString()}`, locale));
     } catch (err) {
       console.error("Checkout submit unexpected error:", err);
       setServerError(
@@ -120,7 +121,7 @@ export function CheckoutClientView({
         </p>
         <div className="pt-2">
           <Link
-            href="/catalog"
+            href={getLocalizedHref("/catalog", locale)}
             className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />

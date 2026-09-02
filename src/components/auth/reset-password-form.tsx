@@ -14,6 +14,7 @@ import {
 } from "@/lib/validations/auth";
 import { sendPasswordResetLink, resetPassword } from "@/actions/auth-actions";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 
 export function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -31,7 +32,7 @@ function RequestResetLinkForm() {
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const {
     register,
@@ -102,7 +103,7 @@ function RequestResetLinkForm() {
 
           <div className="pt-2">
             <Link
-              href="/login"
+              href={getLocalizedHref("/login", locale)}
               className="w-full py-3 px-4 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2"
             >
               <ArrowLeft className="w-4 h-4" />
@@ -164,7 +165,7 @@ function RequestResetLinkForm() {
           <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
             {t("auth.rememberPassword")}{" "}
             <Link
-              href="/login"
+              href={getLocalizedHref("/login", locale)}
               className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
             >
               {t("auth.loginLink")}
@@ -177,7 +178,7 @@ function RequestResetLinkForm() {
 }
 
 function SetNewPasswordForm({ token }: { token: string }) {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -259,7 +260,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
 
           <div className="pt-2">
             <Link
-              href="/login"
+              href={getLocalizedHref("/login", locale)}
               className="w-full py-3 px-4 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold shadow-md transition-colors flex items-center justify-center gap-2"
             >
               <span>{t("auth.loginButton")}</span>
@@ -376,7 +377,7 @@ function SetNewPasswordForm({ token }: { token: string }) {
           <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
             {t("auth.rememberPassword")}{" "}
             <Link
-              href="/login"
+              href={getLocalizedHref("/login", locale)}
               className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
             >
               {t("auth.loginLink")}

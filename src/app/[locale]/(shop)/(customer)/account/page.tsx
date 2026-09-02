@@ -3,6 +3,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getUserOrders } from "@/actions/order-actions";
 import { AccountClientView } from "@/components/account/account-client-view";
+import { getServerLocale } from "@/i18n/server";
+import { getLocalizedHref } from "@/i18n";
 
 export const metadata: Metadata = {
   title: "Личный кабинет — TechGear",
@@ -12,7 +14,8 @@ export const metadata: Metadata = {
 export default async function AccountPage() {
   const session = await auth();
   if (!session?.user) {
-    redirect("/login");
+    const locale = await getServerLocale();
+    redirect(getLocalizedHref("/login", locale));
   }
 
   const res = await getUserOrders();

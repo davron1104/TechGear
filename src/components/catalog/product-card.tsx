@@ -8,7 +8,7 @@ import { Product } from "@/types/product";
 import { useCart } from "@/hooks/use-cart";
 import { useCurrency } from "@/context/currency-context";
 import { useTranslation } from "@/context/language-context";
-import { getLocalizedProduct } from "@/i18n";
+import { getLocalizedProduct, getLocalizedHref } from "@/i18n";
 
 interface ProductCardProps {
   product: Product;
@@ -171,7 +171,7 @@ export function ProductCard({ product }: ProductCardProps) {
         </div>
 
         {/* Название */}
-        <Link href={`/product/${localized.slug}`}>
+        <Link href={getLocalizedHref(`/product/${localized.slug}`, locale)}>
           <h3 className="text-sm font-semibold text-slate-900 line-clamp-2 min-h-[40px] group-hover:text-[#06B6D4] transition-colors mb-3">
             {localized.name}
           </h3>

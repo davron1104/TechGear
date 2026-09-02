@@ -6,10 +6,11 @@ import Link from "next/link";
 import { CheckCircle2, PackageCheck, ArrowRight, Mail, Phone, MapPin, Truck, User } from "lucide-react";
 import { useCurrency } from "@/context/currency-context";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 
 function SuccessContent() {
   const { formatPrice } = useCurrency();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const searchParams = useSearchParams();
 
   const orderNumber = searchParams.get("orderNumber") || "TG-84920";
@@ -94,7 +95,7 @@ function SuccessContent() {
         {/* Кнопка возврата в каталог */}
         <div className="pt-2">
           <Link
-            href="/"
+            href={getLocalizedHref("/catalog", locale)}
             className="inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-[#0F172A] hover:bg-[#06B6D4] text-white text-sm font-bold shadow-md transition-all hover:scale-[1.01]"
           >
             <span>{t("checkout.backToCatalog")}</span>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Category, DEFAULT_CATEGORIES } from "@/types/category";
 import { useTranslation } from "@/context/language-context";
-import { getLocalizedCategory } from "@/i18n";
+import { getLocalizedCategory, getLocalizedHref } from "@/i18n";
 
 interface CategoryBarProps {
   categories?: Category[];
@@ -13,6 +13,8 @@ interface CategoryBarProps {
 export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProps) {
   const pathname = usePathname();
   const { t, locale } = useTranslation();
+
+  const catalogHref = getLocalizedHref("/catalog", locale);
 
   return (
     <nav
@@ -23,9 +25,9 @@ export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProp
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">
           {/* Кнопка "Все товары" */}
           <Link
-            href="/catalog"
+            href={catalogHref}
             className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
-              pathname === "/catalog"
+              pathname === catalogHref
                 ? "bg-[#0F172A] text-white shadow-xs"
                 : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-100 hover:text-[#0F172A]"
             }`}
@@ -36,11 +38,13 @@ export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProp
           {/* Список категорий */}
           {categories.map((category) => {
             const localized = getLocalizedCategory(category, locale);
-            const isActive = pathname === `/catalog/${category.slug}`;
+            const categoryHref = getLocalizedHref(`/catalog/${category.slug}`, locale);
+            const isActive = pathname === categoryHref;
+
             return (
               <Link
                 key={category.id}
-                href={`/catalog/${category.slug}`}
+                href={categoryHref}
                 className={`shrink-0 px-4 py-2 rounded-full text-sm font-medium transition-all ${
                   isActive
                     ? "bg-[#0F172A] text-white shadow-xs"

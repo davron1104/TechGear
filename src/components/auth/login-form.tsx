@@ -9,14 +9,15 @@ import { loginSchema, LoginInput } from "@/lib/validations/auth";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslation } from "@/context/language-context";
+import { getLocalizedHref } from "@/i18n";
 
 export function LoginForm() {
+  const { t, locale } = useTranslation();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callbackUrl") || getLocalizedHref("/", locale);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState<string | null>(null);
-  const { t } = useTranslation();
 
   const {
     register,
@@ -115,7 +116,7 @@ export function LoginForm() {
               {t("auth.passwordLabel")}
             </label>
             <Link
-              href="/reset-password"
+              href={getLocalizedHref("/reset-password", locale)}
               className="text-xs text-[#06B6D4] hover:text-[#0891B2] font-medium transition-colors"
             >
               {t("auth.forgotPassword")}
@@ -178,7 +179,7 @@ export function LoginForm() {
       <div className="mt-6 pt-6 border-t border-slate-100 text-center text-xs text-slate-500">
         {t("auth.noAccount")}{" "}
         <Link
-          href="/register"
+          href={getLocalizedHref("/register", locale)}
           className="text-[#06B6D4] hover:text-[#0891B2] font-semibold underline underline-offset-4 transition-colors"
         >
           {t("auth.registerLink")}
