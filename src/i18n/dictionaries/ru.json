@@ -272,5 +272,30 @@
     "privacyPolicy": "Политика конфиденциальности",
     "termsOfService": "Условия обслуживания",
     "standards": "Разработано по стандартам современной электронной коммерции"
+  },
+  "seo": {
+    "homeTitle": "TechGear — Интернет-магазин компьютерной техники и аксессуаров",
+    "homeDescription": "Премиальная компьютерная периферия, клавиатуры, мыши, гарнитуры, мониторы и аксессуары с быстрой доставкой.",
+    "catalogTitle": "Каталог товаров — TechGear",
+    "catalogDescription": "Широкий выбор профессиональной компьютерной техники, периферии и аксессуаров в интернет-магазине TechGear.",
+    "catalogSearchTitle": "Поиск: {{query}} — TechGear",
+    "catalogSearchDescription": "Результаты поиска по запросу «{{query}}» в интернет-магазине TechGear.",
+    "categoryTitle": "{{category}} — купить в TechGear",
+    "categoryDescription": "Качественные {{category}} по лучшим ценам с гарантией и быстрой доставкой в интернет-магазине TechGear.",
+    "productNotFoundTitle": "Товар не найден — TechGear",
+    "categoryNotFoundTitle": "Категория не найдена — TechGear",
+    "orderNotFoundTitle": "Заказ не найден — TechGear",
+    "loginTitle": "Вход в аккаунт — TechGear",
+    "loginDescription": "Войдите в личный кабинет интернет-магазина TechGear для управления заказами.",
+    "registerTitle": "Регистрация — TechGear",
+    "registerDescription": "Создайте аккаунт в интернет-магазине TechGear и покупайте девайсы со скидками и историей заказов.",
+    "resetPasswordTitle": "Восстановление пароля — TechGear",
+    "resetPasswordDescription": "Восстановление доступа к личному кабинету TechGear.",
+    "checkoutTitle": "Оформление заказа — TechGear",
+    "checkoutDescription": "Оформление заказа премиальной техники и периферии в интернет-магазине TechGear.",
+    "accountTitle": "Личный кабинет — TechGear",
+    "accountDescription": "Управление заказами и персональными данными в интернет-магазине TechGear.",
+    "orderTitle": "Заказ #{{number}} — TechGear",
+    "orderDescription": "Просмотр деталей заказа в личном кабинете TechGear."
   }
 }

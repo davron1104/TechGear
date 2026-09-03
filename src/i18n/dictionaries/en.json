@@ -272,5 +272,30 @@
     "privacyPolicy": "Privacy Policy",
     "termsOfService": "Terms of Service",
     "standards": "Built according to modern e-commerce standards"
+  },
+  "seo": {
+    "homeTitle": "TechGear — Computer Hardware & Accessories Online Store",
+    "homeDescription": "Premium computer peripherals, keyboards, mice, headsets, monitors, and accessories with fast dispatch.",
+    "catalogTitle": "Product Catalog — TechGear",
+    "catalogDescription": "Wide selection of professional computer hardware, peripherals, and accessories at TechGear.",
+    "catalogSearchTitle": "Search: {{query}} — TechGear",
+    "catalogSearchDescription": "Search results for \"{{query}}\" at TechGear online store.",
+    "categoryTitle": "{{category}} — Buy at TechGear",
+    "categoryDescription": "High-quality {{category}} at best prices with warranty and fast delivery at TechGear.",
+    "productNotFoundTitle": "Product Not Found — TechGear",
+    "categoryNotFoundTitle": "Category Not Found — TechGear",
+    "orderNotFoundTitle": "Order Not Found — TechGear",
+    "loginTitle": "Account Login — TechGear",
+    "loginDescription": "Sign in to your TechGear account to manage orders and track shipments.",
+    "registerTitle": "Create Account — TechGear",
+    "registerDescription": "Create an account at TechGear and enjoy exclusive deals with order tracking.",
+    "resetPasswordTitle": "Reset Password — TechGear",
+    "resetPasswordDescription": "Reset your TechGear account password.",
+    "checkoutTitle": "Checkout — TechGear",
+    "checkoutDescription": "Secure checkout for premium computer gear and peripherals at TechGear.",
+    "accountTitle": "My Account — TechGear",
+    "accountDescription": "Manage your profile, order history, and preferences at TechGear.",
+    "orderTitle": "Order #{{number}} — TechGear",
+    "orderDescription": "View order details and status in your TechGear account."
   }
 }

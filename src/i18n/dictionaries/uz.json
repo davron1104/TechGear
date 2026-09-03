@@ -272,5 +272,30 @@
     "privacyPolicy": "Maxfiylik siyosati",
     "termsOfService": "Xizmat ko'rsatish shartlari",
     "standards": "Zamonaviy elektron tijorat standartlari asosida ishlab chiqilgan"
+  },
+  "seo": {
+    "homeTitle": "TechGear — Kompyuter texnikasi va aksessuarlari internet-do'koni",
+    "homeDescription": "Tezkor yetkazib berish bilan premium kompyuter periferiyasi, klaviaturalar, sichqonchalar, quloqchinlar va monitorlar.",
+    "catalogTitle": "Mahsulotlar katalogi — TechGear",
+    "catalogDescription": "TechGear internet-do'konida professional kompyuter texnikasi va aksessuarlarining keng tanlovi.",
+    "catalogSearchTitle": "Qidiruv: {{query}} — TechGear",
+    "catalogSearchDescription": "TechGear internet-do'konida «{{query}}» so'rovi bo'yicha qidiruv natijalari.",
+    "categoryTitle": "{{category}} — TechGear-dan xarid qiling",
+    "categoryDescription": "TechGear internet-do'konida kafolat va tezkor yetkazib berish bilan qulay narxlardagi {{category}}.",
+    "productNotFoundTitle": "Mahsulot topilmadi — TechGear",
+    "categoryNotFoundTitle": "Kategoriya topilmadi — TechGear",
+    "orderNotFoundTitle": "Buyurtma topilmadi — TechGear",
+    "loginTitle": "Hisobga kirish — TechGear",
+    "loginDescription": "Buyurtmalarni boshqarish uchun TechGear internet-do'konidagi shaxsiy kabinetingizga kiring.",
+    "registerTitle": "Ro'yxatdan o'tish — TechGear",
+    "registerDescription": "TechGear internet-do'konida hisob yarating va chegirmalar hamda buyurtmalar tarixi bilan xarid qiling.",
+    "resetPasswordTitle": "Parolni tiklash — TechGear",
+    "resetPasswordDescription": "TechGear shaxsiy kabinetiga kirishni tiklash.",
+    "checkoutTitle": "Buyurtmani rasmiylashtirish — TechGear",
+    "checkoutDescription": "TechGear internet-do'konida premium texnika va periferiyaga buyurtma rasmiylashtirish.",
+    "accountTitle": "Shaxsiy kabinet — TechGear",
+    "accountDescription": "TechGear internet-do'konida buyurtmalar va shaxsiy ma'lumotlarni boshqarish.",
+    "orderTitle": "Buyurtma #{{number}} — TechGear",
+    "orderDescription": "TechGear shaxsiy kabinetida buyurtma tafsilotlarini ko'rish."
   }
 }

@@ -5,6 +5,7 @@ import { SessionProvider } from "next-auth/react";
 import { CartSyncProvider } from "@/components/cart/cart-sync-provider";
 import { CurrencyProvider } from "@/context/currency-context";
 import { getServerCurrency, getExchangeRate } from "@/lib/currency-server";
+import { getBaseUrl } from "@/lib/seo";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -19,6 +20,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getBaseUrl()),
   title: "TechGear — Интернет-магазин компьютерной техники и аксессуаров",
   description:
     "Премиальная компьютерная периферия, клавиатуры, мыши, гарнитуры, мониторы и аксессуары с быстрой доставкой.",
