@@ -5,11 +5,13 @@ import { CatalogView } from "@/components/catalog/catalog-view";
 import prisma from "@/lib/prisma";
 import { getPublicProducts } from "@/lib/products";
 import { getServerLocale } from "@/i18n/server";
-import { getLocalizedCategory } from "@/i18n";
+import { createTranslator, getLocalizedCategory, Locale, DEFAULT_LOCALE, isValidLocale } from "@/i18n";
 import { CategoryTranslations } from "@/types/product";
+import { getI18nAlternates, getOgLocale } from "@/lib/seo";
 
 interface CategoryPageProps {
   params: Promise<{
+    locale?: string;
     category: string;
   }>;
   searchParams: Promise<{
@@ -21,28 +23,84 @@ export async function generateMetadata({
   params,
   searchParams,
 }: CategoryPageProps): Promise<Metadata> {
-  const { category } = await params;
+  const { locale: rawLocale, category } = await params;
   const { search } = await searchParams;
+  const locale: Locale = isValidLocale(rawLocale) ? (rawLocale as Locale) : DEFAULT_LOCALE;
+  const t = createTranslator(locale);
+
   const categoryObject = await prisma.category.findUnique({
     where: { slug: category },
   });
 
   if (!categoryObject) {
     return {
-      title: "Категория не найдена — TechGear",
+      title: t("seo.categoryNotFoundTitle"),
+      robots: { index: false, follow: false },
     };
   }
+
+  const localizedCat = getLocalizedCategory(
+    {
+      ...categoryObject,
+      translations: categoryObject.translations as CategoryTranslations | null,
+    },
+    locale
+  );
+
+  const alternates = getI18nAlternates({
+    path: `/catalog/${category}`,
+    locale,
+    includeXDefault: false,
+  });
 
   if (search?.trim()) {
+    const trimmed = search.trim();
+    const title = t("seo.catalogSearchTitle", { query: trimmed });
+    const description = t("seo.catalogSearchDescription", { query: trimmed });
+
     return {
-      title: `Поиск: ${search.trim()} в ${categoryObject.name} — TechGear`,
-      description: `Результаты поиска по запросу "${search.trim()}" в категории ${categoryObject.name} интернет-магазина TechGear.`,
+      title,
+      description,
+      alternates,
+      robots: { index: false, follow: true },
+      openGraph: {
+        title,
+        description,
+        url: alternates.canonical,
+        siteName: "TechGear",
+        locale: getOgLocale(locale),
+        type: "website",
+      },
+      twitter: {
+        card: "summary_large_image",
+        title,
+        description,
+      },
     };
   }
 
+  const title = t("seo.categoryTitle", { category: localizedCat.name });
+  const description = t("seo.categoryDescription", {
+    category: localizedCat.name.toLowerCase(),
+  });
+
   return {
-    title: `${categoryObject.name} — купить в TechGear`,
-    description: `Качественные ${categoryObject.name.toLowerCase()} по лучшим ценам с гарантией и быстрой доставкой в интернет-магазине TechGear.`,
+    title,
+    description,
+    alternates,
+    openGraph: {
+      title,
+      description,
+      url: alternates.canonical,
+      siteName: "TechGear",
+      locale: getOgLocale(locale),
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
   };
 }
 

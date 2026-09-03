@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { 
   Keyboard, 
@@ -14,8 +15,45 @@ import { ProductCard } from "@/components/catalog/product-card";
 import { getFeaturedProduct, getPopularProducts } from "@/lib/products";
 import prisma from "@/lib/prisma";
 import { getServerLocale } from "@/i18n/server";
-import { createTranslator, getLocalizedCategory, getLocalizedHref } from "@/i18n";
+import { createTranslator, getLocalizedCategory, getLocalizedHref, Locale, DEFAULT_LOCALE, isValidLocale } from "@/i18n";
 import { CategoryTranslations } from "@/types/product";
+import { getI18nAlternates, getOgLocale } from "@/lib/seo";
+
+interface HomePageProps {
+  params?: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: HomePageProps): Promise<Metadata> {
+  const resolvedParams = params ? await params : undefined;
+  const rawLocale = resolvedParams?.locale;
+  const locale: Locale = isValidLocale(rawLocale) ? (rawLocale as Locale) : DEFAULT_LOCALE;
+  const t = createTranslator(locale);
+
+  const title = t("seo.homeTitle");
+  const description = t("seo.homeDescription");
+  const alternates = getI18nAlternates({ path: "/", locale, includeXDefault: false });
+
+  return {
+    title,
+    description,
+    alternates,
+    openGraph: {
+      title,
+      description,
+      url: alternates.canonical,
+      siteName: "TechGear",
+      locale: getOgLocale(locale),
+      type: "website",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+    },
+  };
+}
 
 // Красивое соответствие иконок и цветов для каждой категории
 const CATEGORY_META = {
