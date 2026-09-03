@@ -6,10 +6,11 @@ import { auth } from "@/auth";
 import { getOrderById } from "@/actions/order-actions";
 import { OrderDetailView } from "@/components/account/order-detail-view";
 import { getServerLocale } from "@/i18n/server";
-import { getLocalizedHref, translate } from "@/i18n";
+import { getLocalizedHref, translate, createTranslator, Locale, DEFAULT_LOCALE, isValidLocale } from "@/i18n";
 
 interface OrderPageProps {
   params: Promise<{
+    locale?: string;
     id: string;
   }>;
 }
@@ -17,13 +18,18 @@ interface OrderPageProps {
 export async function generateMetadata({
   params,
 }: OrderPageProps): Promise<Metadata> {
-  const { id } = await params;
+  const { locale: rawLocale, id } = await params;
+  const locale: Locale = isValidLocale(rawLocale) ? (rawLocale as Locale) : DEFAULT_LOCALE;
+  const t = createTranslator(locale);
+
   const res = await getOrderById(id);
   const order = res.success ? res.data : null;
 
   return {
-    title: order ? `Заказ #${order.orderNumber} — TechGear` : "Заказ не найден — TechGear",
-    description: "Просмотр деталей заказа в личном кабинете TechGear.",
+    title: order
+      ? t("seo.orderTitle", { number: order.orderNumber })
+      : t("seo.orderNotFoundTitle"),
+    description: t("seo.orderDescription"),
   };
 }
 

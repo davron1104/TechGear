@@ -1,10 +1,24 @@
 import { Metadata } from "next";
 import { RegisterForm } from "@/components/auth/register-form";
+import { createTranslator, Locale, DEFAULT_LOCALE, isValidLocale } from "@/i18n";
 
-export const metadata: Metadata = {
-  title: "Регистрация — TechGear",
-  description: "Создайте аккаунт в интернет-магазине TechGear и покупайте девайсы со скидками и историей заказов.",
-};
+interface RegisterPageProps {
+  params?: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: RegisterPageProps): Promise<Metadata> {
+  const resolvedParams = params ? await params : undefined;
+  const rawLocale = resolvedParams?.locale;
+  const locale: Locale = isValidLocale(rawLocale) ? (rawLocale as Locale) : DEFAULT_LOCALE;
+  const t = createTranslator(locale);
+
+  return {
+    title: t("seo.registerTitle"),
+    description: t("seo.registerDescription"),
+  };
+}
 
 export default function RegisterPage() {
   return (

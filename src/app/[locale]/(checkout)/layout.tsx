@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { CheckoutHeader } from "@/components/checkout/checkout-header";
 import { CheckoutFooter } from "@/components/checkout/checkout-footer";
+import { getPrivatePageRobots } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  robots: getPrivatePageRobots(),
+};
 
 export default function CheckoutLayout({
   children,

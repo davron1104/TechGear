@@ -1,8 +1,14 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getServerLocale } from "@/i18n/server";
 import { getLocalizedHref, translate } from "@/i18n";
 import { LanguageSwitcher } from "@/components/layout/language-switcher";
+import { getPrivatePageRobots } from "@/lib/seo";
+
+export const metadata: Metadata = {
+  robots: getPrivatePageRobots(),
+};
 
 export default async function AuthLayout({
   children,

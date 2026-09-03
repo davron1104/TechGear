@@ -1,11 +1,25 @@
 import { Metadata } from "next";
 import { LoginForm } from "@/components/auth/login-form";
 import { Suspense } from "react";
+import { createTranslator, Locale, DEFAULT_LOCALE, isValidLocale } from "@/i18n";
 
-export const metadata: Metadata = {
-  title: "Вход в аккаунт — TechGear",
-  description: "Войдите в личный кабинет интернет-магазина TechGear для управления заказами.",
-};
+interface LoginPageProps {
+  params?: Promise<{ locale: string }>;
+}
+
+export async function generateMetadata({
+  params,
+}: LoginPageProps): Promise<Metadata> {
+  const resolvedParams = params ? await params : undefined;
+  const rawLocale = resolvedParams?.locale;
+  const locale: Locale = isValidLocale(rawLocale) ? (rawLocale as Locale) : DEFAULT_LOCALE;
+  const t = createTranslator(locale);
+
+  return {
+    title: t("seo.loginTitle"),
+    description: t("seo.loginDescription"),
+  };
+}
 
 export default function LoginPage() {
   return (
