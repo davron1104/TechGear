@@ -1,14 +1,28 @@
 "use server";
 
+import path from "path";
 import { auth } from "@/auth";
-import {
-  ALLOWED_IMAGE_TYPES,
-  MAX_IMAGE_SIZE_BYTES,
-  saveImageLocally,
-} from "@/lib/storage";
+import { uploadImageToB2 } from "@/lib/b2";
+
+const ALLOWED_IMAGE_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+];
+
+const ALLOWED_IMAGE_EXTENSIONS = [
+  ".jpg",
+  ".jpeg",
+  ".png",
+  ".webp",
+  ".gif",
+];
+
+const MAX_IMAGE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export type UploadResponse =
-  | { success: true; url: string }
+  | { success: true; url: string; key?: string }
   | { success: false; error: string };
 
 async function assertAdmin() {
@@ -20,7 +34,7 @@ async function assertAdmin() {
 }
 
 /**
- * Server action to upload a product image to local public/uploads/products/ storage.
+ * Server action to securely upload a product image directly to Backblaze B2.
  */
 export async function uploadProductImage(formData: FormData): Promise<UploadResponse> {
   try {
@@ -42,7 +56,16 @@ export async function uploadProductImage(formData: FormData): Promise<UploadResp
       };
     }
 
-    // 2. Validate file size (max 5 MB)
+    // 2. Validate file extension
+    const extension = path.extname(file.name || "").toLowerCase();
+    if (!ALLOWED_IMAGE_EXTENSIONS.includes(extension)) {
+      return {
+        success: false,
+        error: `Недопустимое расширение файла (${extension || "отсутствует"}). Разрешены: .jpg, .jpeg, .png, .webp, .gif.`,
+      };
+    }
+
+    // 3. Validate file size (max 5 MB)
     if (file.size > MAX_IMAGE_SIZE_BYTES) {
       return {
         success: false,
@@ -50,16 +73,23 @@ export async function uploadProductImage(formData: FormData): Promise<UploadResp
       };
     }
 
-    // 3. Convert File to Buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // 4. Convert File to Buffer in memory
+    let buffer: Buffer;
+    if (typeof file.arrayBuffer === "function") {
+      const arrayBuffer = await file.arrayBuffer();
+      buffer = Buffer.from(arrayBuffer);
+    } else {
+      const text = await file.text();
+      buffer = Buffer.from(text);
+    }
 
-    // 4. Save to local storage
-    const relativeUrl = await saveImageLocally(buffer, file.name, file.type);
+    // 5. Stream directly to Backblaze B2 S3 storage (no local file is written)
+    const result = await uploadImageToB2(buffer, file.name, file.type);
 
     return {
       success: true,
-      url: relativeUrl,
+      url: result.url,
+      key: result.key,
     };
   } catch (error: unknown) {
     let message = "Системная ошибка при сохранении изображения.";
