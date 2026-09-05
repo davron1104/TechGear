@@ -45,8 +45,8 @@ describe("Sitemap and Robots Generators", () => {
         select: { slug: true, updatedAt: true },
       });
 
-      // Total count: (1 home + 1 catalog + 2 categories + 1 product) * 3 locales = 15 URLs
-      expect(entries).toHaveLength(15);
+      // Total count: (1 home + 1 catalog + 2 info + 2 categories + 1 product) * 3 locales = 21 URLs
+      expect(entries).toHaveLength(21);
 
       // Home URLs
       expect(entries).toContainEqual({ url: "https://techgear.uz/ru" });
@@ -57,6 +57,16 @@ describe("Sitemap and Robots Generators", () => {
       expect(entries).toContainEqual({ url: "https://techgear.uz/ru/catalog" });
       expect(entries).toContainEqual({ url: "https://techgear.uz/uz/catalog" });
       expect(entries).toContainEqual({ url: "https://techgear.uz/en/catalog" });
+
+      // Delivery URLs
+      expect(entries).toContainEqual({ url: "https://techgear.uz/ru/delivery" });
+      expect(entries).toContainEqual({ url: "https://techgear.uz/uz/delivery" });
+      expect(entries).toContainEqual({ url: "https://techgear.uz/en/delivery" });
+
+      // Warranty URLs
+      expect(entries).toContainEqual({ url: "https://techgear.uz/ru/warranty" });
+      expect(entries).toContainEqual({ url: "https://techgear.uz/uz/warranty" });
+      expect(entries).toContainEqual({ url: "https://techgear.uz/en/warranty" });
 
       // Category URLs with real updatedAt
       expect(entries).toContainEqual({
@@ -94,8 +104,8 @@ describe("Sitemap and Robots Generators", () => {
 
       const entries = await sitemap();
 
-      // Only home (3) + catalog (3) = 6 URLs
-      expect(entries).toHaveLength(6);
+      // Only home (3) + catalog (3) + delivery (3) + warranty (3) = 12 URLs
+      expect(entries).toHaveLength(12);
     });
   });
 

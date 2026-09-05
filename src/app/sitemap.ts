@@ -41,6 +41,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     });
   }
 
+  // 3. Информационные страницы: Доставка и Гарантия (для всех 3 локалей)
+  for (const locale of LOCALES) {
+    entries.push({
+      url: `${baseUrl}/${locale}/delivery`,
+    });
+    entries.push({
+      url: `${baseUrl}/${locale}/warranty`,
+    });
+  }
+
   // 3. Категории товаров (для всех 3 локалей)
   for (const category of categories) {
     for (const locale of LOCALES) {

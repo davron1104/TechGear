@@ -124,10 +124,14 @@ export function Footer({ shopSettings = DEFAULT_SHOP_SETTINGS }: FooterProps) {
                 </Link>
               </li>
               <li>
-                <span className="text-slate-400">{t("footer.deliveryAndPayment")}</span>
+                <Link href={getLocalizedHref("/delivery", locale)} className="hover:text-white transition-colors">
+                  {t("footer.deliveryAndPayment")}
+                </Link>
               </li>
               <li>
-                <span className="text-slate-400">{t("footer.warrantyAndService")}</span>
+                <Link href={getLocalizedHref("/warranty", locale)} className="hover:text-white transition-colors">
+                  {t("footer.warrantyAndService")}
+                </Link>
               </li>
             </ul>
           </div>
