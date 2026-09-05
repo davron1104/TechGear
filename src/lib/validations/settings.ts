@@ -38,3 +38,72 @@ export const updateShopSettingsSchema = z.object({
 });
 
 export type UpdateShopSettingsInput = z.infer<typeof updateShopSettingsSchema>;
+
+const localizedFeatureSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .max(60, "Заголовок преимущества не может быть длиннее 60 символов"),
+  description: z
+    .string()
+    .trim()
+    .max(100, "Описание преимущества не может быть длиннее 100 символов"),
+});
+
+const requiredLocalizedFeatureSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Заголовок преимущества обязателен для заполнения")
+    .max(60, "Заголовок преимущества не может быть длиннее 60 символов"),
+  description: z
+    .string()
+    .trim()
+    .min(1, "Описание преимущества обязательно для заполнения")
+    .max(100, "Описание преимущества не может быть длиннее 100 символов"),
+});
+
+const localizedTextSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .max(150, "Заголовок не может быть длиннее 150 символов"),
+  content: z
+    .string()
+    .trim()
+    .max(3000, "Текст не может быть длиннее 3000 символов"),
+  features: z.tuple([
+    localizedFeatureSchema,
+    localizedFeatureSchema,
+    localizedFeatureSchema,
+  ]),
+});
+
+const requiredLocalizedTextSchema = z.object({
+  title: z
+    .string()
+    .trim()
+    .min(1, "Заголовок на русском языке обязателен для заполнения")
+    .max(150, "Заголовок не может быть длиннее 150 символов"),
+  content: z
+    .string()
+    .trim()
+    .min(1, "Текст на русском языке обязателен для заполнения")
+    .max(3000, "Текст не может быть длиннее 3000 символов"),
+  features: z.tuple([
+    requiredLocalizedFeatureSchema,
+    requiredLocalizedFeatureSchema,
+    requiredLocalizedFeatureSchema,
+  ]),
+});
+
+export const updateHomeTextBlockSchema = z.object({
+  enabled: z.boolean({
+    message: "Флаг активности блока обязателен",
+  }),
+  ru: requiredLocalizedTextSchema,
+  uz: localizedTextSchema,
+  en: localizedTextSchema,
+});
+
+export type UpdateHomeTextBlockInput = z.infer<typeof updateHomeTextBlockSchema>;

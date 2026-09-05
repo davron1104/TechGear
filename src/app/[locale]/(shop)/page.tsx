@@ -12,12 +12,15 @@ import {
 } from "lucide-react";
 import { HeroBanner } from "@/components/catalog/hero-banner";
 import { ProductCard } from "@/components/catalog/product-card";
+import { HomeTextBlock } from "@/components/catalog/home-text-block";
 import { getFeaturedProduct, getPopularProducts } from "@/lib/products";
+import { getHomeTextBlockSettings } from "@/lib/settings-server";
 import prisma from "@/lib/prisma";
 import { getServerLocale } from "@/i18n/server";
 import { createTranslator, getLocalizedCategory, getLocalizedHref, Locale, DEFAULT_LOCALE, isValidLocale } from "@/i18n";
 import { CategoryTranslations } from "@/types/product";
 import { getI18nAlternates, getOgLocale } from "@/lib/seo";
+
 
 interface HomePageProps {
   params?: Promise<{ locale: string }>;
@@ -99,12 +102,14 @@ export default async function HomePage() {
   const locale = await getServerLocale();
   const t = createTranslator(locale);
 
-  // Загружаем флагманский промо-товар, популярные товары и категории
-  const [featuredProduct, popularProducts, categories] = await Promise.all([
-    getFeaturedProduct(),
-    getPopularProducts(4),
-    prisma.category.findMany(),
-  ]);
+  // Загружаем флагманский промо-товар, популярные товары, категории и текстовый блок
+  const [featuredProduct, popularProducts, categories, homeTextBlockSettings] =
+    await Promise.all([
+      getFeaturedProduct(),
+      getPopularProducts(4),
+      prisma.category.findMany(),
+      getHomeTextBlockSettings(),
+    ]);
 
   const typedCategories = categories.map((cat) => ({
     ...cat,
@@ -175,6 +180,10 @@ export default async function HomePage() {
           })}
         </div>
       </section>
+
+      {/* 3. Редактируемый информационный блок TechGear */}
+      <HomeTextBlock settings={homeTextBlockSettings} locale={locale} />
+
 
       {/* 3. Секция «Популярные товары» */}
       {popularProducts.length > 0 && (

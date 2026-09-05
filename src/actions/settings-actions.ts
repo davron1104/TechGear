@@ -25,10 +25,16 @@ import {
   SHOP_WORKING_HOURS_KEY,
   DELIVERY_COST_UZS_KEY,
   FREE_DELIVERY_THRESHOLD_UZS_KEY,
+  HOME_TEXT_BLOCK_KEY,
+  HomeTextBlockSettings,
 } from "@/lib/settings";
-import { getShopSettings } from "@/lib/settings-server";
-import { updateShopSettingsSchema } from "@/lib/validations/settings";
+import { getShopSettings, getHomeTextBlockSettings } from "@/lib/settings-server";
+import {
+  updateShopSettingsSchema,
+  updateHomeTextBlockSchema,
+} from "@/lib/validations/settings";
 import { revalidatePath } from "next/cache";
+
 import { z } from "zod";
 
 export type ActionResponse<T = void> =
@@ -362,6 +368,97 @@ export async function updateShopSettings(
     const message =
       error instanceof Error ? error.message : "Не удалось сохранить настройки магазина.";
     console.error("Update shop settings error:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * Retrieves the home page text block settings (Admin only).
+ */
+export async function getAdminHomeTextBlockSettings(): Promise<
+  ActionResponse<HomeTextBlockSettings>
+> {
+  try {
+    await assertAdmin();
+    const settings = await getHomeTextBlockSettings();
+    return {
+      success: true,
+      data: settings,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Не удалось получить настройки текстового блока главной страницы.";
+    console.error("Get admin home text block settings error:", error);
+    return {
+      success: false,
+      error: message,
+    };
+  }
+}
+
+/**
+ * Updates the home page text block settings in the database (Admin only).
+ * - Validates input with Zod.
+ * - Enforces role-based access control (ADMIN only).
+ * - Upserts into SystemSetting under HOME_TEXT_BLOCK.
+ * - Revalidates home page, admin settings and localized routes.
+ */
+export async function updateHomeTextBlockSettings(
+  data: unknown
+): Promise<ActionResponse<HomeTextBlockSettings>> {
+  try {
+    await assertAdmin();
+
+    const parseResult = updateHomeTextBlockSchema.safeParse(data);
+    if (!parseResult.success) {
+      const fieldErrors: Record<string, string[]> = {};
+      for (const issue of parseResult.error.issues) {
+        const key = issue.path.join(".");
+        if (!fieldErrors[key]) fieldErrors[key] = [];
+        fieldErrors[key].push(issue.message);
+      }
+
+      return {
+        success: false,
+        error: "Ошибка валидации данных текстового блока.",
+        fields: fieldErrors,
+      };
+    }
+
+
+    const validData: HomeTextBlockSettings = parseResult.data;
+    const jsonValue = JSON.stringify(validData);
+
+    await prisma.systemSetting.upsert({
+      where: { key: HOME_TEXT_BLOCK_KEY },
+      create: { key: HOME_TEXT_BLOCK_KEY, value: jsonValue },
+      update: { value: jsonValue },
+    });
+
+    try {
+      revalidatePath("/admin");
+      revalidatePath("/admin/settings");
+      revalidatePath("/");
+      revalidatePath("/ru");
+      revalidatePath("/uz");
+      revalidatePath("/en");
+    } catch {}
+
+    return {
+      success: true,
+      data: validData,
+    };
+  } catch (error: unknown) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Не удалось сохранить настройки текстового блока.";
+    console.error("Update home text block settings error:", error);
     return {
       success: false,
       error: message,

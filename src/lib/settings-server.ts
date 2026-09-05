@@ -8,7 +8,12 @@ import {
   SHOP_WORKING_HOURS_KEY,
   DELIVERY_COST_UZS_KEY,
   FREE_DELIVERY_THRESHOLD_UZS_KEY,
+  HOME_TEXT_BLOCK_KEY,
+  HomeTextBlockSettings,
+  LocalizedFeature,
+  DEFAULT_HOME_TEXT_BLOCK_SETTINGS,
 } from "./settings";
+
 
 /**
  * Retrieves shop settings from the database (SystemSetting).
@@ -72,4 +77,111 @@ export async function getShopSettings(): Promise<ShopSettings> {
   }
 
   return settings;
+}
+
+function parseLocalizedFeatures(
+  rawFeatures: unknown,
+  defaultFeatures: [LocalizedFeature, LocalizedFeature, LocalizedFeature]
+): [LocalizedFeature, LocalizedFeature, LocalizedFeature] {
+  const result: [LocalizedFeature, LocalizedFeature, LocalizedFeature] = [
+    { ...defaultFeatures[0] },
+    { ...defaultFeatures[1] },
+    { ...defaultFeatures[2] },
+  ];
+
+  if (!Array.isArray(rawFeatures)) {
+    return result;
+  }
+
+  for (let i = 0; i < 3; i++) {
+    const item = rawFeatures[i];
+    if (item && typeof item === "object") {
+      const typedItem = item as { title?: unknown; description?: unknown };
+      if (typeof typedItem.title === "string") {
+        result[i].title = typedItem.title;
+      }
+      if (typeof typedItem.description === "string") {
+        result[i].description = typedItem.description;
+      }
+    }
+  }
+
+  return result;
+}
+
+/**
+ * Retrieves home page text block settings from the database (SystemSetting).
+ * Safely falls back to DEFAULT_HOME_TEXT_BLOCK_SETTINGS if missing or on JSON/DB error.
+ * Ensures 100% backward compatibility for existing records without features.
+ */
+export async function getHomeTextBlockSettings(): Promise<HomeTextBlockSettings> {
+  try {
+    const record = await prisma.systemSetting.findUnique({
+      where: { key: HOME_TEXT_BLOCK_KEY },
+    });
+
+    if (!record || !record.value) {
+      return DEFAULT_HOME_TEXT_BLOCK_SETTINGS;
+    }
+
+    const parsed = JSON.parse(record.value);
+    if (!parsed || typeof parsed !== "object") {
+      return DEFAULT_HOME_TEXT_BLOCK_SETTINGS;
+    }
+
+    return {
+      enabled:
+        typeof parsed.enabled === "boolean"
+          ? parsed.enabled
+          : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.enabled,
+      ru: {
+        title:
+          typeof parsed.ru?.title === "string"
+            ? parsed.ru.title
+            : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.ru.title,
+        content:
+          typeof parsed.ru?.content === "string"
+            ? parsed.ru.content
+            : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.ru.content,
+        features: parseLocalizedFeatures(
+          parsed.ru?.features,
+          DEFAULT_HOME_TEXT_BLOCK_SETTINGS.ru.features
+        ),
+      },
+      uz: {
+        title:
+          typeof parsed.uz?.title === "string"
+            ? parsed.uz.title
+            : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.uz.title,
+        content:
+          typeof parsed.uz?.content === "string"
+            ? parsed.uz.content
+            : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.uz.content,
+        features: parseLocalizedFeatures(
+          parsed.uz?.features,
+          DEFAULT_HOME_TEXT_BLOCK_SETTINGS.uz.features
+        ),
+      },
+      en: {
+        title:
+          typeof parsed.en?.title === "string"
+            ? parsed.en.title
+            : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.en.title,
+        content:
+          typeof parsed.en?.content === "string"
+            ? parsed.en.content
+            : DEFAULT_HOME_TEXT_BLOCK_SETTINGS.en.content,
+        features: parseLocalizedFeatures(
+          parsed.en?.features,
+          DEFAULT_HOME_TEXT_BLOCK_SETTINGS.en.features
+        ),
+      },
+    };
+  } catch (error) {
+    console.error(
+      "Failed to load home text block settings from database, using defaults:",
+      error
+    );
+    return DEFAULT_HOME_TEXT_BLOCK_SETTINGS;
+  }
 }

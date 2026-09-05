@@ -3,14 +3,15 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { getExchangeRateDetails } from "@/lib/currency-server";
-import { getShopSettings } from "@/lib/settings-server";
+import { getShopSettings, getHomeTextBlockSettings } from "@/lib/settings-server";
 import { ExchangeRateForm } from "@/components/admin/settings/exchange-rate-form";
 import { ShopSettingsForm } from "@/components/admin/settings/shop-settings-form";
+import { HomeTextBlockForm } from "@/components/admin/settings/home-text-block-form";
 import { ArrowLeft, Sliders, Shield } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Настройки системы и магазина — TechGear Admin",
-  description: "Управление глобальными системными настройками, контактами, доставкой и курсом валют магазина TechGear.",
+  description: "Управление глобальными системными настройками, контактами, доставкой, курсом валют и промо-блоками магазина TechGear.",
 };
 
 export default async function AdminSettingsPage() {
@@ -19,8 +20,13 @@ export default async function AdminSettingsPage() {
     redirect("/login");
   }
 
-  const { exchangeRate, updatedAt, source } = await getExchangeRateDetails();
-  const shopSettings = await getShopSettings();
+  const [exchangeDetails, shopSettings, homeTextBlockSettings] = await Promise.all([
+    getExchangeRateDetails(),
+    getShopSettings(),
+    getHomeTextBlockSettings(),
+  ]);
+
+  const { exchangeRate, updatedAt, source } = exchangeDetails;
 
   return (
     <div className="min-h-screen flex flex-col bg-[#F8FAFC]">
@@ -91,7 +97,7 @@ export default async function AdminSettingsPage() {
               Настройки магазина и курсы валют
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
-              Управление курсом пересчета USD к базовой валюте UZS, контактными данными, графиком работы и тарифами доставки.
+              Управление курсом пересчета USD к базовой валюте UZS, контактными данными, тарифами доставки и промо-блоками.
             </p>
           </div>
         </div>
@@ -118,6 +124,16 @@ export default async function AdminSettingsPage() {
             </h2>
           </div>
           <ShopSettingsForm initialSettings={shopSettings} />
+        </section>
+
+        {/* 3. Секция редактируемого текстового блока главной страницы */}
+        <section className="space-y-3">
+          <div className="flex items-center justify-between">
+            <h2 className="text-base font-bold text-slate-900">
+              3. Информационный блок главной страницы
+            </h2>
+          </div>
+          <HomeTextBlockForm initialSettings={homeTextBlockSettings} />
         </section>
       </main>
     </div>
