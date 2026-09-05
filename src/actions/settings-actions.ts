@@ -25,6 +25,7 @@ import {
   SHOP_WORKING_HOURS_KEY,
   DELIVERY_COST_UZS_KEY,
   FREE_DELIVERY_THRESHOLD_UZS_KEY,
+  STICKY_TOP_BAR_KEY,
   HOME_TEXT_BLOCK_KEY,
   HomeTextBlockSettings,
 } from "@/lib/settings";
@@ -304,6 +305,7 @@ export async function updateShopSettings(
       workingHours,
       deliveryCostUzs,
       freeDeliveryThresholdUzs,
+      stickyTopBar,
     } = parseResult.data;
 
     // Batch upsert into SystemSetting
@@ -341,11 +343,20 @@ export async function updateShopSettings(
         },
         update: { value: freeDeliveryThresholdUzs.toString() },
       }),
+      prisma.systemSetting.upsert({
+        where: { key: STICKY_TOP_BAR_KEY },
+        create: {
+          key: STICKY_TOP_BAR_KEY,
+          value: stickyTopBar ? "true" : "false",
+        },
+        update: { value: stickyTopBar ? "true" : "false" },
+      }),
     ]);
 
     try {
       revalidatePath("/admin");
       revalidatePath("/admin/settings");
+      revalidatePath("/", "layout");
       revalidatePath("/");
       revalidatePath("/checkout");
       revalidatePath("/catalog");
@@ -358,6 +369,7 @@ export async function updateShopSettings(
       workingHours,
       deliveryCostUzs,
       freeDeliveryThresholdUzs,
+      stickyTopBar,
     };
 
     return {

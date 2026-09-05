@@ -14,6 +14,7 @@ const customShopSettings: ShopSettings = {
   workingHours: "Пн-Вс: 10:00 - 22:00",
   deliveryCostUzs: 35000,
   freeDeliveryThresholdUzs: 500000,
+  stickyTopBar: false,
 };
 
 function renderDeliveryView(locale: "ru" | "uz" | "en", currency: "UZS" | "USD" = "UZS") {

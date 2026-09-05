@@ -58,9 +58,13 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
   const cleanPhone = shopSettings.phone.replace(/[^0-9+]/g, "");
 
   return (
-    <header className="w-full flex flex-col">
+    <>
       {/* 1. Верхняя информационная сервисная полоса */}
-      <div className="bg-[#0F172A] text-slate-300 text-xs py-2 px-4 border-b border-slate-800">
+      <div
+        className={`bg-[#0F172A] text-slate-300 text-xs py-2 px-4 border-b border-slate-800 transition-all ${
+          shopSettings.stickyTopBar ? "sticky top-0 z-50 shadow-md" : ""
+        }`}
+      >
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-6">
             <div className="flex items-center gap-1.5 text-slate-300">
@@ -94,7 +98,7 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
       </div>
 
       {/* 2. Основная навигационная полоса */}
-      <div className="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-xs">
+      <header className="w-full bg-white border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 h-[72px] flex items-center justify-between gap-4">
           {/* Логотип */}
           <Link
@@ -212,8 +216,8 @@ export function Header({ shopSettings = DEFAULT_SHOP_SETTINGS }: HeaderProps) {
             </button>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 }
 

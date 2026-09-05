@@ -148,6 +148,7 @@ describe("Settings Server Actions - Shop Settings", () => {
         workingHours: "Пн–Сб: 10:00 – 20:00",
         deliveryCostUzs: 35000,
         freeDeliveryThresholdUzs: 600000,
+        stickyTopBar: true,
       };
 
       const result = await updateShopSettings(payload);

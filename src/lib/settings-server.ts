@@ -8,6 +8,7 @@ import {
   SHOP_WORKING_HOURS_KEY,
   DELIVERY_COST_UZS_KEY,
   FREE_DELIVERY_THRESHOLD_UZS_KEY,
+  STICKY_TOP_BAR_KEY,
   HOME_TEXT_BLOCK_KEY,
   HomeTextBlockSettings,
   LocalizedFeature,
@@ -34,6 +35,7 @@ export async function getShopSettings(): Promise<ShopSettings> {
             SHOP_WORKING_HOURS_KEY,
             DELIVERY_COST_UZS_KEY,
             FREE_DELIVERY_THRESHOLD_UZS_KEY,
+            STICKY_TOP_BAR_KEY,
           ],
         },
       },
@@ -68,6 +70,11 @@ export async function getShopSettings(): Promise<ShopSettings> {
           if (!isNaN(num) && num >= 0) {
             settings.freeDeliveryThresholdUzs = num;
           }
+          break;
+        }
+        case STICKY_TOP_BAR_KEY: {
+          const val = record.value.trim().toLowerCase();
+          settings.stickyTopBar = val === "true" || val === "1";
           break;
         }
       }

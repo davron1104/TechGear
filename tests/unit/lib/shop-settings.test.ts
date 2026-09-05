@@ -9,6 +9,7 @@ import {
   SHOP_WORKING_HOURS_KEY,
   DELIVERY_COST_UZS_KEY,
   FREE_DELIVERY_THRESHOLD_UZS_KEY,
+  STICKY_TOP_BAR_KEY,
 } from "@/lib/settings";
 import { updateShopSettingsSchema } from "@/lib/validations/settings";
 
@@ -45,6 +46,7 @@ describe("Shop Settings Service & Validation", () => {
         { key: SHOP_WORKING_HOURS_KEY, value: "10:00 - 20:00", updatedAt: new Date() },
         { key: DELIVERY_COST_UZS_KEY, value: "25000", updatedAt: new Date() },
         { key: FREE_DELIVERY_THRESHOLD_UZS_KEY, value: "400000", updatedAt: new Date() },
+        { key: STICKY_TOP_BAR_KEY, value: "true", updatedAt: new Date() },
       ]);
 
       const settings = await getShopSettings();
@@ -56,7 +58,24 @@ describe("Shop Settings Service & Validation", () => {
         workingHours: "10:00 - 20:00",
         deliveryCostUzs: 25000,
         freeDeliveryThresholdUzs: 400000,
+        stickyTopBar: true,
       });
+    });
+
+    it("should parse '1' as stickyTopBar true and '0' as false", async () => {
+      vi.mocked(prisma.systemSetting.findMany).mockResolvedValueOnce([
+        { key: STICKY_TOP_BAR_KEY, value: "1", updatedAt: new Date() },
+      ]);
+
+      const settings1 = await getShopSettings();
+      expect(settings1.stickyTopBar).toBe(true);
+
+      vi.mocked(prisma.systemSetting.findMany).mockResolvedValueOnce([
+        { key: STICKY_TOP_BAR_KEY, value: "0", updatedAt: new Date() },
+      ]);
+
+      const settings0 = await getShopSettings();
+      expect(settings0.stickyTopBar).toBe(false);
     });
 
     it("should fallback safely on database exception", async () => {
@@ -71,8 +90,26 @@ describe("Shop Settings Service & Validation", () => {
   });
 
   describe("updateShopSettingsSchema validation", () => {
-    it("should validate valid shop settings input", () => {
+    it("should validate valid shop settings input with stickyTopBar", () => {
       const validInput = {
+        phone: "+998 90 123 45 67",
+        email: "support@techgear.uz",
+        address: "г. Ташкент, ул. Навои, 1",
+        workingHours: "Пн-Пт: 09:00 - 18:00",
+        deliveryCostUzs: 35000,
+        freeDeliveryThresholdUzs: 600000,
+        stickyTopBar: true,
+      };
+
+      const result = updateShopSettingsSchema.safeParse(validInput);
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.stickyTopBar).toBe(true);
+      }
+    });
+
+    it("should default stickyTopBar to false if omitted", () => {
+      const inputWithoutSticky = {
         phone: "+998 90 123 45 67",
         email: "support@techgear.uz",
         address: "г. Ташкент, ул. Навои, 1",
@@ -81,8 +118,11 @@ describe("Shop Settings Service & Validation", () => {
         freeDeliveryThresholdUzs: 600000,
       };
 
-      const result = updateShopSettingsSchema.safeParse(validInput);
+      const result = updateShopSettingsSchema.safeParse(inputWithoutSticky);
       expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.stickyTopBar).toBe(false);
+      }
     });
 
     it("should reject short phone or invalid email", () => {

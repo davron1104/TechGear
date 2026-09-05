@@ -36,9 +36,12 @@ describe("ShopSettingsForm Component", () => {
     expect(
       screen.getByLabelText(/Порог бесплатной доставки \(UZS\)/i)
     ).toHaveValue(DEFAULT_SHOP_SETTINGS.freeDeliveryThresholdUzs);
+    expect(
+      screen.getByLabelText(/Закрепить информационную панель при прокрутке/i)
+    ).not.toBeChecked();
   });
 
-  it("submits updated shop settings and displays success message", async () => {
+  it("submits updated shop settings with toggled stickyTopBar and displays success message", async () => {
     const user = userEvent.setup();
     vi.mocked(updateShopSettings).mockResolvedValueOnce({
       success: true,
@@ -49,6 +52,7 @@ describe("ShopSettingsForm Component", () => {
         workingHours: "09:00 - 22:00",
         deliveryCostUzs: 40000,
         freeDeliveryThresholdUzs: 700000,
+        stickyTopBar: true,
       },
     });
 
@@ -58,13 +62,24 @@ describe("ShopSettingsForm Component", () => {
     await user.clear(phoneInput);
     await user.type(phoneInput, "+998 71 333 44 55");
 
+    const stickyCheckbox = screen.getByLabelText(
+      /Закрепить информационную панель при прокрутке/i
+    );
+    await user.click(stickyCheckbox);
+    expect(stickyCheckbox).toBeChecked();
+
     const submitButton = screen.getByRole("button", {
       name: /Сохранить настройки магазина/i,
     });
     await user.click(submitButton);
 
     await waitFor(() => {
-      expect(updateShopSettings).toHaveBeenCalledTimes(1);
+      expect(updateShopSettings).toHaveBeenCalledWith(
+        expect.objectContaining({
+          phone: "+998 71 333 44 55",
+          stickyTopBar: true,
+        })
+      );
       expect(screen.getByText(/Настройки магазина успешно сохранены/i)).toBeInTheDocument();
     });
   });

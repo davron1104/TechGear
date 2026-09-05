@@ -5,10 +5,15 @@ import { LanguageSwitcher } from "@/components/layout/language-switcher";
 import { LanguageProvider, useLanguage } from "@/context/language-context";
 import { LOCALE_COOKIE_NAME } from "@/i18n";
 
+const mockPush = vi.fn();
+const mockReplace = vi.fn();
+const mockRefresh = vi.fn();
+
 vi.mock("next/navigation", () => ({
   useRouter: () => ({
-    push: vi.fn(),
-    refresh: vi.fn(),
+    push: mockPush,
+    replace: mockReplace,
+    refresh: mockRefresh,
   }),
   usePathname: () => "/ru",
   useSearchParams: () => new URLSearchParams(),
@@ -29,6 +34,9 @@ describe("LanguageSwitcher & LanguageContext", () => {
   beforeEach(() => {
     // Clear cookies before each test
     document.cookie = `${LOCALE_COOKIE_NAME}=; max-age=0`;
+    mockPush.mockClear();
+    mockReplace.mockClear();
+    mockRefresh.mockClear();
   });
 
   it("should initialize with default locale 'ru'", () => {
@@ -52,7 +60,7 @@ describe("LanguageSwitcher & LanguageContext", () => {
     expect(enBtn.getAttribute("aria-pressed")).toBe("false");
   });
 
-  it("should switch from ru to uz and update cookie, state and translation", () => {
+  it("should switch from ru to uz and update cookie, state, translation and call router.replace with scroll: false", () => {
     render(
       <LanguageProvider initialLocale="ru">
         <LanguageSwitcher />
@@ -70,9 +78,12 @@ describe("LanguageSwitcher & LanguageContext", () => {
     expect(screen.getByRole("button", { name: "RU" }).getAttribute("aria-pressed")).toBe("false");
 
     expect(document.cookie).toContain(`${LOCALE_COOKIE_NAME}=uz`);
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/uz", { scroll: false });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it("should switch from uz to en and update cookie, state and translation", () => {
+  it("should switch from uz to en and call router.replace with scroll: false", () => {
     render(
       <LanguageProvider initialLocale="uz">
         <LanguageSwitcher />
@@ -89,6 +100,9 @@ describe("LanguageSwitcher & LanguageContext", () => {
     expect(enBtn.getAttribute("aria-pressed")).toBe("true");
 
     expect(document.cookie).toContain(`${LOCALE_COOKIE_NAME}=en`);
+    expect(mockReplace).toHaveBeenCalledTimes(1);
+    expect(mockReplace).toHaveBeenCalledWith("/en", { scroll: false });
+    expect(mockPush).not.toHaveBeenCalled();
   });
 
   it("should fallback to Russian when a key is missing in target locale", () => {

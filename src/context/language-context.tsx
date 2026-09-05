@@ -74,7 +74,7 @@ export function LanguageProvider({
         const targetUrl = currentSearch ? `${targetPath}?${currentSearch}` : targetPath;
 
         startTransition(() => {
-          router.push(targetUrl);
+          router.replace(targetUrl, { scroll: false });
         });
       }
     },

@@ -7,6 +7,7 @@ export const SHOP_ADDRESS_KEY = "SHOP_ADDRESS";
 export const SHOP_WORKING_HOURS_KEY = "SHOP_WORKING_HOURS";
 export const DELIVERY_COST_UZS_KEY = "DELIVERY_COST_UZS";
 export const FREE_DELIVERY_THRESHOLD_UZS_KEY = "FREE_DELIVERY_THRESHOLD_UZS";
+export const STICKY_TOP_BAR_KEY = "STICKY_TOP_BAR";
 export const HOME_TEXT_BLOCK_KEY = "HOME_TEXT_BLOCK";
 
 export interface ShopSettings {
@@ -16,6 +17,7 @@ export interface ShopSettings {
   workingHours: string;
   deliveryCostUzs: number;
   freeDeliveryThresholdUzs: number;
+  stickyTopBar: boolean;
 }
 
 export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
@@ -25,6 +27,7 @@ export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
   workingHours: "Пн–Вс: 09:00 – 21:00",
   deliveryCostUzs: 30000,
   freeDeliveryThresholdUzs: 500000,
+  stickyTopBar: false,
 };
 
 export interface LocalizedFeature {

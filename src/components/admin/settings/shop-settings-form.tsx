@@ -10,6 +10,7 @@ import {
   MapPin,
   Clock,
   Truck,
+  Sliders,
   Save,
   Loader2,
   CheckCircle2,
@@ -33,13 +34,17 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
   ) => {
-    const { name, value } = e.target;
+    const { name, value, type } = e.target;
+    const isCheckbox = type === "checkbox";
+    const checked = (e.target as HTMLInputElement).checked;
+
     setFormData((prev) => ({
       ...prev,
-      [name]:
-        name === "deliveryCostUzs" || name === "freeDeliveryThresholdUzs"
-          ? parseInt(value, 10) || 0
-          : value,
+      [name]: isCheckbox
+        ? checked
+        : name === "deliveryCostUzs" || name === "freeDeliveryThresholdUzs"
+        ? parseInt(value, 10) || 0
+        : value,
     }));
 
     if (fieldErrors[name]) {
@@ -354,6 +359,49 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
               </strong>
             </p>
           </div>
+        </div>
+      </div>
+
+      {/* 4. Секция: Отображение и навигация */}
+      <div className="bg-white border border-slate-200 rounded-2xl shadow-xs overflow-hidden">
+        <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+              <Sliders className="w-4 h-4" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">Отображение и навигация</h3>
+              <p className="text-xs text-slate-500">
+                Параметры поведения и закрепления сервисных панелей сайта
+              </p>
+            </div>
+          </div>
+          <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
+            Навигация
+          </span>
+        </div>
+
+        <div className="p-6">
+          <label className="flex items-start gap-3.5 cursor-pointer select-none">
+            <div className="relative flex items-center mt-0.5">
+              <input
+                id="sticky-top-bar"
+                name="stickyTopBar"
+                type="checkbox"
+                checked={formData.stickyTopBar}
+                onChange={handleChange}
+                className="w-4 h-4 text-[#06B6D4] bg-slate-50 border-slate-300 rounded-sm focus:ring-[#06B6D4] focus:ring-2 cursor-pointer"
+              />
+            </div>
+            <div className="space-y-1">
+              <span className="text-sm font-bold text-slate-900 block">
+                Закрепить информационную панель при прокрутке
+              </span>
+              <p className="text-xs text-slate-500 leading-relaxed max-w-2xl">
+                Если настройка включена, самая верхняя информационная панель (телефон, часы работы, язык и валюта) остаётся закреплённой вверху при прокрутке страницы. Основная шапка с логотипом и CategoryBar продолжают прокручиваться стандартно.
+              </p>
+            </div>
+          </label>
         </div>
       </div>
 

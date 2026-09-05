@@ -35,6 +35,7 @@ export const updateShopSettingsSchema = z.object({
     .int("Порог бесплатной доставки должен быть целым числом")
     .min(0, "Порог бесплатной доставки не может быть отрицательным")
     .max(100000000, "Порог бесплатной доставки не может превышать 100 000 000 сум"),
+  stickyTopBar: z.boolean().default(false),
 });
 
 export type UpdateShopSettingsInput = z.infer<typeof updateShopSettingsSchema>;
