@@ -20,6 +20,7 @@
     "login": "Sign In",
     "register": "Register",
     "admin": "Admin Dashboard",
+    "adminRole": "TechGear Administrator",
     "logout": "Log Out"
   },
   "header": {
@@ -27,6 +28,7 @@
     "currencyLabel": "Select currency",
     "languageLabel": "Select language",
     "searchPlaceholder": "Search products, brands and categories...",
+    "searchToggle": "Search website",
     "cart": "Cart"
   },
   "hero": {

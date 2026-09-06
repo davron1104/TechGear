@@ -45,9 +45,9 @@ export default async function ShopLayout({
 
   return (
     <>
-      <Header shopSettings={shopSettings} />
+      <Header shopSettings={shopSettings} categories={sortedCategories} />
       <Suspense
-        fallback={<div className="h-14 bg-white border-b border-slate-200" />}
+        fallback={<div className="hidden lg:block h-14 bg-white border-b border-slate-200" />}
       >
         <CategoryBar categories={sortedCategories} />
       </Suspense>

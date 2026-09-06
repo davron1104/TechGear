@@ -73,7 +73,7 @@ describe("Integration: Cart Flow", () => {
     await user.click(cartButton);
 
     // Получаем элемент корзины
-    const drawer = screen.getByRole("dialog");
+    const drawer = screen.getByRole("dialog", { name: "Корзина" });
 
     // 5. В CartDrawer должен отобразиться наш товар
     expect(within(drawer).getByText("Test Laptop X")).toBeInTheDocument();

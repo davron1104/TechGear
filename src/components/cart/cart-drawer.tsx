@@ -56,6 +56,7 @@ export function CartDrawer() {
       }`}
       role="dialog"
       aria-modal="true"
+      aria-label={t("cart.title")}
     >
       {/* 1. Полупрозрачный оверлей с плавным затемнением и размытием */}
       <div

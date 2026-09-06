@@ -19,7 +19,7 @@ export function CategoryBar({ categories = DEFAULT_CATEGORIES }: CategoryBarProp
   return (
     <nav
       aria-label={t("catalog.categoriesNav")}
-      className="bg-white border-b border-slate-200 py-3"
+      className="hidden lg:block bg-white border-b border-slate-200 py-3"
     >
       <div className="max-w-7xl mx-auto px-4">
         <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1">

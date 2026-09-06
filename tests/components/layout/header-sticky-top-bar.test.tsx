@@ -21,7 +21,7 @@ describe("Header Sticky Top Bar Behavior", () => {
     const { container } = renderHeader(DEFAULT_SHOP_SETTINGS);
 
     // Find the top info bar (contains phone number link)
-    const phoneLink = screen.getByText(DEFAULT_SHOP_SETTINGS.phone);
+    const phoneLink = screen.getAllByText(DEFAULT_SHOP_SETTINGS.phone)[0];
     const topBar = phoneLink.closest(".bg-\\[\\#0F172A\\]");
 
     expect(topBar).toBeInTheDocument();
@@ -42,7 +42,7 @@ describe("Header Sticky Top Bar Behavior", () => {
 
     const { container } = renderHeader(stickySettings);
 
-    const phoneLink = screen.getByText(stickySettings.phone);
+    const phoneLink = screen.getAllByText(stickySettings.phone)[0];
     const topBar = phoneLink.closest(".bg-\\[\\#0F172A\\]");
 
     expect(topBar).toBeInTheDocument();

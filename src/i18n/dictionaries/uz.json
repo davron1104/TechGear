@@ -20,6 +20,7 @@
     "login": "Kirish",
     "register": "Ro'yxatdan o'tish",
     "admin": "Boshqaruv paneli",
+    "adminRole": "Administrator TechGear",
     "logout": "Chiqish"
   },
   "header": {
@@ -27,6 +28,7 @@
     "currencyLabel": "Valyutani tanlash",
     "languageLabel": "Tilni tanlash",
     "searchPlaceholder": "Mahsulotlar, brendlar va toifalarni qidirish...",
+    "searchToggle": "Sayt bo'ylab qidirish",
     "cart": "Savat"
   },
   "hero": {

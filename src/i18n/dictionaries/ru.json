@@ -20,6 +20,7 @@
     "login": "Войти",
     "register": "Регистрация",
     "admin": "Панель управления",
+    "adminRole": "Администратор TechGear",
     "logout": "Выйти"
   },
   "header": {
@@ -27,6 +28,7 @@
     "currencyLabel": "Выбор валюты",
     "languageLabel": "Выбор языка",
     "searchPlaceholder": "Поиск товаров, брендов и категорий...",
+    "searchToggle": "Поиск по сайту",
     "cart": "Корзина"
   },
   "hero": {
