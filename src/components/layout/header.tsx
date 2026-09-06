@@ -47,6 +47,7 @@ export function Header({
   const [isMobileNavOpen, setIsMobileNavOpen] = useState(false);
   const [isMobileSearchOpen, setIsMobileSearchOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
   const { t, locale } = useTranslation();
   const { formatPrice } = useCurrency();
 
@@ -79,6 +80,21 @@ export function Header({
       document.body.style.overflow = "";
     };
   }, [isMobileNavOpen]);
+
+  // Обработка клавиши Escape при открытой строке мобильного поиска
+  useEffect(() => {
+    if (!isMobileSearchOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsMobileSearchOpen(false);
+        searchButtonRef.current?.focus();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isMobileSearchOpen]);
 
   const isHydrated = useSyncExternalStore(
     emptySubscribe,
@@ -180,13 +196,23 @@ export function Header({
           <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
             {/* Кнопка открытия мобильного поиска (< 768px) */}
             <button
+              ref={searchButtonRef}
               type="button"
-              onClick={() => setIsMobileSearchOpen((prev) => !prev)}
+              onClick={() => {
+                setIsMobileSearchOpen((prev) => {
+                  const next = !prev;
+                  if (!next) {
+                    searchButtonRef.current?.focus();
+                  }
+                  return next;
+                });
+              }}
               className={`md:hidden p-2 text-slate-700 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors cursor-pointer ${
                 isMobileSearchOpen ? "bg-slate-100 text-[#06B6D4]" : ""
               }`}
               aria-label={t("header.searchToggle")}
               aria-expanded={isMobileSearchOpen}
+              aria-controls="mobile-search-panel"
             >
               <Search className="w-5 h-5" />
             </button>
@@ -289,21 +315,35 @@ export function Header({
           </div>
         </div>
 
-        {/* Раскрывающаяся строка мобильного поиска (< 768px) */}
-        {isMobileSearchOpen && (
-          <div className="md:hidden border-t border-slate-100 px-4 py-2.5 bg-slate-50 animate-in fade-in slide-in-from-top-1 duration-150">
-            <Suspense
-              fallback={
-                <div className="w-full h-10 bg-white border border-slate-200 rounded-lg animate-pulse" />
-              }
-            >
-              <SearchBar
-                autoFocus
-                onSearchSubmitted={() => setIsMobileSearchOpen(false)}
-              />
-            </Suspense>
+        {/* Раскрывающаяся строка мобильного поиска (< 768px) с плавной анимацией */}
+        <div
+          id="mobile-search-panel"
+          className={`md:hidden transition-all duration-200 ease-in-out motion-reduce:transition-none grid ${
+            isMobileSearchOpen
+              ? "grid-rows-[1fr] opacity-100 visible border-t border-slate-100"
+              : "grid-rows-[0fr] opacity-0 invisible delay-200 border-t-0"
+          }`}
+          aria-hidden={!isMobileSearchOpen}
+          inert={!isMobileSearchOpen ? true : undefined}
+        >
+          <div className="min-h-0 overflow-hidden">
+            <div className="bg-slate-50 px-4 py-2.5">
+              <Suspense
+                fallback={
+                  <div className="w-full h-10 bg-white border border-slate-200 rounded-lg animate-pulse" />
+                }
+              >
+                <SearchBar
+                  autoFocus={isMobileSearchOpen}
+                  onSearchSubmitted={() => {
+                    setIsMobileSearchOpen(false);
+                    searchButtonRef.current?.focus();
+                  }}
+                />
+              </Suspense>
+            </div>
           </div>
-        )}
+        </div>
       </header>
 
       {/* 3. Выдвижное адаптивное Burger Menu (Drawer) с z-[60], гарантированно выше Top Info Bar (z-50) */}
@@ -546,6 +586,16 @@ function SearchBarForm({
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState(initialSearch);
   const { t, locale } = useTranslation();
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (autoFocus) {
+      const timer = setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+      return () => clearTimeout(timer);
+    }
+  }, [autoFocus]);
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -563,8 +613,8 @@ function SearchBarForm({
   return (
     <form onSubmit={handleSearchSubmit} className="relative">
       <input
+        ref={inputRef}
         type="text"
-        autoFocus={autoFocus}
         placeholder={t("header.searchPlaceholder")}
         value={searchQuery}
         onChange={(e) => setSearchQuery(e.target.value)}

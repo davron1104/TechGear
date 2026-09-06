@@ -83,24 +83,29 @@ describe("Responsive Navigation (Header, Burger Drawer, CategoryBar)", () => {
     expect(drawer).toHaveClass("invisible");
   });
 
-  it("should toggle mobile search input when mobile search button is clicked", () => {
+  it("should toggle mobile search panel with smooth transition, correct ARIA attributes and Escape handling", () => {
     renderLayout();
     const searchToggleBtn = screen.getByRole("button", { name: "Поиск по сайту" });
     expect(searchToggleBtn).toHaveClass("md:hidden");
-
-    // Initially mobile search row is not rendered (only 1 desktop search input)
     expect(searchToggleBtn.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getAllByPlaceholderText("Поиск товаров, брендов и категорий...").length).toBe(1);
+    expect(searchToggleBtn.getAttribute("aria-controls")).toBe("mobile-search-panel");
 
-    // Click to open (now 2 search inputs: desktop + mobile dropdown)
+    const searchPanel = document.getElementById("mobile-search-panel");
+    expect(searchPanel).toBeInTheDocument();
+    expect(searchPanel).toHaveClass("grid-rows-[0fr]");
+    expect(searchPanel).toHaveClass("invisible");
+
+    // 1. Click to open
     fireEvent.click(searchToggleBtn);
     expect(searchToggleBtn.getAttribute("aria-expanded")).toBe("true");
-    expect(screen.getAllByPlaceholderText("Поиск товаров, брендов и категорий...").length).toBe(2);
+    expect(searchPanel).toHaveClass("grid-rows-[1fr]");
+    expect(searchPanel).toHaveClass("visible");
 
-    // Click to close
-    fireEvent.click(searchToggleBtn);
+    // 2. Press Escape to close and verify focus restoration
+    fireEvent.keyDown(window, { key: "Escape" });
     expect(searchToggleBtn.getAttribute("aria-expanded")).toBe("false");
-    expect(screen.getAllByPlaceholderText("Поиск товаров, брендов и категорий...").length).toBe(1);
+    expect(searchPanel).toHaveClass("grid-rows-[0fr]");
+    expect(searchPanel).toHaveClass("invisible");
   });
 
   it("should display localized adminRole for ADMIN on RU, UZ, and EN", () => {
