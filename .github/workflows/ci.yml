@@ -104,7 +104,7 @@ jobs:
 
       - name: Push database schema & seed data
         run: |
-          npx prisma db push --skip-generate
+          npx prisma db push
           npx tsx prisma/seed.ts
 
       - name: Build Next.js application
@@ -147,7 +147,7 @@ jobs:
 
       - name: Push database schema & seed data
         run: |
-          npx prisma db push --skip-generate
+          npx prisma db push
           npx tsx prisma/seed.ts
 
       - name: Install Playwright Chromium & system deps
