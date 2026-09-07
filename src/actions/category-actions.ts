@@ -58,11 +58,12 @@ export async function createCategory(data: unknown) {
 
     revalidatePath("/admin/categories");
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Create category error:", error);
+    const message = error instanceof Error ? error.message : "Произошла системная ошибка при создании категории.";
     return {
       success: false,
-      error: error.message || "Произошла системная ошибка при создании категории.",
+      error: message,
     };
   }
 }
@@ -112,11 +113,12 @@ export async function updateCategory(id: string, data: unknown) {
 
     revalidatePath("/admin/categories");
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Update category error:", error);
+    const message = error instanceof Error ? error.message : "Произошла системная ошибка при обновлении категории.";
     return {
       success: false,
-      error: error.message || "Произошла системная ошибка при обновлении категории.",
+      error: message,
     };
   }
 }
@@ -147,11 +149,12 @@ export async function deleteCategory(id: string) {
 
     revalidatePath("/admin/categories");
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Delete category error:", error);
+    const message = error instanceof Error ? error.message : "Произошла системная ошибка при удалении категории.";
     return {
       success: false,
-      error: error.message || "Произошла системная ошибка при удалении категории.",
+      error: message,
     };
   }
 }

@@ -46,6 +46,7 @@ export function CatalogFilters({
 
   // Синхронизация отображаемых строк при смене валюты, изменении курса или внешнем сбросе фильтров
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setMinInputStr(toDisplayString(filters.minPrice, currency, exchangeRate));
     setMaxInputStr(toDisplayString(filters.maxPrice, currency, exchangeRate));
   }, [currency, exchangeRate, filters.minPrice === null, filters.maxPrice === null]);

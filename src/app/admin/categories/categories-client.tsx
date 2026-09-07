@@ -142,7 +142,7 @@ export function AdminCategoriesClient({ initialCategories }: AdminCategoriesClie
           setStatusMessage({ text: res.error || "Произошла ошибка при сохранении.", type: "error" });
           if (res.fields) {
             Object.entries(res.fields).forEach(([field, messages]) => {
-              setError(field as any, {
+              setError(field as keyof CategoryInput, {
                 type: "server",
                 message: messages[0],
               });

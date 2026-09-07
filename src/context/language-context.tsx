@@ -49,6 +49,7 @@ export function LanguageProvider({
   // Синхронизация состояния при изменении initialLocale из URL (навигация Next.js)
   useEffect(() => {
     if (isValidLocale(initialLocale) && initialLocale !== locale) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setLocaleState(initialLocale);
     }
   }, [initialLocale]);
