@@ -16,7 +16,7 @@ test.describe("E2E: Responsive Navigation", () => {
     await expect(burgerBtn).toBeHidden();
 
     // Search bar in header should be visible
-    const searchInput = page.locator('header input[placeholder*="Поиск"]');
+    const searchInput = page.locator('header input[placeholder*="Поиск"]').first();
     await expect(searchInput).toBeVisible();
   });
 
@@ -35,7 +35,7 @@ test.describe("E2E: Responsive Navigation", () => {
     await expect(burgerBtn).toBeVisible();
 
     // Search input should be visible in header on tablet
-    const searchInput = page.locator('header input[placeholder*="Поиск"]');
+    const searchInput = page.locator('header input[placeholder*="Поиск"]').first();
     await expect(searchInput).toBeVisible();
 
     // Clicking Burger opens drawer
