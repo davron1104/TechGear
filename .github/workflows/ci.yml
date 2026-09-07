@@ -71,6 +71,21 @@ jobs:
     name: Production Build
     needs: [lint-and-typecheck, unit-and-integration-tests]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgrespassword
+          POSTGRES_DB: techgear_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -86,6 +101,11 @@ jobs:
 
       - name: Generate Prisma Client
         run: npx prisma generate
+
+      - name: Push database schema & seed data
+        run: |
+          npx prisma db push --skip-generate
+          npx tsx prisma/seed.ts
 
       - name: Build Next.js application
         run: npm run build
