@@ -1,6 +1,7 @@
 import prisma from "@/lib/prisma";
 import {
   ShopSettings,
+  LocalizedShopField,
   DEFAULT_SHOP_SETTINGS,
   SHOP_PHONE_KEY,
   SHOP_EMAIL_KEY,
@@ -15,6 +16,56 @@ import {
   DEFAULT_HOME_TEXT_BLOCK_SETTINGS,
 } from "./settings";
 
+/**
+ * Safely parses localized shop field (address/workingHours) from DB string.
+ * Supports:
+ * 1. JSON object { ru, uz, en } with validation.
+ * 2. Legacy single string values (backward compatibility).
+ * 3. Default fallback if empty or invalid.
+ */
+function parseLocalizedShopField(
+  rawValue: string,
+  defaultValue: LocalizedShopField
+): LocalizedShopField {
+  const trimmed = rawValue.trim();
+  if (!trimmed) {
+    return { ...defaultValue };
+  }
+
+  try {
+    const parsed = JSON.parse(trimmed);
+    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+      const typed = parsed as Record<string, unknown>;
+      const ru =
+        typeof typed.ru === "string" && typed.ru.trim().length > 0
+          ? typed.ru.trim()
+          : defaultValue.ru;
+      const uz =
+        typeof typed.uz === "string" && typed.uz.trim().length > 0
+          ? typed.uz.trim()
+          : typeof typed.ru === "string" && typed.ru.trim().length > 0
+          ? typed.ru.trim()
+          : defaultValue.uz;
+      const en =
+        typeof typed.en === "string" && typed.en.trim().length > 0
+          ? typed.en.trim()
+          : typeof typed.ru === "string" && typed.ru.trim().length > 0
+          ? typed.ru.trim()
+          : defaultValue.en;
+
+      return { ru, uz, en };
+    }
+  } catch {
+    // Handled below for legacy plain string
+  }
+
+  // Legacy single string fallback
+  return {
+    ru: trimmed,
+    uz: trimmed,
+    en: trimmed,
+  };
+}
 
 /**
  * Retrieves shop settings from the database (SystemSetting).
@@ -22,7 +73,11 @@ import {
  * Safely falls back to DEFAULT_SHOP_SETTINGS if values are missing or on database error.
  */
 export async function getShopSettings(): Promise<ShopSettings> {
-  const settings: ShopSettings = { ...DEFAULT_SHOP_SETTINGS };
+  const settings: ShopSettings = {
+    ...DEFAULT_SHOP_SETTINGS,
+    address: { ...DEFAULT_SHOP_SETTINGS.address },
+    workingHours: { ...DEFAULT_SHOP_SETTINGS.workingHours },
+  };
 
   try {
     const records = await prisma.systemSetting.findMany({
@@ -52,11 +107,16 @@ export async function getShopSettings(): Promise<ShopSettings> {
           settings.email = record.value.trim() || DEFAULT_SHOP_SETTINGS.email;
           break;
         case SHOP_ADDRESS_KEY:
-          settings.address = record.value.trim() || DEFAULT_SHOP_SETTINGS.address;
+          settings.address = parseLocalizedShopField(
+            record.value,
+            DEFAULT_SHOP_SETTINGS.address
+          );
           break;
         case SHOP_WORKING_HOURS_KEY:
-          settings.workingHours =
-            record.value.trim() || DEFAULT_SHOP_SETTINGS.workingHours;
+          settings.workingHours = parseLocalizedShopField(
+            record.value,
+            DEFAULT_SHOP_SETTINGS.workingHours
+          );
           break;
         case DELIVERY_COST_UZS_KEY: {
           const num = parseInt(record.value, 10);

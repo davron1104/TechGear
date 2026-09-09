@@ -10,8 +10,16 @@ import { ShopSettings } from "@/lib/settings";
 const customShopSettings: ShopSettings = {
   phone: "+998 71 200 00 00",
   email: "support@techgear.uz",
-  address: "г. Ташкент, ул. Амира Темура, 100",
-  workingHours: "Пн-Вс: 10:00 - 22:00",
+  address: {
+    ru: "г. Ташкент, ул. Амира Темура, 100",
+    uz: "Toshkent sh., Amir Temur ko'chasi, 100",
+    en: "100 Amir Temur St., Tashkent",
+  },
+  workingHours: {
+    ru: "Пн-Вс: 10:00 - 22:00",
+    uz: "Dush-Yak: 10:00 - 22:00",
+    en: "Mon-Sun: 10:00 - 22:00",
+  },
   deliveryCostUzs: 35000,
   freeDeliveryThresholdUzs: 500000,
   stickyTopBar: false,
@@ -63,22 +71,28 @@ describe("Info Pages Components", () => {
       expect(screen.getByText(/500 000/)).toBeInTheDocument();
     });
 
-    it("should render Uzbek delivery page correctly", () => {
+    it("should render Uzbek delivery page correctly with localized address and working hours", () => {
       renderDeliveryView("uz");
 
       expect(screen.getByRole("heading", { level: 1, name: "Yetkazib berish va to'lov" })).toBeInTheDocument();
       expect(screen.getByText("Bosh sahifa")).toBeInTheDocument();
       expect(screen.getByText("Tariflar va bepul yetkazib berish")).toBeInTheDocument();
       expect(screen.getByText("To'lov usullari")).toBeInTheDocument();
+
+      expect(screen.getByText("Toshkent sh., Amir Temur ko'chasi, 100")).toBeInTheDocument();
+      expect(screen.getByText("Dush-Yak: 10:00 - 22:00")).toBeInTheDocument();
     });
 
-    it("should render English delivery page correctly", () => {
+    it("should render English delivery page correctly with localized address and working hours", () => {
       renderDeliveryView("en");
 
       expect(screen.getByRole("heading", { level: 1, name: "Delivery & Payment" })).toBeInTheDocument();
       expect(screen.getByText("Home")).toBeInTheDocument();
       expect(screen.getByText("Rates & Free Delivery")).toBeInTheDocument();
       expect(screen.getByText("Payment Methods")).toBeInTheDocument();
+
+      expect(screen.getByText("100 Amir Temur St., Tashkent")).toBeInTheDocument();
+      expect(screen.getByText("Mon-Sun: 10:00 - 22:00")).toBeInTheDocument();
     });
   });
 
@@ -109,9 +123,11 @@ describe("Info Pages Components", () => {
       // Contacts from ShopSettings
       expect(screen.getByText("+998 71 200 00 00")).toBeInTheDocument();
       expect(screen.getByText("support@techgear.uz")).toBeInTheDocument();
+      expect(screen.getByText("г. Ташкент, ул. Амира Темура, 100")).toBeInTheDocument();
+      expect(screen.getByText("Пн-Вс: 10:00 - 22:00")).toBeInTheDocument();
     });
 
-    it("should render Uzbek warranty page correctly", () => {
+    it("should render Uzbek warranty page correctly with localized address and working hours", () => {
       renderWarrantyView("uz");
 
       expect(
@@ -121,9 +137,12 @@ describe("Info Pages Components", () => {
       expect(screen.getByText("Kafolatli xizmat ko'rsatish shartlari")).toBeInTheDocument();
       expect(screen.getByText("Murojaat qilish tartibi")).toBeInTheDocument();
       expect(screen.getByText("Qo'llab-quvvatlash xizmatiga murojaat")).toBeInTheDocument();
+
+      expect(screen.getByText("Toshkent sh., Amir Temur ko'chasi, 100")).toBeInTheDocument();
+      expect(screen.getByText("Dush-Yak: 10:00 - 22:00")).toBeInTheDocument();
     });
 
-    it("should render English warranty page correctly", () => {
+    it("should render English warranty page correctly with localized address and working hours", () => {
       renderWarrantyView("en");
 
       expect(
@@ -133,6 +152,9 @@ describe("Info Pages Components", () => {
       expect(screen.getByText("Warranty Service Terms")).toBeInTheDocument();
       expect(screen.getByText("Inquiry Procedure")).toBeInTheDocument();
       expect(screen.getByText("Contact Customer Support")).toBeInTheDocument();
+
+      expect(screen.getByText("100 Amir Temur St., Tashkent")).toBeInTheDocument();
+      expect(screen.getByText("Mon-Sun: 10:00 - 22:00")).toBeInTheDocument();
     });
   });
 });

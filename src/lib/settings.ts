@@ -10,11 +10,19 @@ export const FREE_DELIVERY_THRESHOLD_UZS_KEY = "FREE_DELIVERY_THRESHOLD_UZS";
 export const STICKY_TOP_BAR_KEY = "STICKY_TOP_BAR";
 export const HOME_TEXT_BLOCK_KEY = "HOME_TEXT_BLOCK";
 
+import { Locale } from "@/i18n";
+
+export interface LocalizedShopField {
+  ru: string;
+  uz: string;
+  en: string;
+}
+
 export interface ShopSettings {
   phone: string;
   email: string;
-  address: string;
-  workingHours: string;
+  address: LocalizedShopField;
+  workingHours: LocalizedShopField;
   deliveryCostUzs: number;
   freeDeliveryThresholdUzs: number;
   stickyTopBar: boolean;
@@ -23,12 +31,33 @@ export interface ShopSettings {
 export const DEFAULT_SHOP_SETTINGS: ShopSettings = {
   phone: "+7 (800) 555-35-35",
   email: "support@techgear.uz",
-  address: "г. Ташкент, ул. Амира Темура, д. 42",
-  workingHours: "Пн–Вс: 09:00 – 21:00",
+  address: {
+    ru: "г. Ташкент, ул. Амира Темура, д. 42",
+    uz: "Toshkent sh., Amir Temur ko'ch., 42-uy",
+    en: "42 Amir Temur St., Tashkent",
+  },
+  workingHours: {
+    ru: "Пн–Вс: 09:00 – 21:00",
+    uz: "Dush–Yak: 09:00 – 21:00",
+    en: "Mon–Sun: 09:00 – 21:00",
+  },
   deliveryCostUzs: 30000,
   freeDeliveryThresholdUzs: 500000,
   stickyTopBar: false,
 };
+
+/**
+ * Returns localized string for shop field (address/workingHours) with fallback to RU.
+ * Safely supports legacy string values as well.
+ */
+export function getLocalizedShopField(
+  field: LocalizedShopField | string | undefined | null,
+  locale: Locale
+): string {
+  if (!field) return "";
+  if (typeof field === "string") return field;
+  return field[locale]?.trim() || field.ru?.trim() || "";
+}
 
 export interface LocalizedFeature {
   title: string;

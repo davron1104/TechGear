@@ -17,6 +17,29 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+type LangTab = "ru" | "uz" | "en";
+
+const TAB_CONFIG: Record<
+  LangTab,
+  { label: string; fullLabel: string; flag: string; required: boolean }
+> = {
+  ru: { label: "RU", fullLabel: "Русский (основной)", flag: "🇷🇺", required: true },
+  uz: { label: "UZ", fullLabel: "O‘zbekcha", flag: "🇺🇿", required: false },
+  en: { label: "EN", fullLabel: "English", flag: "🇬🇧", required: false },
+};
+
+const ADDRESS_PLACEHOLDERS: Record<LangTab, string> = {
+  ru: "г. Ташкент, ул. Амира Темура, д. 42",
+  uz: "Toshkent sh., Amir Temur ko'ch., 42-uy",
+  en: "42 Amir Temur St., Tashkent",
+};
+
+const WORKING_HOURS_PLACEHOLDERS: Record<LangTab, string> = {
+  ru: "Пн–Вс: 09:00 – 21:00",
+  uz: "Dush–Yak: 09:00 – 21:00",
+  en: "Mon–Sun: 09:00 – 21:00",
+};
+
 interface ShopSettingsFormProps {
   initialSettings: ShopSettings;
 }
@@ -25,6 +48,8 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
   const { formatPrice } = useCurrency();
 
   const [formData, setFormData] = useState<ShopSettings>(initialSettings);
+  const [addressTab, setAddressTab] = useState<LangTab>("ru");
+  const [workingHoursTab, setWorkingHoursTab] = useState<LangTab>("ru");
   const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({});
   const [serverError, setServerError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -51,6 +76,32 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
       setFieldErrors((prev) => {
         const next = { ...prev };
         delete next[name];
+        return next;
+      });
+    }
+    if (serverError) setServerError(null);
+    if (successMessage) setSuccessMessage(null);
+  };
+
+  const handleLocalizedChange = (
+    field: "address" | "workingHours",
+    lang: LangTab,
+    value: string
+  ) => {
+    setFormData((prev) => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        [lang]: value,
+      },
+    }));
+
+    const errorKey = `${field}.${lang}`;
+    if (fieldErrors[errorKey] || fieldErrors[field]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[errorKey];
+        delete next[field];
         return next;
       });
     }
@@ -109,10 +160,8 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
               <Phone className="w-4 h-4" />
             </div>
             <div>
-              <h3 className="text-sm font-bold text-slate-900">Контакты магазина</h3>
-              <p className="text-xs text-slate-500">
-                Отображаются в шапке (Header) и подвале (Footer) сайта
-              </p>
+              <h3 className="text-sm font-bold text-slate-900">Основные контакты</h3>
+              <p className="text-xs text-slate-500">Телефон, email и физический адрес</p>
             </div>
           </div>
           <span className="text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -120,92 +169,126 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
           </span>
         </div>
 
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-5">
-          {/* Телефон */}
-          <div>
-            <label
-              htmlFor="shop-phone"
-              className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider"
-            >
-              Телефон магазина
-            </label>
-            <div className="relative">
-              <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                id="shop-phone"
-                name="phone"
-                type="text"
-                value={formData.phone}
-                onChange={handleChange}
-                placeholder="+7 (800) 555-35-35"
-                className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#06B6D4] focus:bg-white transition-all ${
-                  fieldErrors.phone ? "border-rose-400 bg-rose-50/20" : "border-slate-200"
-                }`}
-              />
+        <div className="p-6 space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+            {/* Телефон */}
+            <div>
+              <label
+                htmlFor="shop-phone"
+                className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider"
+              >
+                Телефон поддержки <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Phone className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  id="shop-phone"
+                  name="phone"
+                  type="text"
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder="+7 (800) 555-35-35"
+                  className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#06B6D4] focus:bg-white transition-all ${
+                    fieldErrors.phone ? "border-rose-400 bg-rose-50/20" : "border-slate-200"
+                  }`}
+                />
+              </div>
+              {fieldErrors.phone && (
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {fieldErrors.phone[0]}
+                </p>
+              )}
             </div>
-            {fieldErrors.phone && (
-              <p className="text-xs text-rose-600 mt-1 font-medium">
-                {fieldErrors.phone[0]}
-              </p>
-            )}
+
+            {/* Email */}
+            <div>
+              <label
+                htmlFor="shop-email"
+                className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider"
+              >
+                Email поддержки <span className="text-rose-500">*</span>
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                <input
+                  id="shop-email"
+                  name="email"
+                  type="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  placeholder="support@techgear.uz"
+                  className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#06B6D4] focus:bg-white transition-all ${
+                    fieldErrors.email ? "border-rose-400 bg-rose-50/20" : "border-slate-200"
+                  }`}
+                />
+              </div>
+              {fieldErrors.email && (
+                <p className="text-xs text-rose-600 mt-1 font-medium">
+                  {fieldErrors.email[0]}
+                </p>
+              )}
+            </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="shop-email"
-              className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider"
-            >
-              Email службы поддержки
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
-              <input
-                id="shop-email"
-                name="email"
-                type="email"
-                value={formData.email}
-                onChange={handleChange}
-                placeholder="support@techgear.uz"
-                className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#06B6D4] focus:bg-white transition-all ${
-                  fieldErrors.email ? "border-rose-400 bg-rose-50/20" : "border-slate-200"
-                }`}
-              />
+          {/* Мультиязычный адрес */}
+          <div className="pt-2 border-t border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+              <label
+                htmlFor={`shop-address-${addressTab}`}
+                className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+              >
+                Адрес магазина ({addressTab.toUpperCase()})
+              </label>
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+                {(["ru", "uz", "en"] as LangTab[]).map((tab) => {
+                  const cfg = TAB_CONFIG[tab];
+                  const isActive = addressTab === tab;
+                  const hasErr = !!fieldErrors[`address.${tab}`] || (tab === "ru" && !!fieldErrors.address);
+                  return (
+                    <button
+                      key={tab}
+                      type="button"
+                      onClick={() => setAddressTab(tab)}
+                      className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                        isActive
+                          ? "bg-white text-slate-900 shadow-xs"
+                          : "text-slate-500 hover:text-slate-800"
+                      }`}
+                    >
+                      <span>{cfg.flag}</span>
+                      <span>{cfg.label}</span>
+                      {cfg.required && <span className="text-rose-500">*</span>}
+                      {hasErr && <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />}
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-            {fieldErrors.email && (
-              <p className="text-xs text-rose-600 mt-1 font-medium">
-                {fieldErrors.email[0]}
-              </p>
-            )}
-          </div>
 
-          {/* Адрес */}
-          <div className="md:col-span-2">
-            <label
-              htmlFor="shop-address"
-              className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider"
-            >
-              Адрес магазина / пункта самовывоза
-            </label>
             <div className="relative">
               <MapPin className="w-4 h-4 text-slate-400 absolute left-3 top-3 pointer-events-none" />
               <input
-                id="shop-address"
-                name="address"
+                id={`shop-address-${addressTab}`}
+                aria-label={`Адрес магазина (${addressTab.toUpperCase()})`}
                 type="text"
-                value={formData.address}
-                onChange={handleChange}
-                placeholder="г. Ташкент, ул. Амира Темура, д. 42"
+                value={formData.address[addressTab] || ""}
+                onChange={(e) => handleLocalizedChange("address", addressTab, e.target.value)}
+                placeholder={ADDRESS_PLACEHOLDERS[addressTab]}
                 className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#06B6D4] focus:bg-white transition-all ${
-                  fieldErrors.address ? "border-rose-400 bg-rose-50/20" : "border-slate-200"
+                  fieldErrors[`address.${addressTab}`] || (addressTab === "ru" && fieldErrors.address)
+                    ? "border-rose-400 bg-rose-50/20"
+                    : "border-slate-200"
                 }`}
               />
             </div>
-            {fieldErrors.address && (
+            {(fieldErrors[`address.${addressTab}`] || (addressTab === "ru" && fieldErrors.address)) && (
               <p className="text-xs text-rose-600 mt-1 font-medium">
-                {fieldErrors.address[0]}
+                {fieldErrors[`address.${addressTab}`]?.[0] || fieldErrors.address?.[0]}
               </p>
             )}
+            <p className="text-[11px] text-slate-400 mt-1">
+              Языковая версия: {TAB_CONFIG[addressTab].fullLabel}
+            </p>
           </div>
         </div>
       </div>
@@ -227,30 +310,57 @@ export function ShopSettingsForm({ initialSettings }: ShopSettingsFormProps) {
           </span>
         </div>
 
-        <div className="p-6">
-          <label
-            htmlFor="shop-working-hours"
-            className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider"
-          >
-            Часы работы магазина
-          </label>
-          <div className="relative max-w-md">
+        <div className="p-6 space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+            <label
+              htmlFor={`shop-working-hours-${workingHoursTab}`}
+              className="block text-xs font-bold text-slate-700 uppercase tracking-wider"
+            >
+              Режим работы ({workingHoursTab.toUpperCase()})
+            </label>
+            <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
+              {(["ru", "uz", "en"] as LangTab[]).map((tab) => {
+                const cfg = TAB_CONFIG[tab];
+                const isActive = workingHoursTab === tab;
+                const hasErr = !!fieldErrors[`workingHours.${tab}`] || (tab === "ru" && !!fieldErrors.workingHours);
+                return (
+                  <button
+                    key={tab}
+                    type="button"
+                    onClick={() => setWorkingHoursTab(tab)}
+                    className={`flex items-center gap-1.5 px-3 py-1 text-xs font-bold rounded-lg transition-all ${
+                      isActive
+                        ? "bg-white text-slate-900 shadow-xs"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    <span>{cfg.flag}</span>
+                    <span>{cfg.label}</span>
+                    {cfg.required && <span className="text-rose-500">*</span>}
+                    {hasErr && <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="relative">
             <Clock className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
-              id="shop-working-hours"
-              name="workingHours"
+              id={`shop-working-hours-${workingHoursTab}`}
+              aria-label={`Режим работы (${workingHoursTab.toUpperCase()})`}
               type="text"
-              value={formData.workingHours}
-              onChange={handleChange}
-              placeholder="Пн–Вс: 09:00 – 21:00"
+              value={formData.workingHours[workingHoursTab] || ""}
+              onChange={(e) => handleLocalizedChange("workingHours", workingHoursTab, e.target.value)}
+              placeholder={WORKING_HOURS_PLACEHOLDERS[workingHoursTab]}
               className={`w-full pl-9 pr-3 py-2.5 bg-slate-50 border rounded-xl text-sm font-medium focus:outline-hidden focus:ring-2 focus:ring-[#06B6D4] focus:bg-white transition-all ${
-                fieldErrors.workingHours
+                fieldErrors[`workingHours.${workingHoursTab}`] || (workingHoursTab === "ru" && fieldErrors.workingHours)
                   ? "border-rose-400 bg-rose-50/20"
                   : "border-slate-200"
               }`}
             />
           </div>
-          {fieldErrors.workingHours && (
+          {(fieldErrors[`workingHours.${workingHoursTab}`] || (workingHoursTab === "ru" && fieldErrors.workingHours)) && (
             <p className="text-xs text-rose-600 mt-1 font-medium">
               {fieldErrors.workingHours[0]}
             </p>

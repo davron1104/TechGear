@@ -1,5 +1,57 @@
 import { z } from "zod";
 
+export const localizedAddressSchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    return { ru: val, uz: "", en: "" };
+  }
+  return val;
+}, z.object({
+  ru: z
+    .string()
+    .trim()
+    .min(1, "Адрес магазина на русском языке обязателен для заполнения")
+    .min(3, "Адрес не может быть короче 3 символов")
+    .max(255, "Адрес не может быть длиннее 255 символов"),
+  uz: z
+    .string()
+    .trim()
+    .max(255, "Адрес не может быть длиннее 255 символов")
+    .optional()
+    .default(""),
+  en: z
+    .string()
+    .trim()
+    .max(255, "Адрес не может быть длиннее 255 символов")
+    .optional()
+    .default(""),
+}));
+
+export const localizedWorkingHoursSchema = z.preprocess((val) => {
+  if (typeof val === "string") {
+    return { ru: val, uz: "", en: "" };
+  }
+  return val;
+}, z.object({
+  ru: z
+    .string()
+    .trim()
+    .min(1, "Режим работы на русском языке обязателен для заполнения")
+    .min(3, "Режим работы не может быть короче 3 символов")
+    .max(100, "Режим работы не может быть длиннее 100 символов"),
+  uz: z
+    .string()
+    .trim()
+    .max(100, "Режим работы не может быть длиннее 100 символов")
+    .optional()
+    .default(""),
+  en: z
+    .string()
+    .trim()
+    .max(100, "Режим работы не может быть длиннее 100 символов")
+    .optional()
+    .default(""),
+}));
+
 export const updateShopSettingsSchema = z.object({
   phone: z
     .string()
@@ -13,18 +65,8 @@ export const updateShopSettingsSchema = z.object({
     .trim()
     .email("Некорректный формат email адреса")
     .max(100, "Email не может быть длиннее 100 символов"),
-  address: z
-    .string()
-    .min(1, "Адрес магазина обязателен для заполнения")
-    .trim()
-    .min(3, "Адрес не может быть короче 3 символов")
-    .max(255, "Адрес не может быть длиннее 255 символов"),
-  workingHours: z
-    .string()
-    .min(1, "Режим работы обязателен для заполнения")
-    .trim()
-    .min(3, "Режим работы не может быть короче 3 символов")
-    .max(100, "Режим работы не может быть длиннее 100 символов"),
+  address: localizedAddressSchema,
+  workingHours: localizedWorkingHoursSchema,
   deliveryCostUzs: z
     .number()
     .int("Стоимость доставки должна быть целым числом")

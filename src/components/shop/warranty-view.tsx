@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "@/context/language-context";
 import { getLocalizedHref } from "@/i18n";
-import { ShopSettings, DEFAULT_SHOP_SETTINGS } from "@/lib/settings";
+import { ShopSettings, DEFAULT_SHOP_SETTINGS, getLocalizedShopField } from "@/lib/settings";
 
 interface WarrantyViewProps {
   shopSettings?: ShopSettings;
@@ -28,6 +28,8 @@ export function WarrantyView({
   const { t, locale } = useTranslation();
 
   const cleanPhone = shopSettings.phone.replace(/[^0-9+]/g, "");
+  const localizedAddress = getLocalizedShopField(shopSettings.address, locale);
+  const localizedWorkingHours = getLocalizedShopField(shopSettings.workingHours, locale);
 
   const steps = [
     {
@@ -207,17 +209,17 @@ export function WarrantyView({
               </a>
             )}
 
-            {shopSettings.address && (
+            {localizedAddress && (
               <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/80 text-slate-200 border border-slate-700/50 sm:col-span-2">
                 <MapPin className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                <span className="text-xs sm:text-sm">{shopSettings.address}</span>
+                <span className="text-xs sm:text-sm">{localizedAddress}</span>
               </div>
             )}
 
-            {shopSettings.workingHours && (
+            {localizedWorkingHours && (
               <div className="flex items-start gap-3 p-3 rounded-xl bg-slate-800/80 text-slate-200 border border-slate-700/50 sm:col-span-2">
                 <Clock className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
-                <span className="text-xs sm:text-sm">{shopSettings.workingHours}</span>
+                <span className="text-xs sm:text-sm">{localizedWorkingHours}</span>
               </div>
             )}
           </div>

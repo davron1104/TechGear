@@ -29,7 +29,7 @@ import { useTranslation } from "@/context/language-context";
 import { getLocalizedHref, getLocalizedCategory } from "@/i18n";
 import { useCurrency } from "@/context/currency-context";
 import { Category, DEFAULT_CATEGORIES } from "@/types/category";
-import { ShopSettings, DEFAULT_SHOP_SETTINGS } from "@/lib/settings";
+import { ShopSettings, DEFAULT_SHOP_SETTINGS, getLocalizedShopField } from "@/lib/settings";
 
 const emptySubscribe = () => () => {};
 
@@ -136,7 +136,7 @@ export function Header({
             </div>
             <div className="hidden md:flex items-center gap-1.5 text-slate-400">
               <Clock className="w-3.5 h-3.5 text-[#06B6D4]" />
-              <span>{shopSettings.workingHours}</span>
+              <span>{getLocalizedShopField(shopSettings.workingHours, locale)}</span>
             </div>
           </div>
 
@@ -543,7 +543,7 @@ export function Header({
               </div>
               <div className="flex items-center gap-2 text-slate-400">
                 <Clock className="w-3.5 h-3.5 text-[#06B6D4]" />
-                <span>{shopSettings.workingHours}</span>
+                <span>{getLocalizedShopField(shopSettings.workingHours, locale)}</span>
               </div>
             </div>
           </aside>

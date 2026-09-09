@@ -322,13 +322,13 @@ export async function updateShopSettings(
       }),
       prisma.systemSetting.upsert({
         where: { key: SHOP_ADDRESS_KEY },
-        create: { key: SHOP_ADDRESS_KEY, value: address },
-        update: { value: address },
+        create: { key: SHOP_ADDRESS_KEY, value: JSON.stringify(address) },
+        update: { value: JSON.stringify(address) },
       }),
       prisma.systemSetting.upsert({
         where: { key: SHOP_WORKING_HOURS_KEY },
-        create: { key: SHOP_WORKING_HOURS_KEY, value: workingHours },
-        update: { value: workingHours },
+        create: { key: SHOP_WORKING_HOURS_KEY, value: JSON.stringify(workingHours) },
+        update: { value: JSON.stringify(workingHours) },
       }),
       prisma.systemSetting.upsert({
         where: { key: DELIVERY_COST_UZS_KEY },

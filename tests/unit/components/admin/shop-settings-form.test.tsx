@@ -15,21 +15,51 @@ describe("ShopSettingsForm Component", () => {
     vi.clearAllMocks();
   });
 
-  it("renders form with initial settings", () => {
+  it("renders form with initial settings and supports language tab switching", async () => {
+    const user = userEvent.setup();
     render(<ShopSettingsForm initialSettings={DEFAULT_SHOP_SETTINGS} />);
 
-    expect(screen.getByLabelText(/Телефон магазина/i)).toHaveValue(
+    expect(screen.getByLabelText(/Телефон поддержки/i)).toHaveValue(
       DEFAULT_SHOP_SETTINGS.phone
     );
-    expect(screen.getByLabelText(/Email службы поддержки/i)).toHaveValue(
+    expect(screen.getByLabelText(/Email поддержки/i)).toHaveValue(
       DEFAULT_SHOP_SETTINGS.email
     );
-    expect(
-      screen.getByLabelText(/Адрес магазина \/ пункта самовывоза/i)
-    ).toHaveValue(DEFAULT_SHOP_SETTINGS.address);
-    expect(screen.getByLabelText(/Часы работы магазина/i)).toHaveValue(
-      DEFAULT_SHOP_SETTINGS.workingHours
+
+    // Initial RU tab
+    expect(screen.getByLabelText(/Адрес магазина \(RU\)/i)).toHaveValue(
+      DEFAULT_SHOP_SETTINGS.address.ru
     );
+    expect(screen.getByLabelText(/Режим работы \(RU\)/i)).toHaveValue(
+      DEFAULT_SHOP_SETTINGS.workingHours.ru
+    );
+
+    // Switch to UZ tabs for both address and working hours
+    const uzTabs = screen.getAllByRole("button", { name: /UZ/i });
+    for (const tab of uzTabs) {
+      await user.click(tab);
+    }
+
+    expect(screen.getByLabelText(/Адрес магазина \(UZ\)/i)).toHaveValue(
+      DEFAULT_SHOP_SETTINGS.address.uz
+    );
+    expect(screen.getByLabelText(/Режим работы \(UZ\)/i)).toHaveValue(
+      DEFAULT_SHOP_SETTINGS.workingHours.uz
+    );
+
+    // Switch to EN tabs for both address and working hours
+    const enTabs = screen.getAllByRole("button", { name: /EN/i });
+    for (const tab of enTabs) {
+      await user.click(tab);
+    }
+
+    expect(screen.getByLabelText(/Адрес магазина \(EN\)/i)).toHaveValue(
+      DEFAULT_SHOP_SETTINGS.address.en
+    );
+    expect(screen.getByLabelText(/Режим работы \(EN\)/i)).toHaveValue(
+      DEFAULT_SHOP_SETTINGS.workingHours.en
+    );
+
     expect(
       screen.getByLabelText(/Стоимость курьерской доставки \(UZS\)/i)
     ).toHaveValue(DEFAULT_SHOP_SETTINGS.deliveryCostUzs);
@@ -48,8 +78,16 @@ describe("ShopSettingsForm Component", () => {
       data: {
         phone: "+998 71 333 44 55",
         email: "support@techgear.uz",
-        address: "г. Ташкент, ул. Амира Темура, 100",
-        workingHours: "09:00 - 22:00",
+        address: {
+          ru: "г. Ташкент, ул. Амира Темура, 100",
+          uz: "Toshkent sh., Amir Temur ko'chasi, 100",
+          en: "100 Amir Temur St., Tashkent",
+        },
+        workingHours: {
+          ru: "09:00 - 22:00",
+          uz: "09:00 - 22:00",
+          en: "09:00 - 22:00",
+        },
         deliveryCostUzs: 40000,
         freeDeliveryThresholdUzs: 700000,
         stickyTopBar: true,
@@ -58,7 +96,7 @@ describe("ShopSettingsForm Component", () => {
 
     render(<ShopSettingsForm initialSettings={DEFAULT_SHOP_SETTINGS} />);
 
-    const phoneInput = screen.getByLabelText(/Телефон магазина/i);
+    const phoneInput = screen.getByLabelText(/Телефон поддержки/i);
     await user.clear(phoneInput);
     await user.type(phoneInput, "+998 71 333 44 55");
 
@@ -78,6 +116,9 @@ describe("ShopSettingsForm Component", () => {
         expect.objectContaining({
           phone: "+998 71 333 44 55",
           stickyTopBar: true,
+          address: expect.objectContaining({
+            ru: DEFAULT_SHOP_SETTINGS.address.ru,
+          }),
         })
       );
       expect(screen.getByText(/Настройки магазина успешно сохранены/i)).toBeInTheDocument();

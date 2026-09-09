@@ -6,7 +6,7 @@ import { DEFAULT_CATEGORIES } from "@/types/category";
 import { useTranslation } from "@/context/language-context";
 import { useCurrency } from "@/context/currency-context";
 import { getLocalizedCategory, getLocalizedHref } from "@/i18n";
-import { ShopSettings, DEFAULT_SHOP_SETTINGS } from "@/lib/settings";
+import { ShopSettings, DEFAULT_SHOP_SETTINGS, getLocalizedShopField } from "@/lib/settings";
 
 interface FooterProps {
   shopSettings?: ShopSettings;
@@ -17,6 +17,9 @@ export function Footer({ shopSettings = DEFAULT_SHOP_SETTINGS }: FooterProps) {
   const { formatPrice } = useCurrency();
 
   const cleanPhone = shopSettings.phone.replace(/[^0-9+]/g, "");
+
+  const displayedWorkingHours = getLocalizedShopField(shopSettings.workingHours, locale);
+  const displayedAddress = getLocalizedShopField(shopSettings.address, locale);
 
   return (
     <footer className="bg-[#0F172A] text-slate-400 mt-auto border-t border-slate-800">
@@ -162,12 +165,12 @@ export function Footer({ shopSettings = DEFAULT_SHOP_SETTINGS }: FooterProps) {
               </li>
               <li>
                 <strong className="text-slate-300">{t("footer.workingHoursLabel")}</strong>{" "}
-                <span>{shopSettings.workingHours}</span>
+                <span>{displayedWorkingHours}</span>
               </li>
-              {shopSettings.address && (
+              {displayedAddress && (
                 <li>
                   <strong className="text-slate-300">{t("footer.addressLabel")}</strong>{" "}
-                  <span>{shopSettings.address}</span>
+                  <span>{displayedAddress}</span>
                 </li>
               )}
             </ul>

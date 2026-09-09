@@ -144,8 +144,16 @@ describe("Settings Server Actions - Shop Settings", () => {
       const payload = {
         phone: "+998 71 200 00 00",
         email: "admin@techgear.uz",
-        address: "г. Ташкент, пр-т Амира Темура, 50",
-        workingHours: "Пн–Сб: 10:00 – 20:00",
+        address: {
+          ru: "г. Ташкент, пр-т Амира Темура, 50",
+          uz: "Toshkent sh., Amir Temur shox ko'chasi, 50",
+          en: "50 Amir Temur Ave, Tashkent",
+        },
+        workingHours: {
+          ru: "Пн–Сб: 10:00 – 20:00",
+          uz: "Dush–Shan: 10:00 – 20:00",
+          en: "Mon–Sat: 10:00 – 20:00",
+        },
         deliveryCostUzs: 35000,
         freeDeliveryThresholdUzs: 600000,
         stickyTopBar: true,

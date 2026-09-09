@@ -55,4 +55,48 @@ describe("Header Sticky Top Bar Behavior", () => {
     const headerElement = container.querySelector("header");
     expect(headerElement).not.toHaveClass("sticky");
   });
+
+  it("should render localized working hours in header across RU, UZ, and EN locales", () => {
+    const customSettings: ShopSettings = {
+      ...DEFAULT_SHOP_SETTINGS,
+      workingHours: {
+        ru: "Пн-Пт: 09:00 - 18:00",
+        uz: "Dush-Juma: 09:00 - 18:00",
+        en: "Mon-Fri: 09:00 - 18:00",
+      },
+    };
+
+    // 1. RU
+    const { unmount: unmountRu } = render(
+      <LanguageProvider initialLocale="ru">
+        <CurrencyProvider initialCurrency="UZS">
+          <Header shopSettings={customSettings} />
+        </CurrencyProvider>
+      </LanguageProvider>
+    );
+    expect(screen.getAllByText("Пн-Пт: 09:00 - 18:00").length).toBeGreaterThanOrEqual(1);
+    unmountRu();
+
+    // 2. UZ
+    const { unmount: unmountUz } = render(
+      <LanguageProvider initialLocale="uz">
+        <CurrencyProvider initialCurrency="UZS">
+          <Header shopSettings={customSettings} />
+        </CurrencyProvider>
+      </LanguageProvider>
+    );
+    expect(screen.getAllByText("Dush-Juma: 09:00 - 18:00").length).toBeGreaterThanOrEqual(1);
+    unmountUz();
+
+    // 3. EN
+    const { unmount: unmountEn } = render(
+      <LanguageProvider initialLocale="en">
+        <CurrencyProvider initialCurrency="UZS">
+          <Header shopSettings={customSettings} />
+        </CurrencyProvider>
+      </LanguageProvider>
+    );
+    expect(screen.getAllByText("Mon-Fri: 09:00 - 18:00").length).toBeGreaterThanOrEqual(1);
+    unmountEn();
+  });
 });
