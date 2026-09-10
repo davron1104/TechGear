@@ -279,7 +279,7 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
                   <div className="flex items-center gap-2">
                     <span className="text-xs text-slate-400">Сумма заказа:</span>
                     <span className="font-mono font-extrabold text-base text-slate-900">
-                      {order.finalTotal.toLocaleString("ru-RU")} ₽
+                      {order.finalTotal.toLocaleString("ru-RU")} сум
                     </span>
                   </div>
                 </div>
@@ -336,7 +336,7 @@ export function AdminOrdersClient({ initialOrders }: AdminOrdersClientProps) {
                             {item.name}
                           </span>
                           <span className="font-mono text-slate-400 shrink-0">
-                            {item.quantity} шт. × {item.price} ₽
+                            {item.quantity} шт. × {Number(item.price).toLocaleString("ru-RU")} сум
                           </span>
                         </div>
                       ))}

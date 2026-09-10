@@ -620,7 +620,7 @@ export function AdminProductsClient({
                         </span>
                       </td>
                       <td className="py-4 px-4 text-right font-mono text-sm font-semibold text-slate-900">
-                        {product.price.toLocaleString("ru-RU")} ₽
+                        {product.price.toLocaleString("ru-RU")} сум
                       </td>
                       <td className="py-4 px-4 text-center">
                         <span
@@ -803,14 +803,14 @@ export function AdminProductsClient({
                     htmlFor="prod-price"
                     className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
                   >
-                    Цена (₽) *
+                    Цена (UZS) *
                   </label>
                   <input
                     id="prod-price"
                     type="number"
                     min="0"
                     step="1"
-                    placeholder="4990"
+                    placeholder="450000"
                     {...register("price", { valueAsNumber: true })}
                     className={`${inputClass(!!errors.price)} font-mono`}
                   />

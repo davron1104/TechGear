@@ -377,7 +377,7 @@ export default async function AdminDashboardPage() {
                     <div className="flex items-center gap-6 shrink-0">
                       <div className="text-right font-mono">
                         <div className="text-xs font-bold text-slate-900">
-                          {Number(p.price).toLocaleString("ru-RU")} ₽
+                          {Number(p.price).toLocaleString("ru-RU")} сум
                         </div>
                         <div className="text-[10px] text-slate-400">
                           Остаток: {p.stock} шт.
