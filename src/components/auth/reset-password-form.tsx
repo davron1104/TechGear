@@ -50,7 +50,7 @@ function RequestResetLinkForm() {
     setStatusMessage(null);
 
     try {
-      const res = await sendPasswordResetLink(data);
+      const res = await sendPasswordResetLink(data, locale);
       setIsLoading(false);
       if (res.success) {
         setSubmittedEmail(data.email);

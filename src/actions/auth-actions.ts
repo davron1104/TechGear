@@ -73,7 +73,7 @@ export async function registerUser(data: unknown) {
  * Generates a password reset token, saves its SHA-256 hash to the database,
  * and sends the raw token via email.
  */
-export async function sendPasswordResetLink(data: unknown) {
+export async function sendPasswordResetLink(data: unknown, rawLocale?: string) {
   const result = resetPasswordSchema.safeParse(data);
   if (!result.success) {
     return {
@@ -122,15 +122,18 @@ export async function sendPasswordResetLink(data: unknown) {
       },
     });
 
-    // Send the raw token in the link
-    await sendPasswordResetEmail(user.email, rawToken);
+    // Send the raw token in the link with locale
+    await sendPasswordResetEmail(user.email, rawToken, rawLocale);
 
     return {
       success: true,
       message: successMessage,
     };
   } catch (error) {
-    console.error("Password reset request error:", error);
+    console.error(
+      "Password reset request error:",
+      error instanceof Error ? error.message : "Unknown error"
+    );
     return {
       success: false,
       error: "Произошла системная ошибка при отправке ссылки.",
