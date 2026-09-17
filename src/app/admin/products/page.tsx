@@ -3,6 +3,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import prisma from "@/lib/prisma";
 import { AdminProductsClient } from "./products-client";
+import { ProductTranslations } from "@/types/product";
 
 export const metadata: Metadata = {
   title: "Управление товарами — TechGear Admin",
@@ -39,6 +40,7 @@ export default async function AdminProductsPage() {
     shortDescription: p.shortDescription,
     description: p.description,
     characteristics: (p.characteristics as Record<string, string>) ?? {},
+    translations: (p.translations as ProductTranslations) ?? null,
     isPopular: p.isPopular ?? false,
     deletedAt: p.deletedAt ? p.deletedAt.toISOString() : null,
     createdAt: p.createdAt.toISOString(),

@@ -4,6 +4,8 @@ import { auth } from "@/auth";
 import prisma from "@/lib/prisma";
 import { productSchema } from "@/lib/validations/product";
 import { revalidatePath } from "next/cache";
+import { ProductTranslations, ProductTranslationData } from "@/types/product";
+import type { Prisma } from "@/generated/prisma/client";
 
 type ActionSuccess = { success: true };
 type ActionError = {
@@ -12,6 +14,69 @@ type ActionError = {
   fields?: Record<string, string[]>;
 };
 type ActionResponse = ActionSuccess | ActionError;
+
+/**
+ * Cleans translation fields, stripping empty strings and empty objects.
+ */
+function cleanTranslationData(
+  data?: ProductTranslationData | null
+): ProductTranslationData | undefined {
+  if (!data) return undefined;
+
+  const trimmedName = data.name?.trim();
+  const trimmedShortDesc = data.shortDescription?.trim();
+  const trimmedDesc = data.description?.trim();
+
+  const cleanCharacteristics: Record<string, string> = {};
+  if (data.characteristics) {
+    for (const [key, value] of Object.entries(data.characteristics)) {
+      const trimmedKey = key.trim();
+      const trimmedValue = value.trim();
+      if (trimmedKey) {
+        cleanCharacteristics[trimmedKey] = trimmedValue;
+      }
+    }
+  }
+
+  const hasChars = Object.keys(cleanCharacteristics).length > 0;
+  const hasName = Boolean(trimmedName);
+  const hasShortDesc = Boolean(trimmedShortDesc);
+  const hasDesc = Boolean(trimmedDesc);
+
+  if (!hasName && !hasShortDesc && !hasDesc && !hasChars) {
+    return undefined;
+  }
+
+  const result: ProductTranslationData = {};
+  if (hasName) result.name = trimmedName;
+  if (hasShortDesc) result.shortDescription = trimmedShortDesc;
+  if (hasDesc) result.description = trimmedDesc;
+  if (hasChars) result.characteristics = cleanCharacteristics;
+
+  return result;
+}
+
+/**
+ * Sanitizes the entire ProductTranslations structure.
+ */
+function cleanTranslations(
+  translations?: ProductTranslations | null
+): ProductTranslations | null {
+  if (!translations) return null;
+
+  const uz = cleanTranslationData(translations.uz);
+  const en = cleanTranslationData(translations.en);
+
+  if (!uz && !en) {
+    return null;
+  }
+
+  const result: ProductTranslations = {};
+  if (uz) result.uz = uz;
+  if (en) result.en = en;
+
+  return result;
+}
 
 /**
  * Asserts that the current session belongs to an ADMIN user.
@@ -52,6 +117,7 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
       shortDescription,
       description,
       characteristics,
+      translations,
       isPopular,
     } = result.data;
     const formattedSlug = slug.toLowerCase().trim();
@@ -86,6 +152,8 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
       };
     }
 
+    const finalTranslations = cleanTranslations(translations as ProductTranslations);
+
     await prisma.product.create({
       data: {
         name: name.trim(),
@@ -98,7 +166,8 @@ export async function createProduct(data: unknown): Promise<ActionResponse> {
         images: finalImages,
         shortDescription: shortDescription.trim(),
         description: description.trim(),
-        characteristics,
+        characteristics: characteristics as Prisma.InputJsonValue,
+        translations: (finalTranslations ?? undefined) as Prisma.InputJsonValue | undefined,
         isPopular: Boolean(isPopular),
       },
     });
@@ -145,6 +214,7 @@ export async function updateProduct(
       shortDescription,
       description,
       characteristics,
+      translations,
       isPopular,
     } = result.data;
     const formattedSlug = slug.toLowerCase().trim();
@@ -179,22 +249,30 @@ export async function updateProduct(
       };
     }
 
+    const updateData: Prisma.ProductUncheckedUpdateInput = {
+      name: name.trim(),
+      slug: formattedSlug,
+      categoryId,
+      price,
+      brand: brand.trim(),
+      stock,
+      image: trimmedMainImage,
+      images: finalImages,
+      shortDescription: shortDescription.trim(),
+      description: description.trim(),
+      characteristics: characteristics as Prisma.InputJsonValue,
+      isPopular: Boolean(isPopular),
+    };
+
+    if (translations !== undefined) {
+      updateData.translations = (cleanTranslations(translations as ProductTranslations) ?? null) as
+        | Prisma.InputJsonValue
+        | Prisma.NullableJsonNullValueInput;
+    }
+
     await prisma.product.update({
       where: { id },
-      data: {
-        name: name.trim(),
-        slug: formattedSlug,
-        categoryId,
-        price,
-        brand: brand.trim(),
-        stock,
-        image: trimmedMainImage,
-        images: finalImages,
-        shortDescription: shortDescription.trim(),
-        description: description.trim(),
-        characteristics,
-        isPopular: Boolean(isPopular),
-      },
+      data: updateData,
     });
 
     revalidatePath("/admin/products");

@@ -1,5 +1,12 @@
 import { z } from "zod";
 
+export const productTranslationSchema = z.object({
+  name: z.string().max(200, "Максимум 200 символов").optional(),
+  shortDescription: z.string().max(500, "Максимум 500 символов").optional(),
+  description: z.string().optional(),
+  characteristics: z.record(z.string(), z.string()).optional(),
+});
+
 export const productSchema = z.object({
   name: z
     .string()
@@ -49,7 +56,15 @@ export const productSchema = z.object({
     .max(500, "Максимум 500 символов"),
   description: z.string().min(1, "Описание обязательно"),
   characteristics: z.record(z.string(), z.string()),
+  translations: z
+    .object({
+      uz: productTranslationSchema.optional(),
+      en: productTranslationSchema.optional(),
+    })
+    .optional()
+    .nullable(),
   isPopular: z.boolean(),
 });
 
 export type ProductInput = z.infer<typeof productSchema>;
+export type ProductTranslationInput = z.infer<typeof productTranslationSchema>;

@@ -16,10 +16,9 @@ import {
   AlertTriangle,
   UploadCloud,
   Link as LinkIcon,
-  Image as ImageIcon,
   CheckCircle2,
 } from "lucide-react";
-import { useForm } from "react-hook-form";
+import { useForm, Path } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { productSchema } from "@/lib/validations/product";
@@ -29,6 +28,7 @@ import {
   deleteProduct,
 } from "@/actions/product-actions";
 import { uploadProductImage } from "@/actions/upload-actions";
+import { ProductTranslations, Locale } from "@/types/product";
 
 // Form schema without characteristics & images (managed in separate local state)
 const formSchema = productSchema.omit({ characteristics: true, images: true });
@@ -54,6 +54,7 @@ export interface ProductData {
   shortDescription: string;
   description: string;
   characteristics: Record<string, string>;
+  translations?: ProductTranslations | null;
   isPopular?: boolean;
   deletedAt: string | null;
   createdAt: string;
@@ -96,14 +97,19 @@ export function AdminProductsClient({
   const [isPending, startTransition] = useTransition();
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<ProductData | null>(null);
+  const [activeTab, setActiveTab] = useState<Locale>("ru");
   const [statusMessage, setStatusMessage] = useState<{
     text: string;
     type: "success" | "error";
   } | null>(null);
   const [isSlugManuallyEdited, setIsSlugManuallyEdited] = useState(false);
-  const [characteristics, setCharacteristics] = useState<CharacteristicRow[]>([
-    { key: "", value: "" },
-  ]);
+  const [characteristicsByLocale, setCharacteristicsByLocale] = useState<
+    Record<Locale, CharacteristicRow[]>
+  >({
+    ru: [{ key: "", value: "" }],
+    uz: [],
+    en: [],
+  });
 
   // Image upload state
   const [imageInputMode, setImageInputMode] = useState<"upload" | "url">("upload");
@@ -136,6 +142,10 @@ export function AdminProductsClient({
       image: "",
       shortDescription: "",
       description: "",
+      translations: {
+        uz: { name: "", shortDescription: "", description: "" },
+        en: { name: "", shortDescription: "", description: "" },
+      },
       isPopular: false,
     },
   });
@@ -287,13 +297,18 @@ export function AdminProductsClient({
 
   const openCreateForm = () => {
     setEditingProduct(null);
+    setActiveTab("ru");
     setIsSlugManuallyEdited(false);
     setImageUploadError(null);
     setImageInputMode("upload");
     setAdditionalImages([]);
     setAdditionalUrlInput("");
     setAdditionalUploadError(null);
-    setCharacteristics([{ key: "", value: "" }]);
+    setCharacteristicsByLocale({
+      ru: [{ key: "", value: "" }],
+      uz: [],
+      en: [],
+    });
     reset({
       name: "",
       slug: "",
@@ -304,6 +319,10 @@ export function AdminProductsClient({
       image: "",
       shortDescription: "",
       description: "",
+      translations: {
+        uz: { name: "", shortDescription: "", description: "" },
+        en: { name: "", shortDescription: "", description: "" },
+      },
       isPopular: false,
     });
     setStatusMessage(null);
@@ -312,6 +331,7 @@ export function AdminProductsClient({
 
   const handleEditClick = (product: ProductData) => {
     setEditingProduct(product);
+    setActiveTab("ru");
     setIsSlugManuallyEdited(true);
     setImageUploadError(null);
     setImageInputMode(product.image?.startsWith("/uploads/") ? "upload" : "url");
@@ -319,10 +339,23 @@ export function AdminProductsClient({
     setAdditionalImages(extra);
     setAdditionalUrlInput("");
     setAdditionalUploadError(null);
-    const charRows = Object.entries(product.characteristics).map(
+
+    const ruCharRows = Object.entries(product.characteristics || {}).map(
       ([key, value]) => ({ key, value })
     );
-    setCharacteristics(charRows.length > 0 ? charRows : [{ key: "", value: "" }]);
+    const uzCharRows = Object.entries(
+      product.translations?.uz?.characteristics || {}
+    ).map(([key, value]) => ({ key, value }));
+    const enCharRows = Object.entries(
+      product.translations?.en?.characteristics || {}
+    ).map(([key, value]) => ({ key, value }));
+
+    setCharacteristicsByLocale({
+      ru: ruCharRows.length > 0 ? ruCharRows : [{ key: "", value: "" }],
+      uz: uzCharRows,
+      en: enCharRows,
+    });
+
     reset({
       name: product.name,
       slug: product.slug,
@@ -333,6 +366,18 @@ export function AdminProductsClient({
       image: product.image,
       shortDescription: product.shortDescription,
       description: product.description,
+      translations: {
+        uz: {
+          name: product.translations?.uz?.name ?? "",
+          shortDescription: product.translations?.uz?.shortDescription ?? "",
+          description: product.translations?.uz?.description ?? "",
+        },
+        en: {
+          name: product.translations?.en?.name ?? "",
+          shortDescription: product.translations?.en?.shortDescription ?? "",
+          description: product.translations?.en?.description ?? "",
+        },
+      },
       isPopular: product.isPopular ?? false,
     });
     setStatusMessage(null);
@@ -346,20 +391,30 @@ export function AdminProductsClient({
 
   // ── Characteristics helpers ───────────────────────────────────────────────
 
-  const addCharacteristic = () =>
-    setCharacteristics((prev) => [...prev, { key: "", value: "" }]);
+  const addCharacteristic = (locale: Locale) =>
+    setCharacteristicsByLocale((prev) => ({
+      ...prev,
+      [locale]: [...(prev[locale] || []), { key: "", value: "" }],
+    }));
 
-  const removeCharacteristic = (index: number) =>
-    setCharacteristics((prev) => prev.filter((_, i) => i !== index));
+  const removeCharacteristic = (locale: Locale, index: number) =>
+    setCharacteristicsByLocale((prev) => ({
+      ...prev,
+      [locale]: (prev[locale] || []).filter((_, i) => i !== index),
+    }));
 
   const updateCharacteristic = (
+    locale: Locale,
     index: number,
     field: "key" | "value",
     val: string
   ) =>
-    setCharacteristics((prev) =>
-      prev.map((row, i) => (i === index ? { ...row, [field]: val } : row))
-    );
+    setCharacteristicsByLocale((prev) => ({
+      ...prev,
+      [locale]: (prev[locale] || []).map((row, i) =>
+        i === index ? { ...row, [field]: val } : row
+      ),
+    }));
 
   // ── Delete ───────────────────────────────────────────────────────────────
 
@@ -398,18 +453,66 @@ export function AdminProductsClient({
   const onSubmit = async (formData: FormValues) => {
     setStatusMessage(null);
 
-    // Convert characteristics rows → Record<string, string>
-    const charRecord: Record<string, string> = {};
-    for (const row of characteristics) {
+    // Convert RU characteristics rows → Record<string, string>
+    const ruCharRecord: Record<string, string> = {};
+    for (const row of characteristicsByLocale.ru || []) {
       if (row.key.trim()) {
-        charRecord[row.key.trim()] = row.value.trim();
+        ruCharRecord[row.key.trim()] = row.value.trim();
       }
+    }
+
+    // Convert UZ characteristics rows → Record<string, string>
+    const uzCharRecord: Record<string, string> = {};
+    for (const row of characteristicsByLocale.uz || []) {
+      if (row.key.trim()) {
+        uzCharRecord[row.key.trim()] = row.value.trim();
+      }
+    }
+
+    // Convert EN characteristics rows → Record<string, string>
+    const enCharRecord: Record<string, string> = {};
+    for (const row of characteristicsByLocale.en || []) {
+      if (row.key.trim()) {
+        enCharRecord[row.key.trim()] = row.value.trim();
+      }
+    }
+
+    const translationsPayload: ProductTranslations = {};
+
+    const uzName = formData.translations?.uz?.name?.trim();
+    const uzShortDesc = formData.translations?.uz?.shortDescription?.trim();
+    const uzDesc = formData.translations?.uz?.description?.trim();
+    const hasUzChars = Object.keys(uzCharRecord).length > 0;
+
+    if (uzName || uzShortDesc || uzDesc || hasUzChars) {
+      translationsPayload.uz = {
+        ...(uzName ? { name: uzName } : {}),
+        ...(uzShortDesc ? { shortDescription: uzShortDesc } : {}),
+        ...(uzDesc ? { description: uzDesc } : {}),
+        ...(hasUzChars ? { characteristics: uzCharRecord } : {}),
+      };
+    }
+
+    const enName = formData.translations?.en?.name?.trim();
+    const enShortDesc = formData.translations?.en?.shortDescription?.trim();
+    const enDesc = formData.translations?.en?.description?.trim();
+    const hasEnChars = Object.keys(enCharRecord).length > 0;
+
+    if (enName || enShortDesc || enDesc || hasEnChars) {
+      translationsPayload.en = {
+        ...(enName ? { name: enName } : {}),
+        ...(enShortDesc ? { shortDescription: enShortDesc } : {}),
+        ...(enDesc ? { description: enDesc } : {}),
+        ...(hasEnChars ? { characteristics: enCharRecord } : {}),
+      };
     }
 
     const fullData = {
       ...formData,
       images: additionalImages,
-      characteristics: charRecord,
+      characteristics: ruCharRecord,
+      translations:
+        Object.keys(translationsPayload).length > 0 ? translationsPayload : null,
     };
 
     startTransition(async () => {
@@ -434,7 +537,7 @@ export function AdminProductsClient({
           });
           if ("fields" in res && res.fields) {
             Object.entries(res.fields).forEach(([field, messages]) => {
-              setError(field as keyof FormValues, {
+              setError(field as Path<FormValues>, {
                 type: "server",
                 message: messages[0],
               });
@@ -701,52 +804,6 @@ export function AdminProductsClient({
               className="p-6 space-y-5"
               noValidate
             >
-              {/* Name + Slug */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="prod-name"
-                    className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
-                  >
-                    Название *
-                  </label>
-                  <input
-                    id="prod-name"
-                    type="text"
-                    placeholder="Механическая клавиатура..."
-                    {...register("name")}
-                    onChange={handleNameChange}
-                    className={inputClass(!!errors.name)}
-                  />
-                  {errors.name && (
-                    <p className="text-xs text-rose-600 mt-1">
-                      {errors.name.message}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label
-                    htmlFor="prod-slug"
-                    className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
-                  >
-                    Слаг (URL) *
-                  </label>
-                  <input
-                    id="prod-slug"
-                    type="text"
-                    placeholder="mekhanicheskaya-klaviatura"
-                    {...register("slug")}
-                    onChange={handleSlugChange}
-                    className={`${inputClass(!!errors.slug)} font-mono`}
-                  />
-                  {errors.slug && (
-                    <p className="text-xs text-rose-600 mt-1">
-                      {errors.slug.message}
-                    </p>
-                  )}
-                </div>
-              </div>
-
               {/* Category + Brand */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
@@ -842,6 +899,29 @@ export function AdminProductsClient({
                     </p>
                   )}
                 </div>
+              </div>
+
+              {/* Slug (URL) */}
+              <div>
+                <label
+                  htmlFor="prod-slug"
+                  className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                >
+                  Слаг (URL) *
+                </label>
+                <input
+                  id="prod-slug"
+                  type="text"
+                  placeholder="mekhanicheskaya-klaviatura"
+                  {...register("slug")}
+                  onChange={handleSlugChange}
+                  className={`${inputClass(!!errors.slug)} font-mono`}
+                />
+                {errors.slug && (
+                  <p className="text-xs text-rose-600 mt-1">
+                    {errors.slug.message}
+                  </p>
+                )}
               </div>
 
               {/* Image Upload / URL Selector */}
@@ -1124,98 +1204,322 @@ export function AdminProductsClient({
                 )}
               </div>
 
-              {/* Short Description */}
-              <div>
-                <label
-                  htmlFor="prod-short-desc"
-                  className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
-                >
-                  Краткое описание *{" "}
-                  <span className="text-slate-400 normal-case font-normal">
-                    (до 500 символов)
+              {/* ── Language Content Section ───────────────────────────── */}
+              <div className="pt-4 border-t border-slate-100 space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-900 uppercase tracking-wider">
+                    Контент и переводы
                   </span>
-                </label>
-                <textarea
-                  id="prod-short-desc"
-                  rows={2}
-                  placeholder="Одна-две фразы о товаре..."
-                  {...register("shortDescription")}
-                  className={`${inputClass(!!errors.shortDescription)} resize-none`}
-                />
-                {errors.shortDescription && (
-                  <p className="text-xs text-rose-600 mt-1">
-                    {errors.shortDescription.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Description */}
-              <div>
-                <label
-                  htmlFor="prod-desc"
-                  className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
-                >
-                  Полное описание *
-                </label>
-                <textarea
-                  id="prod-desc"
-                  rows={4}
-                  placeholder="Подробное описание товара..."
-                  {...register("description")}
-                  className={`${inputClass(!!errors.description)} resize-none`}
-                />
-                {errors.description && (
-                  <p className="text-xs text-rose-600 mt-1">
-                    {errors.description.message}
-                  </p>
-                )}
-              </div>
-
-              {/* Characteristics — dynamic key-value rows */}
-              <div>
-                <div className="flex items-center justify-between mb-2">
-                  <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
-                    Характеристики
-                  </label>
-                  <button
-                    type="button"
-                    onClick={addCharacteristic}
-                    className="flex items-center gap-1 text-xs text-[#06B6D4] hover:text-[#0891B2] font-medium transition-colors cursor-pointer"
-                  >
-                    <PlusCircle className="w-3.5 h-3.5" /> Добавить
-                  </button>
+                  <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl">
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("ru")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeTab === "ru"
+                          ? "bg-[#0F172A] text-white shadow-xs"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                      }`}
+                    >
+                      RU (Основной)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("uz")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeTab === "uz"
+                          ? "bg-[#0F172A] text-white shadow-xs"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                      }`}
+                    >
+                      UZ
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setActiveTab("en")}
+                      className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                        activeTab === "en"
+                          ? "bg-[#0F172A] text-white shadow-xs"
+                          : "text-slate-600 hover:text-slate-900 hover:bg-slate-200/60"
+                      }`}
+                    >
+                      EN
+                    </button>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  {characteristics.map((row, index) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <input
-                        type="text"
-                        placeholder="Название"
-                        value={row.key}
-                        onChange={(e) =>
-                          updateCharacteristic(index, "key", e.target.value)
-                        }
-                        className="flex-1 px-3 py-2 bg-[#F8FAFC] border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Значение"
-                        value={row.value}
-                        onChange={(e) =>
-                          updateCharacteristic(index, "value", e.target.value)
-                        }
-                        className="flex-1 px-3 py-2 bg-[#F8FAFC] border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => removeCharacteristic(index)}
-                        className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer shrink-0"
-                        title="Удалить строку"
-                      >
-                        <MinusCircle className="w-4 h-4" />
-                      </button>
-                    </div>
-                  ))}
+
+                {/* RU Tab Content */}
+                <div className={activeTab === "ru" ? "space-y-4" : "hidden"}>
+                  <div>
+                    <label
+                      htmlFor="prod-name"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Название * (RU)
+                    </label>
+                    <input
+                      id="prod-name"
+                      type="text"
+                      placeholder="Механическая клавиатура..."
+                      {...register("name")}
+                      onChange={handleNameChange}
+                      className={inputClass(!!errors.name)}
+                    />
+                    {errors.name && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="prod-short-desc"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Краткое описание * (RU){" "}
+                      <span className="text-slate-400 normal-case font-normal">
+                        (до 500 символов)
+                      </span>
+                    </label>
+                    <textarea
+                      id="prod-short-desc"
+                      rows={2}
+                      placeholder="Одна-две фразы о товаре на русском..."
+                      {...register("shortDescription")}
+                      className={`${inputClass(!!errors.shortDescription)} resize-none`}
+                    />
+                    {errors.shortDescription && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.shortDescription.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="prod-desc"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Полное описание * (RU)
+                    </label>
+                    <textarea
+                      id="prod-desc"
+                      rows={4}
+                      placeholder="Подробное описание товара на русском..."
+                      {...register("description")}
+                      className={`${inputClass(!!errors.description)} resize-none`}
+                    />
+                    {errors.description && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.description.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* UZ Tab Content */}
+                <div className={activeTab === "uz" ? "space-y-4" : "hidden"}>
+                  <div>
+                    <label
+                      htmlFor="prod-name-uz"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Название (UZ)
+                    </label>
+                    <input
+                      id="prod-name-uz"
+                      type="text"
+                      placeholder="Mexanik klaviatura..."
+                      {...register("translations.uz.name")}
+                      className={inputClass(!!errors.translations?.uz?.name)}
+                    />
+                    {errors.translations?.uz?.name && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.translations.uz.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="prod-short-desc-uz"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Краткое описание (UZ){" "}
+                      <span className="text-slate-400 normal-case font-normal">
+                        (до 500 символов)
+                      </span>
+                    </label>
+                    <textarea
+                      id="prod-short-desc-uz"
+                      rows={2}
+                      placeholder="Mahsulot haqida qisqacha ma'lumot..."
+                      {...register("translations.uz.shortDescription")}
+                      className={`${inputClass(
+                        !!errors.translations?.uz?.shortDescription
+                      )} resize-none`}
+                    />
+                    {errors.translations?.uz?.shortDescription && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.translations.uz.shortDescription.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="prod-desc-uz"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Полное описание (UZ)
+                    </label>
+                    <textarea
+                      id="prod-desc-uz"
+                      rows={4}
+                      placeholder="Mahsulotning to'liq tavsifi..."
+                      {...register("translations.uz.description")}
+                      className={`${inputClass(
+                        !!errors.translations?.uz?.description
+                      )} resize-none`}
+                    />
+                    {errors.translations?.uz?.description && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.translations.uz.description.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* EN Tab Content */}
+                <div className={activeTab === "en" ? "space-y-4" : "hidden"}>
+                  <div>
+                    <label
+                      htmlFor="prod-name-en"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Название (EN)
+                    </label>
+                    <input
+                      id="prod-name-en"
+                      type="text"
+                      placeholder="Mechanical Keyboard..."
+                      {...register("translations.en.name")}
+                      className={inputClass(!!errors.translations?.en?.name)}
+                    />
+                    {errors.translations?.en?.name && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.translations.en.name.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="prod-short-desc-en"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Краткое описание (EN){" "}
+                      <span className="text-slate-400 normal-case font-normal">
+                        (до 500 символов)
+                      </span>
+                    </label>
+                    <textarea
+                      id="prod-short-desc-en"
+                      rows={2}
+                      placeholder="Short summary about product in English..."
+                      {...register("translations.en.shortDescription")}
+                      className={`${inputClass(
+                        !!errors.translations?.en?.shortDescription
+                      )} resize-none`}
+                    />
+                    {errors.translations?.en?.shortDescription && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.translations.en.shortDescription.message}
+                      </p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="prod-desc-en"
+                      className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1.5"
+                    >
+                      Полное описание (EN)
+                    </label>
+                    <textarea
+                      id="prod-desc-en"
+                      rows={4}
+                      placeholder="Full product description in English..."
+                      {...register("translations.en.description")}
+                      className={`${inputClass(
+                        !!errors.translations?.en?.description
+                      )} resize-none`}
+                    />
+                    {errors.translations?.en?.description && (
+                      <p className="text-xs text-rose-600 mt-1">
+                        {errors.translations.en.description.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Characteristics — dynamic key-value rows for activeTab */}
+                <div className="pt-3 border-t border-slate-100">
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                      Характеристики ({activeTab === "ru" ? "RU" : activeTab.toUpperCase()})
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => addCharacteristic(activeTab)}
+                      className="flex items-center gap-1 text-xs text-[#06B6D4] hover:text-[#0891B2] font-medium transition-colors cursor-pointer"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" /> Добавить
+                    </button>
+                  </div>
+                  <div className="space-y-2">
+                    {(characteristicsByLocale[activeTab] || []).map((row, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          placeholder="Название"
+                          value={row.key}
+                          onChange={(e) =>
+                            updateCharacteristic(activeTab, index, "key", e.target.value)
+                          }
+                          className="flex-1 px-3 py-2 bg-[#F8FAFC] border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all"
+                        />
+                        <input
+                          type="text"
+                          placeholder="Значение"
+                          value={row.value}
+                          onChange={(e) =>
+                            updateCharacteristic(
+                              activeTab,
+                              index,
+                              "value",
+                              e.target.value
+                            )
+                          }
+                          className="flex-1 px-3 py-2 bg-[#F8FAFC] border border-slate-200 rounded-lg text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#06B6D4] transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeCharacteristic(activeTab, index)}
+                          className="p-1.5 text-slate-400 hover:text-rose-500 transition-colors cursor-pointer shrink-0"
+                          title="Удалить строку"
+                        >
+                          <MinusCircle className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
+                    {(!characteristicsByLocale[activeTab] ||
+                      characteristicsByLocale[activeTab].length === 0) && (
+                      <p className="text-xs text-slate-400 italic">
+                        Нет характеристик для этого языка
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 

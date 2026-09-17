@@ -88,4 +88,121 @@ describe("Product Zod Validation Schema (productSchema)", () => {
       expect(result.error.flatten().fieldErrors.slug).toBeDefined();
     }
   });
+
+  describe("translations validation", () => {
+    it("should accept valid full translations for uz and en", () => {
+      const result = productSchema.safeParse({
+        ...validProductInput,
+        translations: {
+          uz: {
+            name: "TechGear CyberPulse Pro O'yin Sichqonchasi",
+            shortDescription: "26000 DPI optik sensorli simsiz sichqoncha.",
+            description: "Kibersport va samarali ish uchun professional sichqoncha.",
+            characteristics: {
+              "Sensor": "PixArt PAW3395",
+              "Vazn": "58 g",
+            },
+          },
+          en: {
+            name: "TechGear CyberPulse Pro Gaming Mouse",
+            shortDescription: "Wireless mouse with 26000 DPI optical sensor.",
+            description: "Professional gaming and productivity mouse.",
+            characteristics: {
+              "Sensor": "PixArt PAW3395",
+              "Weight": "58 g",
+            },
+          },
+        },
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.translations?.uz?.name).toBe(
+          "TechGear CyberPulse Pro O'yin Sichqonchasi"
+        );
+        expect(result.data.translations?.en?.characteristics?.["Weight"]).toBe("58 g");
+      }
+    });
+
+    it("should accept partial translations (e.g. only uz or only name)", () => {
+      const result = productSchema.safeParse({
+        ...validProductInput,
+        translations: {
+          uz: {
+            name: "TechGear CyberPulse Pro UZ",
+          },
+        },
+      });
+
+      expect(result.success).toBe(true);
+      if (result.success) {
+        expect(result.data.translations?.uz?.name).toBe("TechGear CyberPulse Pro UZ");
+        expect(result.data.translations?.uz?.description).toBeUndefined();
+        expect(result.data.translations?.en).toBeUndefined();
+      }
+    });
+
+    it("should accept translations: null and translations: undefined", () => {
+      const nullResult = productSchema.safeParse({
+        ...validProductInput,
+        translations: null,
+      });
+      expect(nullResult.success).toBe(true);
+
+      const undefinedResult = productSchema.safeParse({
+        ...validProductInput,
+        translations: undefined,
+      });
+      expect(undefinedResult.success).toBe(true);
+    });
+
+    it("should accept empty optional translation fields", () => {
+      const result = productSchema.safeParse({
+        ...validProductInput,
+        translations: {
+          uz: {},
+          en: {
+            characteristics: {},
+          },
+        },
+      });
+      expect(result.success).toBe(true);
+    });
+
+    it("should reject translation name exceeding 200 characters", () => {
+      const result = productSchema.safeParse({
+        ...validProductInput,
+        translations: {
+          en: {
+            name: "A".repeat(201),
+          },
+        },
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const hasNameError = result.error.issues.some(
+          (issue) => issue.path.join(".") === "translations.en.name"
+        );
+        expect(hasNameError).toBe(true);
+      }
+    });
+
+    it("should reject translation shortDescription exceeding 500 characters", () => {
+      const result = productSchema.safeParse({
+        ...validProductInput,
+        translations: {
+          uz: {
+            shortDescription: "B".repeat(501),
+          },
+        },
+      });
+      expect(result.success).toBe(false);
+      if (!result.success) {
+        const hasDescError = result.error.issues.some(
+          (issue) => issue.path.join(".") === "translations.uz.shortDescription"
+        );
+        expect(hasDescError).toBe(true);
+      }
+    });
+  });
 });
