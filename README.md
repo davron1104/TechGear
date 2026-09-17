@@ -23,15 +23,11 @@
 * **Supported Languages:** 🇷🇺 Русский | 🇺🇿 O'zbekcha | 🇬🇧 English
 * **Supported Currencies:** UZS (So'm) / USD ($)
 
-### 🔑 Local & Demo Test Accounts
-For evaluating role-based features and admin workflows:
+### 🔑 Local Development Test Accounts
 
-| Role | Email | Password | Access Level |
-| :--- | :--- | :--- | :--- |
-| **Administrator** | `admin@techgear.ru` | `admin123` | Full access to `/admin` dashboard, catalog CRUD, order management, system settings |
-| **Customer** | `customer@techgear.ru` | `customer123` | Personal account, order history, profile management, checkout |
+The project seed script (`prisma/seed.ts`) creates test accounts for local development and testing.
 
-> *Note: Credentials above are standard development test seeds for demonstration purposes.*
+Production credentials are intentionally not published in this repository.
 
 ---
 
